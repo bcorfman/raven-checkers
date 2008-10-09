@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Komodo Project File - DO NOT EDIT -->
+<project id="C4164DC9-734D-4B33-8FB8-43CDC26C157A" kpf_version="4" name="checkers.kpf">
+<file id="0aa5f6c9-8e39-4d6f-8ea3-587f8c9e2330" idref="C4164DC9-734D-4B33-8FB8-43CDC26C157A" name="predicates.py" url="predicates.py">
+</file>
+<file id="113a22e0-b360-4b40-bd91-259b68b1084b" idref="C4164DC9-734D-4B33-8FB8-43CDC26C157A" name="testcb.py" url="testcb.py">
+</file>
+<file id="135ab9dd-8f75-42b9-ae6c-46bd077ae76c" idref="C4164DC9-734D-4B33-8FB8-43CDC26C157A" name="checkers.py" url="checkers.py">
+</file>
+<file id="1C9AD214-1175-42BA-8620-4AF206C214FC" idref="C4164DC9-734D-4B33-8FB8-43CDC26C157A" name="mainframe.py" url="mainframe.py">
+</file>
+<file id="200b3141-9ccd-4f90-b9d4-f6c787011cdb" idref="C4164DC9-734D-4B33-8FB8-43CDC26C157A" name="player.py" url="player.py">
+</file>
+<file id="2A09663B-FAD9-4F81-810D-3DA64404CE37" idref="C4164DC9-734D-4B33-8FB8-43CDC26C157A" name="setupboard.py" url="setupboard.py">
+</file>
+<file id="2B8B3BBB-A428-462E-B844-0BADBB2BCD28" idref="C4164DC9-734D-4B33-8FB8-43CDC26C157A" name="boardview.py" url="boardview.py">
+</file>
+<file id="2D6EFACC-685A-4FF1-A451-7CAFFA03ACD8" idref="C4164DC9-734D-4B33-8FB8-43CDC26C157A" name="playercontroller.py" url="playercontroller.py">
+</file>
+<file id="2af7bfc1-6566-497f-9f0f-a8dfa99a6ccd" idref="C4164DC9-734D-4B33-8FB8-43CDC26C157A" name="controller.py" url="controller.py">
+</file>
+<file id="41D722C8-081F-4B0A-9EFC-BE0C8DE4F039" idref="C4164DC9-734D-4B33-8FB8-43CDC26C157A" name="observer.py" url="observer.py">
+</file>
+<file id="63f66b31-b527-47c0-84af-d89cccfc8897" idref="C4164DC9-734D-4B33-8FB8-43CDC26C157A" name="alphabetacontroller.py" url="alphabetacontroller.py">
+</file>
+<file id="8047D6E7-43CD-498B-BD4D-B9A307E9D72B" idref="C4164DC9-734D-4B33-8FB8-43CDC26C157A" name="command.py" url="command.py">
+</file>
+<file id="98E28B87-23F5-4D49-9A6C-3A11E73FDD0E" idref="C4164DC9-734D-4B33-8FB8-43CDC26C157A" name="aboutbox.py" url="aboutbox.py">
+</file>
+<file id="CE6BD88B-772C-498A-AB2F-B56D5D0F00BD" idref="C4164DC9-734D-4B33-8FB8-43CDC26C157A" name="centeredwindow.py" url="centeredwindow.py">
+</file>
+<file id="D7043F3B-31C7-404F-9F19-C7AB8E78BE76" idref="C4164DC9-734D-4B33-8FB8-43CDC26C157A" name="utils.py" url="utils.py">
+</file>
+<file id="D7AAA58B-29F3-4FBE-B7EC-A629DF2872AB" idref="C4164DC9-734D-4B33-8FB8-43CDC26C157A" name="globalconst.py" url="globalconst.py">
+</file>
+<file id="E5072CAF-3DB1-41E3-9115-122619364D8C" idref="C4164DC9-734D-4B33-8FB8-43CDC26C157A" name="gamemanager.py" url="gamemanager.py">
+</file>
+<file id="dbd24b1c-50bf-4426-9cf9-fd26bfaaf545" idref="C4164DC9-734D-4B33-8FB8-43CDC26C157A" name="games.py" url="games.py">
+</file>
+<preference-set idref="113a22e0-b360-4b40-bd91-259b68b1084b">
+<preference-set id="Invocations">
+<preference-set id="default">
+  <string id="cookieparams"></string>
+  <string id="cwd"></string>
+  <string id="documentRoot"></string>
+  <string id="executable-params"></string>
+  <string relative="path" id="filename">testcb.py</string>
+  <string id="getparams"></string>
+  <string id="language">Python</string>
+  <string id="mpostparams"></string>
+  <string id="params"></string>
+  <string id="postparams"></string>
+  <string id="posttype">application/x-www-form-urlencoded</string>
+  <string id="request-method">GET</string>
+  <boolean id="show-dialog">1</boolean>
+  <boolean id="sim-cgi">0</boolean>
+  <boolean id="use-console">0</boolean>
+  <string id="userCGIEnvironment"></string>
+  <string id="userEnvironment"></string>
+</preference-set>
+</preference-set>
+  <string id="lastInvocation">default</string>
+</preference-set>
+<preference-set idref="135ab9dd-8f75-42b9-ae6c-46bd077ae76c">
+<preference-set id="Invocations">
+<preference-set id="default">
+  <string id="cookieparams"></string>
+  <string id="cwd"></string>
+  <string id="documentRoot"></string>
+  <string id="executable-params"></string>
+  <string relative="path" id="filename">mainframe.py</string>
+  <string id="getparams"></string>
+  <string id="language">Python</string>
+  <string id="mpostparams"></string>
+  <string id="params"></string>
+  <string id="postparams"></string>
+  <string id="posttype">application/x-www-form-urlencoded</string>
+  <string id="request-method">GET</string>
+  <boolean id="show-dialog">1</boolean>
+  <boolean id="sim-cgi">0</boolean>
+  <boolean id="use-console">0</boolean>
+  <string id="userCGIEnvironment"></string>
+  <string id="userEnvironment"></string>
+</preference-set>
+</preference-set>
+  <string id="lastInvocation">default</string>
+</preference-set>
+<preference-set idref="1C9AD214-1175-42BA-8620-4AF206C214FC">
+<preference-set id="Invocations">
+<preference-set id="default">
+  <string id="cookieparams"></string>
+  <string id="cwd"></string>
+  <string id="documentRoot"></string>
+  <string id="executable-params"></string>
+  <string relative="path" id="filename">mainframe.py</string>
+  <string id="getparams"></string>
+  <string id="language">Python</string>
+  <string id="mpostparams"></string>
+  <string id="params"></string>
+  <string id="postparams"></string>
+  <string id="posttype">application/x-www-form-urlencoded</string>
+  <string id="request-method">GET</string>
+  <boolean id="show-dialog">1</boolean>
+  <boolean id="sim-cgi">0</boolean>
+  <boolean id="use-console">0</boolean>
+  <string id="userCGIEnvironment"></string>
+  <string id="userEnvironment"></string>
+</preference-set>
+</preference-set>
+  <string id="lastInvocation">default</string>
+</preference-set>
+<preference-set idref="200b3141-9ccd-4f90-b9d4-f6c787011cdb">
+<preference-set id="Invocations">
+<preference-set id="default">
+  <string id="cookieparams"></string>
+  <string id="cwd"></string>
+  <string id="documentRoot"></string>
+  <string id="executable-params"></string>
+  <string relative="path" id="filename">player.py</string>
+  <string id="getparams"></string>
+  <string id="language">Python</string>
+  <string id="mpostparams"></string>
+  <string id="params"></string>
+  <string id="postparams"></string>
+  <string id="posttype">application/x-www-form-urlencoded</string>
+  <string id="request-method">GET</string>
+  <boolean id="show-dialog">1</boolean>
+  <boolean id="sim-cgi">0</boolean>
+  <boolean id="use-console">0</boolean>
+  <string id="userCGIEnvironment"></string>
+  <string id="userEnvironment"></string>
+</preference-set>
+</preference-set>
+  <string id="lastInvocation">default</string>
+</preference-set>
+<preference-set idref="2A09663B-FAD9-4F81-810D-3DA64404CE37">
+<preference-set id="Invocations">
+<preference-set id="default">
+  <string id="cookieparams"></string>
+  <string id="cwd"></string>
+  <string id="documentRoot"></string>
+  <string id="executable-params"></string>
+  <string relative="path" id="filename">mainframe.py</string>
+  <string id="getparams"></string>
+  <string id="language">Python</string>
+  <string id="mpostparams"></string>
+  <string id="params"></string>
+  <string id="postparams"></string>
+  <string id="posttype">application/x-www-form-urlencoded</string>
+  <string id="request-method">GET</string>
+  <boolean id="show-dialog">1</boolean>
+  <boolean id="sim-cgi">0</boolean>
+  <boolean id="use-console">0</boolean>
+  <string id="userCGIEnvironment"></string>
+  <string id="userEnvironment"></string>
+</preference-set>
+</preference-set>
+  <string id="lastInvocation">default</string>
+</preference-set>
+<preference-set idref="2B8B3BBB-A428-462E-B844-0BADBB2BCD28">
+<preference-set id="Invocations">
+<preference-set id="default">
+  <string id="cookieparams"></string>
+  <string id="cwd"></string>
+  <string id="documentRoot"></string>
+  <string id="executable-params"></string>
+  <string relative="path" id="filename">mainframe.py</string>
+  <string id="getparams"></string>
+  <string id="language">Python</string>
+  <string id="mpostparams"></string>
+  <string id="params"></string>
+  <string id="postparams"></string>
+  <string id="posttype">application/x-www-form-urlencoded</string>
+  <string id="request-method">GET</string>
+  <boolean id="show-dialog">1</boolean>
+  <boolean id="sim-cgi">0</boolean>
+  <boolean id="use-console">0</boolean>
+  <string id="userCGIEnvironment"></string>
+  <string id="userEnvironment"></string>
+</preference-set>
+</preference-set>
+  <string id="lastInvocation">default</string>
+</preference-set>
+<preference-set idref="2D6EFACC-685A-4FF1-A451-7CAFFA03ACD8">
+<preference-set id="Invocations">
+<preference-set id="default">
+  <string id="cookieparams"></string>
+  <string id="cwd"></string>
+  <string id="documentRoot"></string>
+  <string id="executable-params"></string>
+  <string relative="path" id="filename">mainframe.py</string>
+  <string id="getparams"></string>
+  <string id="language">Python</string>
+  <string id="mpostparams"></string>
+  <string id="params"></string>
+  <string id="postparams"></string>
+  <string id="posttype">application/x-www-form-urlencoded</string>
+  <string id="request-method">GET</string>
+  <boolean id="show-dialog">1</boolean>
+  <boolean id="sim-cgi">0</boolean>
+  <boolean id="use-console">0</boolean>
+  <string id="userCGIEnvironment"></string>
+  <string id="userEnvironment"></string>
+</preference-set>
+</preference-set>
+  <string id="lastInvocation">default</string>
+</preference-set>
+<preference-set idref="63f66b31-b527-47c0-84af-d89cccfc8897">
+<preference-set id="Invocations">
+<preference-set id="default">
+  <string id="cookieparams"></string>
+  <string id="cwd"></string>
+  <string id="documentRoot"></string>
+  <string id="executable-params"></string>
+  <string relative="path" id="filename">mainframe.py</string>
+  <string id="getparams"></string>
+  <string id="language">Python</string>
+  <string id="mpostparams"></string>
+  <string id="params"></string>
+  <string id="postparams"></string>
+  <string id="posttype">application/x-www-form-urlencoded</string>
+  <string id="request-method">GET</string>
+  <boolean id="show-dialog">1</boolean>
+  <boolean id="sim-cgi">0</boolean>
+  <boolean id="use-console">0</boolean>
+  <string id="userCGIEnvironment"></string>
+  <string id="userEnvironment"></string>
+</preference-set>
+</preference-set>
+  <string id="lastInvocation">default</string>
+</preference-set>
+<preference-set idref="98E28B87-23F5-4D49-9A6C-3A11E73FDD0E">
+<preference-set id="Invocations">
+<preference-set id="default">
+  <string id="cookieparams"></string>
+  <string id="cwd"></string>
+  <string id="documentRoot"></string>
+  <string id="executable-params"></string>
+  <string relative="path" id="filename">mainframe.py</string>
+  <string id="getparams"></string>
+  <string id="language">Python</string>
+  <string id="mpostparams"></string>
+  <string id="params"></string>
+  <string id="postparams"></string>
+  <string id="posttype">application/x-www-form-urlencoded</string>
+  <string id="request-method">GET</string>
+  <boolean id="show-dialog">1</boolean>
+  <boolean id="sim-cgi">0</boolean>
+  <boolean id="use-console">0</boolean>
+  <string id="userCGIEnvironment"></string>
+  <string id="userEnvironment"></string>
+</preference-set>
+</preference-set>
+  <string id="lastInvocation">default</string>
+</preference-set>
+<preference-set idref="C4164DC9-734D-4B33-8FB8-43CDC26C157A">
+<preference-set id="Invocations">
+<preference-set id="Python">
+  <string id="cookieparams"></string>
+  <string id="cwd"></string>
+  <string id="documentRoot"></string>
+  <string relative="path" id="filename">mainframe.py</string>
+  <string id="getparams"></string>
+  <string id="mpostparams"></string>
+  <string id="params"></string>
+  <string id="postparams"></string>
+  <string id="posttype">application/x-www-form-urlencoded</string>
+  <string id="request-method">GET</string>
+  <boolean id="show-dialog">1</boolean>
+  <boolean id="sim-cgi">0</boolean>
+  <boolean id="use-console">0</boolean>
+  <string id="userCGIEnvironment"></string>
+  <string id="userEnvironment"></string>
+</preference-set>
+</preference-set>
+</preference-set>
+<preference-set idref="D7AAA58B-29F3-4FBE-B7EC-A629DF2872AB">
+<preference-set id="Invocations">
+<preference-set id="default">
+  <string id="cookieparams"></string>
+  <string id="cwd"></string>
+  <string id="documentRoot"></string>
+  <string id="executable-params"></string>
+  <string relative="path" id="filename">mainframe.py</string>
+  <string id="getparams"></string>
+  <string id="language">Python</string>
+  <string id="mpostparams"></string>
+  <string id="params"></string>
+  <string id="postparams"></string>
+  <string id="posttype">application/x-www-form-urlencoded</string>
+  <string id="request-method">GET</string>
+  <boolean id="show-dialog">1</boolean>
+  <boolean id="sim-cgi">0</boolean>
+  <boolean id="use-console">0</boolean>
+  <string id="userCGIEnvironment"></string>
+  <string id="userEnvironment"></string>
+</preference-set>
+</preference-set>
+  <string id="lastInvocation">default</string>
+</preference-set>
+<preference-set idref="E5072CAF-3DB1-41E3-9115-122619364D8C">
+<preference-set id="Invocations">
+<preference-set id="default">
+  <string id="cookieparams"></string>
+  <string id="cwd"></string>
+  <string id="documentRoot"></string>
+  <string id="executable-params"></string>
+  <string relative="path" id="filename">mainframe.py</string>
+  <string id="getparams"></string>
+  <string id="language">Python</string>
+  <string id="mpostparams"></string>
+  <string id="params"></string>
+  <string id="postparams"></string>
+  <string id="posttype">application/x-www-form-urlencoded</string>
+  <string id="request-method">GET</string>
+  <boolean id="show-dialog">1</boolean>
+  <boolean id="sim-cgi">0</boolean>
+  <boolean id="use-console">0</boolean>
+  <string id="userCGIEnvironment"></string>
+  <string id="userEnvironment"></string>
+</preference-set>
+</preference-set>
+  <string id="lastInvocation">default</string>
+</preference-set>
+<preference-set idref="dbd24b1c-50bf-4426-9cf9-fd26bfaaf545">
+<preference-set id="Invocations">
+<preference-set id="default">
+  <string id="cookieparams"></string>
+  <string id="cwd"></string>
+  <string id="documentRoot"></string>
+  <string id="executable-params"></string>
+  <string relative="path" id="filename">mainframe.py</string>
+  <string id="getparams"></string>
+  <string id="language">Python</string>
+  <string id="mpostparams"></string>
+  <string id="params"></string>
+  <string id="postparams"></string>
+  <string id="posttype">application/x-www-form-urlencoded</string>
+  <string id="request-method">GET</string>
+  <boolean id="show-dialog">1</boolean>
+  <boolean id="sim-cgi">0</boolean>
+  <boolean id="use-console">0</boolean>
+  <string id="userCGIEnvironment"></string>
+  <string id="userEnvironment"></string>
+</preference-set>
+</preference-set>
+  <string id="lastInvocation">default</string>
+</preference-set>
+</project>
