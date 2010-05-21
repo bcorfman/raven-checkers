@@ -1,9 +1,11 @@
 from Tkinter import *
+from tkFileDialog import askopenfilename
 from globalconst import *
 from checkers import Checkers
 from boardview import BoardView
 from playercontroller import PlayerController
 from alphabetacontroller import AlphaBetaController
+from gamepersist import SavedGame
 
 class GameManager(object):
     def __init__(self, **props):
@@ -15,7 +17,6 @@ class GameManager(object):
         statusbar.pack(side=BOTTOM, fill=X)
         self.view = BoardView(self._root, model=self.model,
                               statusbar=statusbar)
-        self.view.pack(side=TOP, expand=0)
         self.player_color = BLACK
         self.num_players = 1
         self.set_controllers()
@@ -66,19 +67,27 @@ class GameManager(object):
         self.view.update_statusbar()
         self._controller1.start_turn()
 
+    def load_game(self):
+        # stop alphabeta threads from making any moves
+        self.model.curr_state.ok_to_move = False
+        self._controller1.stop_process()
+        self._controller2.stop_process()
+        f = askopenfilename(filetypes=(('Raven Checkers move files','*.rcm'),
+                                       ('All files','*.*')),
+                            initialdir='training')
+        if not f:
+            return
+        sg = SavedGame()
+        self.model.curr_state = sg.read(f)
+
     def turn_finished(self):
-        if not self.model.terminal_test():
-            if self.model.curr_state.to_move == BLACK:
-                self._controller2.end_turn()
-                self._root.update()
-                self.view.update_statusbar()
-                self._controller1.start_turn()
-            else:
-                self._controller1.end_turn()
-                self._root.update()
-                self.view.update_statusbar()
-                self._controller2.start_turn()
-        else:
-            self.view.update_statusbar()
-            self._controller1.end_turn()
+        if self.model.curr_state.to_move == BLACK:
             self._controller2.end_turn()
+            self._root.update()
+            self.view.update_statusbar()
+            self._controller1.start_turn()
+        else:
+            self._controller1.end_turn()
+            self._root.update()
+            self.view.update_statusbar()
+            self._controller2.start_turn()

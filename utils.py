@@ -83,9 +83,9 @@ def removeall(item, seq):
     Ex: removeall(3, [1, 2, 3, 3, 2, 1, 3]) ==> [1, 2, 2, 1]
     removeall(4, [1, 2, 3]) ==> [1, 2, 3]"""
     if isinstance(seq, str):
-      return seq.replace(item, '')
+        return seq.replace(item, '')
     else:
-      return [x for x in seq if x != item]
+        return [x for x in seq if x != item]
 
 def reverse(seq):
     """Return the reverse of a string or list or tuple.  Mutates the seq.
@@ -161,7 +161,7 @@ def product(seq, fn=None):
     return reduce(operator.mul, seq, 1)
 
 def argmin(gen, fn):
-    """Return an element with lowest fn(gen[i]) score; tie goes to first one.
+    """Return an element with lowest fn(x) score; tie goes to first one.
     Gen must be a generator.
     Ex: argmin(['one', 'to', 'three'], len) ==>  'to'"""
     best = gen.next(); best_score = fn(best)
@@ -172,7 +172,7 @@ def argmin(gen, fn):
     return best
 
 def argmin_list(gen, fn):
-    """Return a list of elements of seq[i] with the lowest fn(seq[i]) scores.
+    """Return a list of elements of gen with the lowest fn(x) scores.
     Ex: argmin_list(['one', 'to', 'three', 'or'], len) ==>  ['to', 'or']"""
     best_score, best = fn(gen.next()), []
     for x in gen:
@@ -196,7 +196,7 @@ def argmin_list(gen, fn):
 #    return best
 
 def argmin_random_tie(gen, fn):
-    """Return an element with lowest fn(seq[i]) score; break ties at random.
+    """Return an element with lowest fn(x) score; break ties at random.
     Thus, for all s,f: argmin_random_tie(s, f) in argmin_list(s, f)"""
     best = gen.next(); best_score = fn(best); n = 0
     for x in gen:
@@ -224,17 +224,17 @@ def argmin_random_tie(gen, fn):
 #    return best
 
 def argmax(gen, fn):
-    """Return an element with highest fn(seq[i]) score; tie goes to first one.
+    """Return an element with highest fn(x) score; tie goes to first one.
     Ex: argmax(['one', 'to', 'three'], len) ==> 'three'"""
     return argmin(gen, lambda x: -fn(x))
 
 def argmax_list(seq, fn):
-    """Return a list of elements of seq[i] with the highest fn(seq[i]) scores.
+    """Return a list of elements of gen with the highest fn(x) scores.
     Ex: argmax_list(['one', 'three', 'seven'], len) ==> ['three', 'seven']"""
     return argmin_list(seq, lambda x: -fn(x))
 
 def argmax_random_tie(seq, fn):
-    "Return an element with highest fn(seq[i]) score; break ties at random."
+    "Return an element with highest fn(x) score; break ties at random."
     return argmin_random_tie(seq, lambda x: -fn(x))
 #______________________________________________________________________________
 # Statistical and mathematical functions
@@ -446,8 +446,7 @@ def print_table(table, header=None, sep=' ', numfmt='%g'):
 
 def AIMAFile(components, mode='r'):
     "Open a file based at the AIMA root directory."
-    import utils
-    dir = os.path.dirname(utils.__file__)
+    dir = os.path.dirname(__file__)
     return open(apply(os.path.join, [dir] + components), mode)
 
 def DataFile(name, mode='r'):

@@ -12,10 +12,10 @@ class PlayerController(Controller):
         self._move_in_progress = False
 
     def _register_event_handlers(self):
-        Widget.bind(self._view, '<Button-1>', self.mouse_click)
+        Widget.bind(self._view.canvas, '<Button-1>', self.mouse_click)
 
     def _unregister_event_handlers(self):
-        Widget.unbind(self._view, '<Button-1>')
+        Widget.unbind(self._view.canvas, '<Button-1>')
 
     def stop_process(self):
         pass
@@ -63,7 +63,7 @@ class PlayerController(Controller):
                 # if only one move available, take it.
                 if len(self.moves) == 1:
                     self._make_move()
-                    self._view.after(100, self._end_turn_event)
+                    self._view.canvas.after(100, self._end_turn_event)
                     return
                 self._move_in_progress = True
         else:
@@ -80,7 +80,7 @@ class PlayerController(Controller):
                     self._highlights.append(pos)
                     if len(self.moves) == 1:
                         self._make_move()
-                        self._view.after(100, self._end_turn_event)
+                        self._view.canvas.after(100, self._end_turn_event)
                         return
                     self.idx += 2 if self._model.captures_available() else 1
 

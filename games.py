@@ -2,8 +2,10 @@
 
 """
 
-from utils import *
+from utils import infinity, argmax, argmax_random_tie, num_or_str, Dict, update
+from utils import if_, Struct
 import random
+import time
 
 #______________________________________________________________________________
 # Minimax Search
@@ -18,7 +20,7 @@ def minimax_decision(state, game):
         if game.terminal_test(state):
             return game.utility(state, player)
         v = -infinity
-        for (a, s) in game.successors(state):
+        for (_, s) in game.successors(state):
             v = max(v, min_value(s))
         return v
 
@@ -26,7 +28,7 @@ def minimax_decision(state, game):
         if game.terminal_test(state):
             return game.utility(state, player)
         v = infinity
-        for (a, s) in game.successors(state):
+        for (_, s) in game.successors(state):
             v = min(v, max_value(s))
         return v
 
@@ -76,13 +78,18 @@ def alphabeta_search(state, game, d=4, cutoff_test=None, eval_fn=None):
     This version cuts off search and uses an evaluation function."""
 
     player = game.to_move(state)
+    global nodes
+    nodes = 0
 
     def max_value(state, alpha, beta, depth):
+        global nodes
         if cutoff_test(state, depth):
             return eval_fn(state)
         v = -infinity
-        succ = game.successors(state, depth)
+        succ = game.successors(state)
         for (a, s) in succ:
+            if depth == d:
+                nodes += 1
             v = max(v, min_value(s, alpha, beta, depth+1))
             if v >= beta:
                 succ.close()
@@ -91,11 +98,14 @@ def alphabeta_search(state, game, d=4, cutoff_test=None, eval_fn=None):
         return v
 
     def min_value(state, alpha, beta, depth):
+        global nodes
         if cutoff_test(state, depth):
             return eval_fn(state)
         v = infinity
-        succ = game.successors(state, depth)
+        succ = game.successors(state)
         for (a, s) in succ:
+            if depth == d:
+                nodes += 1
             v = min(v, max_value(s, alpha, beta, depth+1))
             if v <= alpha:
                 succ.close()
@@ -108,9 +118,11 @@ def alphabeta_search(state, game, d=4, cutoff_test=None, eval_fn=None):
     cutoff_test = (cutoff_test or
                    (lambda state,depth: depth>d or game.terminal_test(state)))
     eval_fn = eval_fn or (lambda state: game.utility(player, state))
+    start = time.time()
     action, state = argmax_random_tie(game.successors(state),
                                       lambda ((a, s)): min_value(s, -infinity,
                                                        infinity, 0))
+    print "depth %d: nodes %d: time %4.2f" % (d, nodes, time.time()-start)
     return action
 
 #______________________________________________________________________________

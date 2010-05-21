@@ -1,7 +1,6 @@
 from Tkinter import *
 from globalconst import *
 import centeredwindow as cw
-import utils
 
 class SetupBoard(Toplevel, cw.CenteredWindow):
     def __init__(self, master, gameManager):

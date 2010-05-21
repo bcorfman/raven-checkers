@@ -1,5 +1,10 @@
-import games, copy, multiprocessing, time, random
+import games
+import copy
+import multiprocessing
+import time
+import random
 from controller import Controller
+from transpositiontable import TranspositionTable
 from globalconst import *
 
 class AlphaBetaController(Controller):
@@ -15,6 +20,7 @@ class AlphaBetaController(Controller):
         self.process = multiprocessing.Process()
         self._start_time = None
         self._call_id = 0
+        self._trans_table = TranspositionTable(50000)
 
     def set_before_turn_event(self, evt):
         self._before_turn_event = evt
@@ -31,13 +37,14 @@ class AlphaBetaController(Controller):
         self._view.update_statusbar('Thinking ...')
         self.process = multiprocessing.Process(target=calc_move,
                                                 args=(self._model,
+                                                      self._trans_table,
                                                       self._search_time,
                                                       self._term_event,
                                                       self._child_conn))
         self._start_time = time.time()
         self.process.daemon = True
         self.process.start()
-        self._view.after(100, self.get_move)
+        self._view.canvas.after(100, self.get_move)
 
     def get_move(self):
         #if self._term_event.is_set() and self._model.curr_state.ok_to_move:
@@ -46,9 +53,9 @@ class AlphaBetaController(Controller):
         self._highlights = []
         moved = self._parent_conn.poll()
         while (not moved and (time.time() - self._start_time) < self._search_time * 2):
-            self._call_id = self._view.after(500, self.get_move)
+            self._call_id = self._view.canvas.after(500, self.get_move)
             return
-        self._view.after_cancel(self._call_id)
+        self._view.canvas.after_cancel(self._call_id)
         move = self._parent_conn.recv()
         if self._model.curr_state.ok_to_move:
             self._before_turn_event()
@@ -69,13 +76,13 @@ class AlphaBetaController(Controller):
 
     def stop_process(self):
         self._term_event.set()
-        self._view.after_cancel(self._call_id)
+        self._view.canvas.after_cancel(self._call_id)
 
     def end_turn(self):
         self._view.update_statusbar()
         self._model.curr_state.detach(self._view)
 
-def calc_move(model, search_time, term_event, child_conn):
+def calc_move(model, table, search_time, term_event, child_conn):
     move = None
     captures = model.captures_available()
     if captures:
@@ -89,6 +96,7 @@ def calc_move(model, search_time, term_event, child_conn):
         model_copy = copy.deepcopy(model)
         while 1:
             depth += 1
+            table.set_hash_move(depth, -1)
             move = games.alphabeta_search(model_copy.curr_state,
                                           model_copy,
                                           depth)
@@ -100,6 +108,7 @@ def calc_move(model, search_time, term_event, child_conn):
                 move = None
                 return
             if (curr_time - start_time > search_time or
-               ((curr_time - checkpoint) * 2) > rem_time):
+               ((curr_time - checkpoint) * 2) > rem_time or
+               depth > MAXDEPTH):
                 break
     child_conn.send(move)
