@@ -1,4 +1,5 @@
 from goal import Goal
+from composite import CompositeGoal
 
 class Goal_OneKingAttack(CompositeGoal):
     def __init__(self, owner):
@@ -16,6 +17,8 @@ class Goal_OneKingAttack(CompositeGoal):
         self.activateIfInactive()
         return self.processSubgoals()
 
+    def terminate(self):
+        self.status = self.INACTIVE
 
 class Goal_MoveTowardEnemy(Goal):
     def __init__(self, owner):
@@ -27,12 +30,13 @@ class Goal_MoveTowardEnemy(Goal):
     def process(self):
         # if status is inactive, activate
         self.activateIfInactive()
-
+        
+        # only moves (not captures) are a valid goal
         if self.owner.captures:
-        for m in self.owner.moves:
-            for src, mid, dest in m:
-
-
+            self.status = self.FAILED
+            return
+        
+        # identify player king and enemy king
         plr_color = self.owner.to_move
         enemy_color = self.owner.enemy
         player = self.owner.get_pieces(plr_color)[0]
@@ -41,11 +45,28 @@ class Goal_MoveTowardEnemy(Goal):
         enemy = self.owner.get_pieces(enemy_color)[0]
         e_idx, _ = enemy
         e_row, e_col = self.owner.row_col_for_index(e_idx)
-        # must be two kings against each other and the distance
-        # between them at least three rows away
-        if ((p_val & KING) and (e_val & KING) and
-            (abs(p_row - e_row) > 2 or abs(p_col - e_col) > 2)):
-            return 1.0
+        
+        # select the available move that decreases the distance
+        # between the player and the enemy. If no such move exists, 
+        # the goal has failed.
+        good_move = None
+        for m in self.owner.moves:
+            # try a move and gather the new row & col for the player
+            self.owner.make_move(m, False, False)
+            plr_update = self.owner.get_pieces(plr_color)[0]
+            pu_idx, _ = plr_update
+            pu_row, pu_col = self.owner.row_col_for_index(pu_idx)
+            self.owner.undo_move(m, False, False)
+            new_diff = abs(pu_row - e_row) + abs(pu_col - e_col)
+            old_diff = abs(p_row - e_row) + abs(p_col - e_col)
+            if new_diff < old_diff:
+                good_move = m
+                break
+        if good_move:
+            self.owner.make_move(good_move, True, True)
+        else:
+            self.status = self.FAILED
+        
     def terminate(self):
         self.status = self.INACTIVE
 
