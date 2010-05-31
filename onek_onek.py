@@ -34,7 +34,7 @@ class OneKingAttackOneKingEvaluator(GoalEvaluator):
             goalset = board.addWhiteSubgoal
         else:
             goalset = board.addBlackSubgoal
-        goalset(Goal_OneKingAttack())
+        goalset(Goal_OneKingAttack(board))
 
 class OneKingFleeOneKingEvaluator(GoalEvaluator):
     def __init__(self, bias):
