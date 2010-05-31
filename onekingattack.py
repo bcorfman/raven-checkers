@@ -46,6 +46,11 @@ class Goal_MoveTowardEnemy(Goal):
         e_idx, _ = enemy
         e_row, e_col = self.owner.row_col_for_index(e_idx)
         
+        # if distance between player and enemy is already down
+        # to 2 rows or cols, then goal is complete.
+        if abs(p_row - e_row) == 2 or abs(p_col - e_col) == 2:
+            self.status = self.COMPLETED
+            
         # select the available move that decreases the distance
         # between the player and the enemy. If no such move exists, 
         # the goal has failed.
