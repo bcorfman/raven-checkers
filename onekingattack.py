@@ -3,7 +3,7 @@ from composite import CompositeGoal
 
 class Goal_OneKingAttack(CompositeGoal):
     def __init__(self, owner):
-        Goal.__init__(self, owner)
+        CompositeGoal.__init__(self, owner)
 
     def activate(self):
         self.status = self.ACTIVE
