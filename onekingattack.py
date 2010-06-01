@@ -83,7 +83,9 @@ class Goal_PinEnemy(Goal):
         self.status = self.ACTIVE
 
     def process(self):
-        pass
+        # for now, I'm not even sure I need this goal, but I'm saving it
+        # as a placeholder.
+        self.status = self.COMPLETED
 
     def terminate(self):
         self.status = self.INACTIVE
