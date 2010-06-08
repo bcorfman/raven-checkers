@@ -1,3 +1,4 @@
+import sys
 from goal import Goal
 from composite import CompositeGoal
 
@@ -20,10 +21,10 @@ class Goal_OneKingFlee(CompositeGoal):
     def terminate(self):
         self.status = self.INACTIVE
 
-class Goal_MoveTowardNearestDoubleCorner(Goal):
+class Goal_MoveTowardBestDoubleCorner(Goal):
     def __init__(self, owner):
         Goal.__init__(self, owner)
-        self.dest = [8, 13, 27, 32]
+        self.dc = [8, 13, 27, 32]
 
     def activate(self):
         self.status = self.ACTIVE
@@ -47,14 +48,26 @@ class Goal_MoveTowardNearestDoubleCorner(Goal):
         e_idx, _ = enemy
         e_row, e_col = self.owner.row_col_for_index(e_idx)
         
-        # if distance between player and enemy is already down
-        # to 2 rows or cols, then goal is complete.
-        if abs(p_row - e_row) == 2 or abs(p_col - e_col) == 2:
+        # pick DC that isn't blocked by enemy
+        lowest_dist = sys.maxint
+        dc = 0 
+        for i in self.dc:
+            dc_row, dc_col = self.owner.row_col_for_index(i)
+            pdist = abs(dc_row - p_row) + abs(dc_col - p_col)
+            edist = abs(dc_row - e_row) + abs(dc_col - e_col)
+            if pdist < lowest_dist and edist > pdist:
+                lowest_dist = pdist
+                dc = i
+                
+        # if lowest distance is 0, then goal is complete.
+        if lowest_dist == 0:
             self.status = self.COMPLETED
-            
+            return
+        
         # select the available move that decreases the distance
-        # between the player and the enemy. If no such move exists, 
-        # the goal has failed.
+        # between the original player position and the chosen double corner.
+        # If no such move exists, the goal has failed.
+        dc_row, dc_col = self.owner.row_col_for_index(dc)
         good_move = None
         for m in self.owner.moves:
             # try a move and gather the new row & col for the player
@@ -63,9 +76,8 @@ class Goal_MoveTowardNearestDoubleCorner(Goal):
             pu_idx, _ = plr_update
             pu_row, pu_col = self.owner.row_col_for_index(pu_idx)
             self.owner.undo_move(m, False, False)
-            new_diff = abs(pu_row - e_row) + abs(pu_col - e_col)
-            old_diff = abs(p_row - e_row) + abs(p_col - e_col)
-            if new_diff < old_diff:
+            new_diff = abs(pu_row - dc_row) + abs(pu_col - dc_col)
+            if new_diff < lowest_dist:
                 good_move = m
                 break
         if good_move:
