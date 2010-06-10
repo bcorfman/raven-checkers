@@ -23,8 +23,7 @@ class TestOneKingAttackOneKingEvaluator(unittest.TestCase):
         squares[6] = BLACK | KING
         squares[48] = WHITE | KING
         self.board.to_move = BLACK
-        self.board.white_total = 1
-        self.board.black_total = 1
+        self.board.update_piece_count()
 
     def testInitialBlackMoves(self):
         ev = onek_onek.OneKingAttackOneKingEvaluator(1.0)
