@@ -121,11 +121,25 @@ class Checkerboard(object):
             for j in range(4):
                 if sq[i+11*j] != FREE:
                     pieces_in_system += 1
-        return pieces_in_system % 2 == 0
+        return pieces_in_system % 2 == 1
 
     def row_col_for_index(self, idx):
         return self.gridmap[idx]
 
+    def update_piece_count(self):
+        self.white_pieces = []
+        for i, piece in enumerate(self.squares):
+            if piece & COLORS == WHITE:
+                self.white_pieces.append((i, piece))
+
+        self.black_pieces = []
+        for i, piece in enumerate(self.squares):
+            if piece & COLORS == BLACK:
+                self.black_pieces.append((i, piece))
+
+        self.white_total = len(self.white_pieces)
+        self.black_total = len(self.black_pieces)
+        
     def make_move(self, move, notify=True, undo=True):
         sq = self.squares
         for m in move:
@@ -137,19 +151,7 @@ class Checkerboard(object):
         self.to_move ^= COLORS
 
         if notify:
-            self.white_pieces = []
-            for i, piece in enumerate(self.squares):
-                if piece & COLORS == WHITE:
-                    self.white_pieces.append((i, piece))
-
-            self.black_pieces = []
-            for i, piece in enumerate(self.squares):
-                if piece & COLORS == BLACK:
-                    self.black_pieces.append((i, piece))
-
-            self.white_total = len(self.white_pieces)
-            self.black_total = len(self.black_pieces)
-
+            self.update_piece_count()
             for o in self.observers:
                 o.notify(move)
         return self
