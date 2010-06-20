@@ -2,7 +2,8 @@ from composite import CompositeGoal
 from onek_onek import OneKingAttackOneKingEvaluator, OneKingFleeOneKingEvaluator
 
 class Goal_Think(CompositeGoal):
-    def __init__(self):
+    def __init__(self, owner):
+        CompositeGoal.__init__(self, owner)
         self.evaluators = [OneKingAttackOneKingEvaluator(1.0),
                            OneKingFleeOneKingEvaluator(1.0)]
 
@@ -31,5 +32,7 @@ class Goal_Think(CompositeGoal):
         if most_desirable == None:
             raise ApplicationException('Goal_Think::arbitrate - no evaluator selected')
         most_desirable.setGoal(self.owner)
+
+    
 
     

@@ -1,8 +1,8 @@
 from goal import Goal
 
 class CompositeGoal(Goal):
-    def __init__(self, **params):
-        Goal.__init__(self, **params)
+    def __init__(self, owner):
+        Goal.__init__(self, owner)
         self.subgoals = []
 
     def removeAllSubgoals(self):
