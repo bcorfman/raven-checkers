@@ -7,16 +7,14 @@ class Goal_Think(CompositeGoal):
                            OneKingFleeOneKingEvaluator(1.0)]
 
     def activate(self):
-        if self.owner.isPossessed():
-            self.arbitrate()
+        self.arbitrate()
         self.status = self.ACTIVE
 
     def process(self):
         self.activateIfInactive()
         status = self.processSubgoals()
         if status == self.COMPLETED or status == self.FAILED:
-            if not self.owner.isPossessed():
-                self.status = self.INACTIVE
+            self.status = self.INACTIVE
         return status
 
     def terminate(self):
