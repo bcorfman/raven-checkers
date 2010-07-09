@@ -29,9 +29,9 @@ class Goal_Think(CompositeGoal):
             if d > best_score:
                 most_desirable = e
                 best_score = d
-        if most_desirable == None:
-            raise ApplicationException('Goal_Think::arbitrate - no evaluator selected')
-        most_desirable.setGoal(self.owner)
+        if most_desirable:
+            most_desirable.setGoal(self.owner)
+        return best_score
 
     
 

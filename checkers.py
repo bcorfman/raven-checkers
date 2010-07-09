@@ -5,6 +5,7 @@ from globalconst import BLACK_KING, WHITE_KING, FREE, OCCUPIED_CHAR, FREE_CHAR
 from globalconst import COLORS, TYPES, TURN, CRAMP, BRV, KEV, KCV, MEV, MCV
 from globalconst import INTACTDOUBLECORNER, ENDGAME, OPENING, MIDGAME
 from globalconst import create_grid_map
+import think
 
 class Checkerboard(object):
     #   (white)
@@ -45,6 +46,7 @@ class Checkerboard(object):
         self.charlookup = {BLACK | MAN: BLACK_CHAR, WHITE | MAN: WHITE_CHAR,
                            BLACK | KING: BLACK_KING, WHITE | KING: WHITE_KING,
                            OCCUPIED: OCCUPIED_CHAR, FREE: FREE_CHAR}
+        self.planner = think.Goal_Think(self)
         self.observers = []
         self.white_pieces = []
         self.black_pieces = []
