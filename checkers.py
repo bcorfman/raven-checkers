@@ -5,7 +5,7 @@ from globalconst import BLACK_KING, WHITE_KING, FREE, OCCUPIED_CHAR, FREE_CHAR
 from globalconst import COLORS, TYPES, TURN, CRAMP, BRV, KEV, KCV, MEV, MCV
 from globalconst import INTACTDOUBLECORNER, ENDGAME, OPENING, MIDGAME
 from globalconst import create_grid_map
-import think
+import copy
 
 class Checkerboard(object):
     #   (white)
@@ -46,7 +46,6 @@ class Checkerboard(object):
         self.charlookup = {BLACK | MAN: BLACK_CHAR, WHITE | MAN: WHITE_CHAR,
                            BLACK | KING: BLACK_KING, WHITE | KING: WHITE_KING,
                            OCCUPIED: OCCUPIED_CHAR, FREE: FREE_CHAR}
-        self.planner = think.Goal_Think(self)
         self.observers = []
         self.white_pieces = []
         self.black_pieces = []
@@ -128,20 +127,6 @@ class Checkerboard(object):
     def row_col_for_index(self, idx):
         return self.gridmap[idx]
 
-    def update_piece_count(self):
-        self.white_pieces = []
-        for i, piece in enumerate(self.squares):
-            if piece & COLORS == WHITE:
-                self.white_pieces.append((i, piece))
-
-        self.black_pieces = []
-        for i, piece in enumerate(self.squares):
-            if piece & COLORS == BLACK:
-                self.black_pieces.append((i, piece))
-
-        self.white_total = len(self.white_pieces)
-        self.black_total = len(self.black_pieces)
-        
     def make_move(self, move, notify=True, undo=True):
         sq = self.squares
         for m in move:
@@ -153,13 +138,25 @@ class Checkerboard(object):
         self.to_move ^= COLORS
 
         if notify:
-            self.update_piece_count()
+            self.white_pieces = []
+            for i, piece in enumerate(self.squares):
+                if piece & COLORS == WHITE:
+                    self.white_pieces.append((i, piece))
+
+            self.black_pieces = []
+            for i, piece in enumerate(self.squares):
+                if piece & COLORS == BLACK:
+                    self.black_pieces.append((i, piece))
+
+            self.white_total = len(self.white_pieces)
+            self.black_total = len(self.black_pieces)
+
             for o in self.observers:
                 o.notify(move)
         return self
 
     def undo_move(self, move=None, notify=True, redo=True):
-        if move == None:
+        if move is None:
             if not self._undo_list:
                 return
             if redo:
@@ -176,7 +173,7 @@ class Checkerboard(object):
             self.make_move(rev_updates, True, True)
 
     def redo_move(self, move=None):
-        if move == None:
+        if move is None:
             if not self._redo_list:
                 return
             move = self._redo_list.pop()
@@ -196,44 +193,56 @@ class Checkerboard(object):
     def create_game(self, gameinfo):
         pass
 
-    def _man_capture(self, valid_moves, sq_index, move):
-        player = self.to_move
-        enemy = self.enemy
-        squares = self.squares
-        for j in valid_moves:
-            mid = sq_index+j
-            dest = sq_index+j*2
-            if (squares[mid] & enemy and
-                squares[dest] & FREE):
-                sq2 = [mid, squares[mid], FREE]
-                if ((player == BLACK and sq_index>=34) or
-                    (player == WHITE and sq_index<=20)):
-                    sq3 = [dest, FREE, player | KING]
-                else:
-                    sq3 = [dest, FREE, player | MAN]
-                move[-1][2] = FREE
-                move.extend([sq2, sq3])
-                move = self._man_capture(valid_moves, dest, move)
-        return move
+    def _go_back(self, move, start, mid, dest):
+        return (start == move[-1][0] and
+                mid == move[-2][0] and
+                dest == move[-3][0])
 
-    def _king_capture(self, sq_index, move):
+    def _detect_cycle(self, move, start, mid, dest):
+        return (start == move[0][0] and
+                mid == move[1][0] and
+                dest == move[2][0])
+
+    def _find_more_captures(self, valid_moves, captures, add_sq_func):
         player = self.to_move
         enemy = self.enemy
         squares = self.squares
-        for j in self.king_moves:
-            mid = sq_index+j
-            dest = sq_index+j*2
-            if (squares[mid] & enemy and
-                squares[dest] & FREE):
-                sq2 = [mid, squares[mid], FREE]
-                sq3 = [dest, squares[dest], player | KING]
-                move[-1][2] = FREE
-                move.extend([sq2, sq3])
-                tmp = squares[sq_index]
-                squares[sq_index] = OCCUPIED
-                move = self._king_capture(dest, move)
-                squares[sq_index] = tmp
-        return move
+        final_captures = []
+        while captures:
+            c = captures.pop()
+            new_captures = []
+            for j in valid_moves:
+                move = c[:]
+                last_pos = move[-1][0]
+                mid = last_pos+j
+                dest = last_pos+j*2
+                if (squares[mid] & enemy and
+                    squares[dest] & FREE and
+                    not self._go_back(move, last_pos, mid, dest) and
+                    not self._detect_cycle(move, last_pos, mid, dest)):
+                    sq2, sq3 = add_sq_func(player, squares, mid, dest, last_pos)
+                    move[-1][2] = FREE
+                    move.extend([sq2, sq3])
+                    new_captures.append(move)
+            if new_captures:
+                captures.extend(new_captures)
+            else:
+                final_captures.append(move)
+        return final_captures
+
+    def _capture_man(self, player, squares, mid, dest, last_pos):
+        sq2 = [mid, squares[mid], FREE]
+        if ((player == BLACK and last_pos>=34) or
+            (player == WHITE and last_pos<=20)):
+            sq3 = [dest, FREE, player | KING]
+        else:
+            sq3 = [dest, FREE, player | MAN]
+        return sq2, sq3
+
+    def _capture_king(self, player, squares, mid, dest, last_pos):
+        sq2 = [mid, squares[mid], FREE]
+        sq3 = [dest, squares[dest], player | KING]
+        return sq2, sq3
 
     def _get_captures(self):
         player = self.to_move
@@ -242,37 +251,37 @@ class Checkerboard(object):
         valid_moves = self.white_moves if player == WHITE else self.black_moves
         captures = []
         for i in self.valid_squares:
-            for j in valid_moves:
-                mid = i+j
-                dest = i+j*2
-                if (squares[i] & player and
-                    squares[i] & MAN and
-                    squares[mid] & enemy and
-                    squares[dest] & FREE):
-                    sq1 = [i, player | MAN, FREE]
-                    sq2 = [mid, squares[mid], FREE]
-                    if ((player == BLACK and i>=34) or
-                        (player == WHITE and i<=20)):
-                        sq3 = [dest, FREE, player | KING]
-                    else:
-                        sq3 = [dest, FREE, player | MAN]
-                    captures.append([sq1, sq2, sq3])
-                    captures = self._man_capture(valid_moves, dest, captures)
-            for j in self.king_moves:
-                mid = i+j
-                dest = i+j*2
-                if (squares[i] & player and
-                    squares[i] & KING and
-                    squares[mid] & enemy and
-                    squares[dest] & FREE):
-                    sq1 = [i, player | KING, FREE]
-                    sq2 = [mid, squares[mid], FREE]
-                    sq3 = [dest, squares[dest], player | KING]
-                    captures.append([sq1, sq2, sq3])
-                    tmp1, tmp2 = squares[i], squares[mid]
-                    squares[i], squares[mid] = FREE, FREE
-                    captures = self._king_capture(dest, captures)
-                    squares[i], squares[mid] = tmp1, tmp2
+            if squares[i] & player and squares[i] & MAN:
+                for j in valid_moves:
+                    mid = i+j
+                    dest = i+j*2
+                    if squares[mid] & enemy and squares[dest] & FREE:
+                        sq1 = [i, player | MAN, FREE]
+                        sq2 = [mid, squares[mid], FREE]
+                        if ((player == BLACK and i>=34) or
+                            (player == WHITE and i<=20)):
+                            sq3 = [dest, FREE, player | KING]
+                        else:
+                            sq3 = [dest, FREE, player | MAN]
+                        captures.append([sq1, sq2, sq3])
+                        captures = self._find_more_captures(valid_moves,
+                                                            captures,
+                                                            self._capture_man)
+            if squares[i] & player and squares[i] & KING:
+                for j in self.king_moves:
+                    mid = i+j
+                    dest = i+j*2
+                    if squares[mid] & enemy and squares[dest] & FREE:
+                        sq1 = [i, player | KING, FREE]
+                        sq2 = [mid, squares[mid], FREE]
+                        sq3 = [dest, squares[dest], player | KING]
+                        captures.append([sq1, sq2, sq3])
+                        tmp1, tmp2 = squares[i], squares[mid]
+                        squares[i], squares[mid] = FREE, FREE
+                        captures = self._find_more_captures(self.king_moves,
+                                                            captures,
+                                                            self._capture_king)
+                        squares[i], squares[mid] = tmp1, tmp2
         return captures
     captures = property(_get_captures,
                         doc="Forced captures for the current player")
