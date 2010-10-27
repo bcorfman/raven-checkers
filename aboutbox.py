@@ -1,14 +1,10 @@
 from Tkinter import *
-import centeredwindow as cw
+from tkSimpleDialog import Dialog
 from globalconst import *
 
-class AboutBox(Toplevel, cw.CenteredWindow):
-    def __init__(self, master):
-        self.frame = Toplevel(master.root)
-        self.frame.transient(master.root)
-        self.frame.grab_set()
-        self.frame.title("About Raven")
-        self.canvas = Canvas(self.frame, width=300, height=275)
+class AboutBox(Dialog):
+    def body(self, master):
+        self.canvas = Canvas(self, width=300, height=275)
         self.canvas.pack(side=TOP, fill=BOTH, expand=0)
         self.canvas.create_text(152,47,text='Raven', fill='black',
                                 font=('Helvetica', 36))
@@ -41,10 +37,15 @@ class AboutBox(Toplevel, cw.CenteredWindow):
         self.canvas.create_text(150,250,text="by Brandon Corfman",
                                 fill='black',
                                 font=('Helvetica', 10))
+        return self.canvas
 
-        self.button = Button(self.frame, text='OK', padx='5m', command=self.frame.destroy)
-        self.blank = Canvas(self.frame, width=10, height=20)
+    def cancel(self, event=None):
+        self.destroy()
+
+    def buttonbox(self):
+        self.button = Button(self, text='OK', padx='5m', command=self.cancel)
+        self.blank = Canvas(self, width=10, height=20)
         self.blank.pack(side=BOTTOM, fill=BOTH, expand=0)
         self.button.pack(side=BOTTOM)
-        cw.CenteredWindow.__init__(self, self.frame)
         self.button.focus_set()
+        self.bind("<Escape>", self.cancel)

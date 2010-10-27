@@ -149,7 +149,7 @@ class MainFrame(object, CenteredWindow):
         return helpBtn
 
     def show_about_box(self):
-        AboutBox(self)
+        AboutBox(self.root, "About Raven")
 
     def show_setup_board_dialog(self):
         # stop alphabeta thread from making any moves
