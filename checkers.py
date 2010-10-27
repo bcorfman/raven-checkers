@@ -556,7 +556,7 @@ class Checkers(games.Game):
 
 def play():
     game = Checkers()
-    for depth in range(1, 9):
+    for depth in range(1, 11):
         start = time.time()
         print "Perft for depth %d: %d. Time: %5.3f sec" % (depth,
                                                            game.perft(depth),
