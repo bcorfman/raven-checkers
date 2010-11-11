@@ -1,25 +1,17 @@
 from Tkinter import *
+from tkSimpleDialog import Dialog
 from globalconst import *
-import centeredwindow as cw
 
-class SetupBoard(Toplevel, cw.CenteredWindow):
-    def __init__(self, master, gameManager):
-        self._frame = Toplevel(master.root)
-        self._frame.transient(master.root)
-        self._frame.grab_set()
-        self._frame.title("Set up board")
+class SetupBoard(Dialog):
+    def __init__(self, parent, title, gameManager):
+        self._master = parent
         self._manager = gameManager
         self._load_entry_box_vars()
-        self._create_controls()
-        if self._num_players.get() == 1:
-            self._enable_player_color()
-        else:
-            self._disable_player_color()
-        cw.CenteredWindow.__init__(self, self._frame)
-        self._cancel.focus_set()
+        Dialog.__init__(self, parent, title)
 
-    def _create_controls(self):
-        self._npLFrame = LabelFrame(self._frame, text='No. of players:')
+    def body(self, master):
+        print "body"
+        self._npLFrame = LabelFrame(master, text='No. of players:')
         self._npFrameEx1 = Frame(self._npLFrame, width=30)
         self._npFrameEx1.pack(side=LEFT, pady=5, expand=1)
         self._npButton1 = Radiobutton(self._npLFrame, text='Zero (autoplay)',
@@ -38,7 +30,7 @@ class SetupBoard(Toplevel, cw.CenteredWindow):
         self._npFrameEx2.pack(side=LEFT, pady=5, expand=1)
         self._npLFrame.pack(fill=X)
 
-        self._playerFrame = LabelFrame(self._frame, text='Player color:')
+        self._playerFrame = LabelFrame(master, text='Player color:')
         self._playerFrameEx1 = Frame(self._playerFrame, width=50)
         self._playerFrameEx1.pack(side=LEFT, pady=5, expand=1)
         self._rbColor1 = Radiobutton(self._playerFrame, text='Black',
@@ -51,7 +43,7 @@ class SetupBoard(Toplevel, cw.CenteredWindow):
         self._playerFrameEx2.pack(side=LEFT, pady=5, expand=1)
         self._playerFrame.pack(fill=X)
 
-        self._rbFrame = LabelFrame(self._frame, text='Next to move:')
+        self._rbFrame = LabelFrame(master, text='Next to move:')
         self._rbFrameEx1 = Frame(self._rbFrame, width=50)
         self._rbFrameEx1.pack(side=LEFT, pady=5, expand=1)
         self._rbTurn1 = Radiobutton(self._rbFrame, text='Black',
@@ -64,7 +56,7 @@ class SetupBoard(Toplevel, cw.CenteredWindow):
         self._rbFrameEx2.pack(side=LEFT, pady=5, expand=1)
         self._rbFrame.pack(fill=X)
 
-        self._bcFrame = LabelFrame(self._frame, text='Board configuration')
+        self._bcFrame = LabelFrame(master, text='Board configuration')
         self._wmFrame = Frame(self._bcFrame, borderwidth=0)
         self._wmLabel = Label(self._wmFrame, text='White men:')
         self._wmLabel.pack(side=LEFT, padx=7, pady=10)
@@ -98,14 +90,10 @@ class SetupBoard(Toplevel, cw.CenteredWindow):
         self._bkFrame.pack()
         self._bcFrame.pack(fill=X)
 
-        self._buttonFrame = Frame(self._frame, borderwidth=0)
-        self._ok = Button(self._buttonFrame, text='OK', padx='7m',
-                          command=self._on_click_ok)
-        self._cancel = Button(self._buttonFrame, text='Cancel', padx='5m',
-                              command=self._on_click_cancel)
-        self._ok.pack(side=LEFT, padx=25, pady=10)
-        self._cancel.pack(side=LEFT, pady=10)
-        self._buttonFrame.pack()
+        if self._num_players.get() == 1:
+            self._enable_player_color()
+        else:
+            self._disable_player_color()
 
     def _load_entry_box_vars(self):
         self._white_men = StringVar()
@@ -125,32 +113,37 @@ class SetupBoard(Toplevel, cw.CenteredWindow):
         self._black_men.set(', '.join(view.get_positions(BLACK | MAN)))
         self._black_kings.set(', '.join(view.get_positions(BLACK | KING)))
 
-    def _on_click_ok(self):
+    def validate(self):
+        print "validate"
+        self.wm_list = self._parse_int_list(self._white_men.get())
+        self.wk_list = self._parse_int_list(self._white_kings.get())
+        self.bm_list = self._parse_int_list(self._black_men.get())
+        self.bk_list = self._parse_int_list(self._black_kings.get())
+        if (self.wm_list == None or self.wk_list == None
+            or self.bm_list == None or self.bk_list == None):
+            return 0  # Error occurred during parsing
+        if not self._all_unique(self.wm_list, self.wk_list,
+                                self.bm_list, self.bk_list):
+            return 0  # A repeated index occurred
+        return 1
+
+    def apply(self):
         mgr = self._manager
         model = mgr.model
-        wm_list = self._parse_int_list(self._white_men.get())
-        wk_list = self._parse_int_list(self._white_kings.get())
-        bm_list = self._parse_int_list(self._black_men.get())
-        bk_list = self._parse_int_list(self._black_kings.get())
-        if (wm_list == None or wk_list == None
-            or bm_list == None or bk_list == None):
-            return  # Error occurred during parsing
-        if not self._all_unique(wm_list, wk_list, bm_list, bk_list):
-            return  # A repeated index occurred
         view = mgr.view
         state = model.curr_state
         state.clear()
         sq = state.squares
-        for item in wm_list:
+        for item in self.wm_list:
             idx = view.squaremap[item]
             sq[idx] = WHITE | MAN
-        for item in wk_list:
+        for item in self.wk_list:
             idx = view.squaremap[item]
             sq[idx] = WHITE | KING
-        for item in bm_list:
+        for item in self.bm_list:
             idx = view.squaremap[item]
             sq[idx] = BLACK | MAN
-        for item in bk_list:
+        for item in self.bk_list:
             idx = view.squaremap[item]
             sq[idx] = BLACK | KING
         state.to_move = self._player_turn.get()
@@ -160,14 +153,16 @@ class SetupBoard(Toplevel, cw.CenteredWindow):
         mgr.set_controllers()
         view.reset_view(mgr.model)
         state.ok_to_move = True
-        self._frame.destroy()
-        mgr.turn_finished()
+        self.destroy()
+        #mgr.turn_finished()
 
-    def _on_click_cancel(self):
+    def cancel(self, event=None):
         mgr = self._manager
         mgr.set_controllers()
         mgr.view.reset_view(mgr.model)
-        self._frame.destroy()
+        if self.parent is not None:
+           self.parent.focus_set()
+        self.destroy()
         mgr.turn_finished()
 
     def _disable_player_color(self):
@@ -184,10 +179,7 @@ class SetupBoard(Toplevel, cw.CenteredWindow):
         for i in lists:
             total_list.extend(i)
             s = s.union(i)
-        s = list(s)
-        s.sort()
-        total_list.sort()
-        return total_list == s
+        return sorted(total_list) == sorted(s)
 
     def _parse_int_list(self, parsestr):
         try:
@@ -202,4 +194,8 @@ class SetupBoard(Toplevel, cw.CenteredWindow):
             lst = [int(i) for i in lst]
         except ValueError:
             return None
+
+        if not all(((x>=1 and x<=MAX_VALID_SQ) for x in lst)):
+            return None
+
         return lst
