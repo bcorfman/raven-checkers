@@ -163,14 +163,14 @@ class Checkerboard(object):
                 move = self._undo_list.pop()
                 self._redo_list.append(move)
         rev_updates = [[idx, dest, src] for idx, src, dest in move]
-        self.make_move(rev_updates, notify, redo)
+        self.make_move(rev_updates, notify, False)
 
     def undo_all_moves(self):
         while self._undo_list:
             move = self._undo_list.pop()
             self._redo_list.append(move)
             rev_updates = [[idx, dest, src] for idx, src, dest in move]
-            self.make_move(rev_updates, True, True)
+            self.make_move(rev_updates, True, False)
 
     def redo_move(self, move=None):
         if move is None:
@@ -178,13 +178,13 @@ class Checkerboard(object):
                 return
             move = self._redo_list.pop()
             self._undo_list.append(move)
-        self.make_move(move, True, True)
+        self.make_move(move, True, False)
 
     def redo_all_moves(self):
         while self._redo_list:
             move = self._redo_list.pop()
             self._undo_list.append(move)
-            self.make_move(move, True, True)
+            self.make_move(move, True, False)
 
     def reset_undo(self):
         self._undo_list = []
@@ -193,17 +193,7 @@ class Checkerboard(object):
     def create_game(self, gameinfo):
         pass
 
-    def _go_back(self, move, start, mid, dest):
-        return (start == move[-1][0] and
-                mid == move[-2][0] and
-                dest == move[-3][0])
-
-    def _detect_cycle(self, move, start, mid, dest):
-        return (start == move[0][0] and
-                mid == move[1][0] and
-                dest == move[2][0])
-
-    def _find_more_captures(self, valid_moves, captures, add_sq_func):
+    def _find_more_captures(self, valid_moves, captures, add_sq_func, visited):
         player = self.to_move
         enemy = self.enemy
         squares = self.squares
@@ -216,13 +206,14 @@ class Checkerboard(object):
                 last_pos = move[-1][0]
                 mid = last_pos+j
                 dest = last_pos+j*2
-                if (squares[mid] & enemy and
-                    squares[dest] & FREE and
-                    not self._go_back(move, last_pos, mid, dest) and
-                    not self._detect_cycle(move, last_pos, mid, dest)):
+                if ((last_pos, mid, dest) not in visited and
+                    (dest, mid, last_pos) not in visited and
+                    squares[mid] & enemy and
+                    squares[dest] & FREE):
                     sq2, sq3 = add_sq_func(player, squares, mid, dest, last_pos)
                     move[-1][2] = FREE
                     move.extend([sq2, sq3])
+                    visited.add((last_pos, mid, dest))
                     new_captures.append(move)
             if new_captures:
                 captures.extend(new_captures)
@@ -264,9 +255,11 @@ class Checkerboard(object):
                         else:
                             sq3 = [dest, FREE, player | MAN]
                         captures.append([sq1, sq2, sq3])
+                        visited = set((i, mid, dest))
                         captures = self._find_more_captures(valid_moves,
                                                             captures,
-                                                            self._capture_man)
+                                                            self._capture_man,
+                                                            visited)
             if squares[i] & player and squares[i] & KING:
                 for j in self.king_moves:
                     mid = i+j
@@ -276,11 +269,13 @@ class Checkerboard(object):
                         sq2 = [mid, squares[mid], FREE]
                         sq3 = [dest, squares[dest], player | KING]
                         captures.append([sq1, sq2, sq3])
+                        visited = set((i, mid, dest))
                         tmp1, tmp2 = squares[i], squares[mid]
                         squares[i], squares[mid] = FREE, FREE
                         captures = self._find_more_captures(self.king_moves,
                                                             captures,
-                                                            self._capture_king)
+                                                            self._capture_king,
+                                                            visited)
                         squares[i], squares[mid] = tmp1, tmp2
         return captures
     captures = property(_get_captures,
