@@ -198,7 +198,11 @@ def argmin_list(gen, fn):
 def argmin_random_tie(gen, fn):
     """Return an element with lowest fn(x) score; break ties at random.
     Thus, for all s,f: argmin_random_tie(s, f) in argmin_list(s, f)"""
-    best = gen.next(); best_score = fn(best); n = 0
+    try:
+        best = gen.next(); best_score = fn(best); n = 0
+    except StopIteration:
+        return []
+
     for x in gen:
         x_score = fn(x)
         if x_score < best_score:
@@ -206,7 +210,7 @@ def argmin_random_tie(gen, fn):
         elif x_score == best_score:
             n += 1
             if random.randrange(n) == 0:
-                    best = x
+                best = x
     return best
 
 #def argmin_random_tie(seq, fn):
