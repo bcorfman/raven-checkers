@@ -25,43 +25,53 @@ class MainFrame(object, CenteredWindow):
         CenteredWindow.__init__(self, self.root)
         self.root.minsize(self.root.winfo_reqwidth(), self.root.winfo_reqheight())
         self.root.maxsize(self.root.winfo_reqwidth(), self.root.winfo_reqheight())
-        self._bind_events()
+        self.bind_events()
         self.root.deiconify()
-        
-    def _bind_events(self):
+
+    def bind_events(self):
         # TODO: Move these events to PlayerController?
         self.root.bind('<Home>', self._undo_all_moves)
         self.root.bind('<End>', self._redo_all_moves)
         self.root.bind('<Left>', self._undo_single_move)
         self.root.bind('<Right>', self._redo_single_move)
 
+    def unbind_events(self):
+        self.root.unbind('<Home>')
+        self.root.unbind('<End>')
+        self.root.unbind('<Left>')
+        self.root.unbind('<Right>')
+
     def _undo_all_moves(self, *args):
-        #self.manager._controller1.stop_process()
-        #self.manager._controller2.stop_process()
+        self.manager.model.curr_state.ok_to_move = False
+        self.manager._controller1.stop_process()
+        self.manager._controller2.stop_process()
         self.manager.model.undo_all_moves()
         self.manager._controller1.remove_highlights()
         self.manager._controller2.remove_highlights()
         self.manager.view.update_statusbar()
 
     def _redo_all_moves(self, *args):
-        #self.manager._controller1.stop_process()
-        #self.manager._controller2.stop_process()
+        self.manager.model.curr_state.ok_to_move = False
+        self.manager._controller1.stop_process()
+        self.manager._controller2.stop_process()
         self.manager.model.redo_all_moves()
         self.manager._controller1.remove_highlights()
         self.manager._controller2.remove_highlights()
         self.manager.view.update_statusbar()
 
     def _undo_single_move(self, *args):
-        #self.manager._controller1.stop_process()
-        #self.manager._controller2.stop_process()
+        self.manager.model.curr_state.ok_to_move = False
+        self.manager._controller1.stop_process()
+        self.manager._controller2.stop_process()
         self.manager.model.undo_move()
         self.manager._controller1.remove_highlights()
         self.manager._controller2.remove_highlights()
         self.manager.view.update_statusbar()
 
     def _redo_single_move(self, *args):
-        #self.manager._controller1.stop_process()
-        #self.manager._controller2.stop_process()
+        self.manager.model.curr_state.ok_to_move = False
+        self.manager._controller1.stop_process()
+        self.manager._controller2.stop_process()
         self.manager.model.redo_move()
         self.manager._controller1.remove_highlights()
         self.manager._controller2.remove_highlights()
@@ -156,7 +166,7 @@ class MainFrame(object, CenteredWindow):
         self.manager.model.curr_state.ok_to_move = False
         self.manager._controller1.stop_process()
         self.manager._controller2.stop_process()
-        SetupBoard(self, self.manager)
+        SetupBoard(self.root, 'Set up board', self.manager)
 
     def set_think_time(self):
         self.manager._controller1.set_search_time(self.thinkTime.get())
