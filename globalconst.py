@@ -3,6 +3,7 @@ import math
 DEFAULT_SIZE = 400
 BOARD_SIZE = 8
 CHECKER_SIZE = 30
+MAX_VALID_SQ = 32
 
 MOVE = 0
 JUMP = 1
@@ -41,7 +42,7 @@ OCCUPIED_CHAR = '-'
 
 INFINITY = 9999999
 MAXDEPTH = 10
-VERSION = '0.3.3'
+VERSION = '0.3.4'
 
 # search values for transposition table
 hashfALPHA, hashfBETA, hashfEXACT = range(3)

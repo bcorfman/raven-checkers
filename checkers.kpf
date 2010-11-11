@@ -45,9 +45,9 @@
 </file>
 <file id="c9534dd1-feee-4bca-8528-bf17eda5a8c9" idref="C4164DC9-734D-4B33-8FB8-43CDC26C157A" name="goalevaluator.py" url="goalevaluator.py">
 </file>
-<file id="d0684b10-6502-4a6f-a07c-0734ffbf38fd" idref="C4164DC9-734D-4B33-8FB8-43CDC26C157A" name="onekingattack.py" url="onekingattack.py">
+<file id="ce8b23f5-449d-41ee-8539-544bed28c98d" idref="C4164DC9-734D-4B33-8FB8-43CDC26C157A" name="tst_onek_eval.py" url="tst_onek_eval.py">
 </file>
-<file id="dbae2cfd-1c89-4fe9-82bb-a63537e98908" idref="C4164DC9-734D-4B33-8FB8-43CDC26C157A" name="test_onek_eval.py" url="test_onek_eval.py">
+<file id="d0684b10-6502-4a6f-a07c-0734ffbf38fd" idref="C4164DC9-734D-4B33-8FB8-43CDC26C157A" name="onekingattack.py" url="onekingattack.py">
 </file>
 <file id="dbd24b1c-50bf-4426-9cf9-fd26bfaaf545" idref="C4164DC9-734D-4B33-8FB8-43CDC26C157A" name="games.py" url="games.py">
 </file>
@@ -110,7 +110,7 @@
   <string id="cwd"></string>
   <string id="documentRoot"></string>
   <string id="executable-params"></string>
-  <string relative="path" id="filename">checkers.py</string>
+  <string relative="path" id="filename">mainframe.py</string>
   <string id="getparams"></string>
   <string id="language">Python</string>
   <string id="mpostparams"></string>
