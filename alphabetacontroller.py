@@ -57,8 +57,8 @@ class AlphaBetaController(Controller):
             return
         self._view.canvas.after_cancel(self._call_id)
         move = self._parent_conn.recv()
-        if self._model.curr_state.ok_to_move:
-            self._before_turn_event()
+        #if self._model.curr_state.ok_to_move:
+        self._before_turn_event()
 
         # highlight remaining board squares used in move
         step = 2 if len(move) > 2 else 1
@@ -82,12 +82,23 @@ class AlphaBetaController(Controller):
         self._view.update_statusbar()
         self._model.curr_state.detach(self._view)
 
+def longest_of(lst):
+    length = -1
+    selected = None
+    for item in lst:
+        l = len(item)
+        if l > length:
+            length = l
+            selected = item
+    return selected
+
 def calc_move(model, table, search_time, term_event, child_conn):
     move = None
+    term_event.clear()
     captures = model.captures_available()
     if captures:
         time.sleep(0.7)
-        move = random.choice(captures)
+        move = longest_of(captures)
     else:
         depth = 0
         start_time = time.time()
@@ -106,9 +117,10 @@ def calc_move(model, table, search_time, term_event, child_conn):
             if term_event.is_set(): # a signal means terminate
                 term_event.clear()
                 move = None
-                return
+                break
             if (curr_time - start_time > search_time or
                ((curr_time - checkpoint) * 2) > rem_time or
                depth > MAXDEPTH):
                 break
     child_conn.send(move)
+    #model.curr_state.ok_to_move = True
