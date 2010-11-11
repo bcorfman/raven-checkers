@@ -109,15 +109,15 @@ class TestBlackKingOptionalJumpDiamond(unittest.TestCase):
 
     def testJump(self):
         self.assertEqual(self.game.legal_moves(self.board),
-                         [[[13, BLACK | KING, FREE], [18, WHITE | MAN, FREE],
-                           [23, FREE, FREE], [29, WHITE | MAN, FREE],
-                           [35, FREE, FREE], [30, WHITE | MAN, FREE],
-                           [25, FREE, FREE], [19, WHITE | MAN, FREE],
-                           [13, FREE, BLACK | KING]],
-                          [[13, BLACK | KING, FREE], [19, WHITE | MAN, FREE],
+                         [[[13, BLACK | KING, FREE], [19, WHITE | MAN, FREE],
                            [25, FREE, FREE], [30, WHITE | MAN, FREE],
                            [35, FREE, FREE], [29, WHITE | MAN, FREE],
                            [23, FREE, FREE], [18, WHITE | MAN, FREE],
+                           [13, FREE, BLACK | KING]],
+                          [[13, BLACK | KING, FREE], [18, WHITE | MAN, FREE],
+                           [23, FREE, FREE], [29, WHITE | MAN, FREE],
+                           [35, FREE, FREE], [30, WHITE | MAN, FREE],
+                           [25, FREE, FREE], [19, WHITE | MAN, FREE],
                            [13, FREE, BLACK | KING]]])
 
 class TestWhiteManSingleJump(unittest.TestCase):
@@ -212,16 +212,16 @@ class TestWhiteKingOptionalJumpDiamond(unittest.TestCase):
 
     def testJump(self):
         self.assertEqual(self.game.legal_moves(self.board),
-                         [[[13, WHITE | KING, FREE], [18, BLACK | MAN, FREE],
-                           [23, FREE, FREE], [29, BLACK | MAN, FREE],
-                           [35, FREE, FREE], [30, BLACK | MAN, FREE],
-                           [25, FREE, FREE], [19, BLACK | MAN, FREE],
-                           [13, FREE, WHITE | KING]],
-                          [[13, WHITE | KING, FREE], [19, BLACK | MAN, FREE],
+                         [[[13, WHITE | KING, FREE], [19, BLACK | MAN, FREE],
                             [25, FREE, FREE], [30, BLACK | MAN, FREE],
                             [35, FREE, FREE], [29, BLACK | MAN, FREE],
                             [23, FREE, FREE], [18, BLACK | MAN, FREE],
-                            [13, FREE, WHITE | KING]]])
+                            [13, FREE, WHITE | KING]],
+                          [[13, WHITE | KING, FREE], [18, BLACK | MAN, FREE],
+                           [23, FREE, FREE], [29, BLACK | MAN, FREE],
+                           [35, FREE, FREE], [30, BLACK | MAN, FREE],
+                           [25, FREE, FREE], [19, BLACK | MAN, FREE],
+                           [13, FREE, WHITE | KING]]])
 
 class TestUtilityFunc(unittest.TestCase):
     def setUp(self):
@@ -255,7 +255,7 @@ class TestSuccessorFuncForBlack(unittest.TestCase):
     def setUp(self):
         self.game = checkers.Checkers()
         self.board = self.game.curr_state
-        
+
     def testInitialBlackMoves(self):
         # Tests whether initial game moves are correct from
         # Black's perspective
@@ -302,17 +302,3 @@ class TestSuccessorFuncForWhite(unittest.TestCase):
                                   [30, FREE, WHITE | MAN]],
                                  [[37, WHITE | MAN, FREE],
                                   [31, FREE, WHITE | MAN]]])
-
-
-if __name__ == '__main__':
-    game = checkers.Checkers()
-    board = game.curr_state
-    squares = board.squares
-    board.clear()
-    squares[45] = WHITE | MAN
-    squares[39] = BLACK | MAN
-    squares[29] = BLACK | MAN
-    squares[41] = WHITE | KING
-    board.to_move = WHITE
-    games.play_game(game, checkers.AlphabetaPlayer(BLACK, 8),
-                    checkers.AlphabetaPlayer(WHITE, 8))
