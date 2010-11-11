@@ -28,5 +28,3 @@ class TestOneKingAttackOneKingEvaluator(unittest.TestCase):
     def testInitialBlackMoves(self):
         ev = onek_onek.OneKingAttackOneKingEvaluator(1.0)
         self.assertEqual(ev.calculateDesirability(self.board), 1.0)
-
-
