@@ -76,20 +76,14 @@ def alphabeta_full_search(state, game):
 def alphabeta_search(state, game, d=4, cutoff_test=None, eval_fn=None):
     """Search game to determine best action; use alpha-beta pruning.
     This version cuts off search and uses an evaluation function."""
-
     player = game.to_move(state)
-    global nodes
-    nodes = 0
 
     def max_value(state, alpha, beta, depth):
-        global nodes
         if cutoff_test(state, depth):
             return eval_fn(state)
         v = -infinity
         succ = game.successors(state)
         for (a, s) in succ:
-            if depth == d:
-                nodes += 1
             v = max(v, min_value(s, alpha, beta, depth+1))
             if v >= beta:
                 succ.close()
@@ -98,14 +92,11 @@ def alphabeta_search(state, game, d=4, cutoff_test=None, eval_fn=None):
         return v
 
     def min_value(state, alpha, beta, depth):
-        global nodes
         if cutoff_test(state, depth):
             return eval_fn(state)
         v = infinity
         succ = game.successors(state)
         for (a, s) in succ:
-            if depth == d:
-                nodes += 1
             v = min(v, max_value(s, alpha, beta, depth+1))
             if v <= alpha:
                 succ.close()
@@ -118,11 +109,9 @@ def alphabeta_search(state, game, d=4, cutoff_test=None, eval_fn=None):
     cutoff_test = (cutoff_test or
                    (lambda state,depth: depth>d or game.terminal_test(state)))
     eval_fn = eval_fn or (lambda state: game.utility(player, state))
-    start = time.time()
     action, state = argmax_random_tie(game.successors(state),
                                       lambda ((a, s)): min_value(s, -infinity,
                                                        infinity, 0))
-    print "depth %d: nodes %d: time %4.2f" % (d, nodes, time.time()-start)
     return action
 
 #______________________________________________________________________________
