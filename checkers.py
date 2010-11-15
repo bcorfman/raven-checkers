@@ -271,12 +271,10 @@ class Checkerboard(object):
                         captures.append([sq1, sq2, sq3])
                         visited = set((i, mid, dest))
                         tmp1, tmp2 = squares[i], squares[mid]
-                        squares[i], squares[mid] = FREE, FREE
                         captures = self._find_more_captures(self.king_moves,
                                                             captures,
                                                             self._capture_king,
                                                             visited)
-                        squares[i], squares[mid] = tmp1, tmp2
         return captures
     captures = property(_get_captures,
                         doc="Forced captures for the current player")
@@ -521,20 +519,23 @@ class Checkers(games.Game):
     def successors(self, curr_state=None):
         state = curr_state or self.curr_state
         moves = self.legal_moves(state)
-        undone = False
-        try:
+        if not moves:
+            yield [], state
+        else:
+            undone = False
             try:
-                for move in moves:
-                    undone = False
-                    self.make_move(move, state, False)
-                    yield move, state
+                try:
+                    for move in moves:
+                        undone = False
+                        self.make_move(move, state, False)
+                        yield move, state
+                        self.undo_move(move, state, False)
+                        undone = True
+                except GeneratorExit:
+                    raise
+            finally:
+                if moves and not undone:
                     self.undo_move(move, state, False)
-                    undone = True
-            except GeneratorExit:
-                raise
-        finally:
-            if moves and not undone:
-                self.undo_move(move, state, False)
 
     def perft(self, depth, curr_state=None):
         if depth == 0:
