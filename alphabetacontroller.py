@@ -34,6 +34,10 @@ class AlphaBetaController(Controller):
             self._view.highlight_square(h, DARK_SQUARES)
 
     def start_turn(self):
+        if self._model.terminal_test():
+            self._before_turn_event()
+            self._model.curr_state.attach(self._view)
+            return
         self._view.update_statusbar('Thinking ...')
         self.process = multiprocessing.Process(target=calc_move,
                                                 args=(self._model,
