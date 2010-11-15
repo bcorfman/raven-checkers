@@ -42,7 +42,7 @@ OCCUPIED_CHAR = '-'
 
 INFINITY = 9999999
 MAXDEPTH = 10
-VERSION = '0.3.4'
+VERSION = '0.3.5'
 
 # search values for transposition table
 hashfALPHA, hashfBETA, hashfEXACT = range(3)
