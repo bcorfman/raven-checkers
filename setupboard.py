@@ -10,7 +10,6 @@ class SetupBoard(Dialog):
         Dialog.__init__(self, parent, title)
 
     def body(self, master):
-        print "body"
         self._npLFrame = LabelFrame(master, text='No. of players:')
         self._npFrameEx1 = Frame(self._npLFrame, width=30)
         self._npFrameEx1.pack(side=LEFT, pady=5, expand=1)
@@ -114,7 +113,6 @@ class SetupBoard(Dialog):
         self._black_kings.set(', '.join(view.get_positions(BLACK | KING)))
 
     def validate(self):
-        print "validate"
         self.wm_list = self._parse_int_list(self._white_men.get())
         self.wk_list = self._parse_int_list(self._white_kings.get())
         self.bm_list = self._parse_int_list(self._black_men.get())
