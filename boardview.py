@@ -24,7 +24,8 @@ class BoardView(Observer):
         self.canvas = Canvas(root, width=self._board_side,
                              height=self._board_side)
         self.canvas.pack(side=TOP)
-        self.txt = Text(root, width=0, height=4, font=('Helvetica', 10))
+        font, size = get_preferences_from_file()
+        self.txt = Text(root, width=0, height=4, font=(font,size))
         self.txt.pack(side=TOP, fill=X)
         self._setup_board(root)
         starting_squares = [i for i in self._model.curr_state.valid_squares
