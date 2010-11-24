@@ -53,6 +53,8 @@
 </file>
 <file id="df8ba321-1dcb-4a6f-992e-a4cb6c95edfd" idref="C4164DC9-734D-4B33-8FB8-43CDC26C157A" name="onek_onek.py" url="onek_onek.py">
 </file>
+<file id="ed386360-28e3-4651-a2b7-52623811a322" idref="C4164DC9-734D-4B33-8FB8-43CDC26C157A" name="prefdlg.py" url="prefdlg.py">
+</file>
 <file id="fe3eeba4-3769-4b04-8544-0a220d031eff" idref="C4164DC9-734D-4B33-8FB8-43CDC26C157A" name="onekingflee.py" url="onekingflee.py">
 </file>
 <preference-set idref="0aa5f6c9-8e39-4d6f-8ea3-587f8c9e2330">
@@ -389,6 +391,30 @@
   <string id="lastInvocation">default</string>
 </preference-set>
 <preference-set idref="dbd24b1c-50bf-4426-9cf9-fd26bfaaf545">
+<preference-set id="Invocations">
+<preference-set id="default">
+  <string id="cookieparams"></string>
+  <string id="cwd"></string>
+  <string id="documentRoot"></string>
+  <string id="executable-params"></string>
+  <string relative="path" id="filename">mainframe.py</string>
+  <string id="getparams"></string>
+  <string id="language">Python</string>
+  <string id="mpostparams"></string>
+  <string id="params"></string>
+  <string id="postparams"></string>
+  <string id="posttype">application/x-www-form-urlencoded</string>
+  <string id="request-method">GET</string>
+  <boolean id="show-dialog">1</boolean>
+  <boolean id="sim-cgi">0</boolean>
+  <boolean id="use-console">0</boolean>
+  <string id="userCGIEnvironment"></string>
+  <string id="userEnvironment"></string>
+</preference-set>
+</preference-set>
+  <string id="lastInvocation">default</string>
+</preference-set>
+<preference-set idref="ed386360-28e3-4651-a2b7-52623811a322">
 <preference-set id="Invocations">
 <preference-set id="default">
   <string id="cookieparams"></string>
