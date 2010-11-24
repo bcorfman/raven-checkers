@@ -6,6 +6,7 @@ from aboutbox import AboutBox
 from setupboard import SetupBoard
 from gamemanager import GameManager
 from centeredwindow import CenteredWindow
+from prefdlg import PreferencesDialog
 
 class MainFrame(object, CenteredWindow):
     def __init__(self, master):
@@ -42,36 +43,28 @@ class MainFrame(object, CenteredWindow):
         self.root.unbind('<Right>')
 
     def _undo_all_moves(self, *args):
-        self.manager.model.curr_state.ok_to_move = False
-        self.manager._controller1.stop_process()
-        self.manager._controller2.stop_process()
+        self.stop_processes()
         self.manager.model.undo_all_moves()
         self.manager._controller1.remove_highlights()
         self.manager._controller2.remove_highlights()
         self.manager.view.update_statusbar()
 
     def _redo_all_moves(self, *args):
-        self.manager.model.curr_state.ok_to_move = False
-        self.manager._controller1.stop_process()
-        self.manager._controller2.stop_process()
+        self.stop_processes()
         self.manager.model.redo_all_moves()
         self.manager._controller1.remove_highlights()
         self.manager._controller2.remove_highlights()
         self.manager.view.update_statusbar()
 
     def _undo_single_move(self, *args):
-        self.manager.model.curr_state.ok_to_move = False
-        self.manager._controller1.stop_process()
-        self.manager._controller2.stop_process()
+        self.stop_processes()
         self.manager.model.undo_move()
         self.manager._controller1.remove_highlights()
         self.manager._controller2.remove_highlights()
         self.manager.view.update_statusbar()
 
     def _redo_single_move(self, *args):
-        self.manager.model.curr_state.ok_to_move = False
-        self.manager._controller1.stop_process()
-        self.manager._controller2.stop_process()
+        self.stop_processes()
         self.manager.model.redo_move()
         self.manager._controller1.remove_highlights()
         self.manager._controller2.remove_highlights()
@@ -146,6 +139,9 @@ class MainFrame(object, CenteredWindow):
                                   value=60)
         optBtn.menu.add_cascade(label='CPU think time', underline=0,
                                 menu=thinkMenu)
+        optBtn.menu.add_separator()
+        optBtn.menu.add_command(label='Preferences ...', underline=0,
+                                command=self.show_preferences_dialog)
         optBtn['menu'] = optBtn.menu
         return optBtn
 
@@ -158,15 +154,26 @@ class MainFrame(object, CenteredWindow):
         helpBtn['menu'] = helpBtn.menu
         return helpBtn
 
-    def show_about_box(self):
-        AboutBox(self.root, "About Raven")
-
-    def show_setup_board_dialog(self):
-        # stop alphabeta thread from making any moves
+    def stop_processes(self):
+        # stop any controller processes from making moves
         self.manager.model.curr_state.ok_to_move = False
         self.manager._controller1.stop_process()
         self.manager._controller2.stop_process()
+
+    def show_about_box(self):
+        AboutBox(self.root, 'About Raven')
+
+    def show_setup_board_dialog(self):
+        self.stop_processes()
         SetupBoard(self.root, 'Set up board', self.manager)
+
+    def show_preferences_dialog(self):
+        self.stop_processes()
+        font, size = get_preferences_from_file()
+        dlg = PreferencesDialog(self.root, 'Preferences', font, size)
+        if dlg.result:
+            self.manager.view.txt.config(font=[dlg.font, dlg.size])
+            write_preferences_to_file(dlg.font, dlg.size)
 
     def set_think_time(self):
         self.manager._controller1.set_search_time(self.thinkTime.get())
