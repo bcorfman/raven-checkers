@@ -40,11 +40,11 @@ class AlphaBetaController(Controller):
             return
         self._view.update_statusbar('Thinking ...')
         self.process = multiprocessing.Process(target=calc_move,
-                                                args=(self._model,
-                                                      self._trans_table,
-                                                      self._search_time,
-                                                      self._term_event,
-                                                      self._child_conn))
+                                               args=(self._model,
+                                                     self._trans_table,
+                                                     self._search_time,
+                                                     self._term_event,
+                                                     self._child_conn))
         self._start_time = time.time()
         self.process.daemon = True
         self.process.start()
@@ -56,7 +56,8 @@ class AlphaBetaController(Controller):
         #    return
         self._highlights = []
         moved = self._parent_conn.poll()
-        while (not moved and (time.time() - self._start_time) < self._search_time * 2):
+        while (not moved and (time.time() - self._start_time)
+               < self._search_time * 2):
             self._call_id = self._view.canvas.after(500, self.get_move)
             return
         self._view.canvas.after_cancel(self._call_id)
@@ -65,14 +66,15 @@ class AlphaBetaController(Controller):
         self._before_turn_event()
 
         # highlight remaining board squares used in move
-        step = 2 if len(move) > 2 else 1
-        for m in move[0::step]:
+        step = 2 if len(move.affected_squares) > 2 else 1
+        for m in move.affected_squares[0::step]:
             idx = m[0]
             self._view.highlight_square(idx, OUTLINE_COLOR)
             self._highlights.append(idx)
 
         self._model.curr_state.attach(self._view)
-        self._model.make_move(move)
+        self._model.make_move(move, None, True, True,
+                              self._view.get_annotation())
         self._end_turn_event()
 
     def set_search_time(self, time):
@@ -86,14 +88,14 @@ class AlphaBetaController(Controller):
         self._view.update_statusbar()
         self._model.curr_state.detach(self._view)
 
-def longest_of(lst):
+def longest_of(moves):
     length = -1
     selected = None
-    for item in lst:
-        l = len(item)
+    for move in moves:
+        l = len(move.affected_squares)
         if l > length:
             length = l
-            selected = item
+            selected = move
     return selected
 
 def calc_move(model, table, search_time, term_event, child_conn):

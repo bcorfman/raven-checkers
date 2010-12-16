@@ -152,7 +152,6 @@ class SetupBoard(Dialog):
         view.reset_view(mgr.model)
         state.ok_to_move = True
         self.destroy()
-        #mgr.turn_finished()
 
     def cancel(self, event=None):
         mgr = self._manager

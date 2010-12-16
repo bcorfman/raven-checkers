@@ -1,5 +1,6 @@
 import games
 import time
+from move import Move
 from globalconst import BLACK, WHITE, KING, MAN, OCCUPIED, BLACK_CHAR, WHITE_CHAR
 from globalconst import BLACK_KING, WHITE_KING, FREE, OCCUPIED_CHAR, FREE_CHAR
 from globalconst import COLORS, TYPES, TURN, CRAMP, BRV, KEV, KCV, MEV, MCV
@@ -21,9 +22,9 @@ class Checkerboard(object):
     valid_squares = [6,7,8,9,12,13,14,15,17,18,19,20,23,24,25,26,
                      28,29,30,31,34,35,36,37,39,40,41,42,45,46,
                      47,48]
-    black_moves = [5,6]
-    white_moves = [-5,-6]
-    king_moves = [-6,-5,5,6]
+    black_idx = [5,6]
+    white_idx = [-5,-6]
+    king_idx = [-6,-5,5,6]
     # values of pieces (KING, MAN, BLACK, WHITE, FREE)
     value = [0,0,0,0,0,1,256,0,0,16,4096,0,0,0,0,0,0]
     edge = [6,7,8,9,15,17,26,28,37,39,45,46,47,48]
@@ -127,13 +128,13 @@ class Checkerboard(object):
     def row_col_for_index(self, idx):
         return self.gridmap[idx]
 
-    def make_move(self, move, notify=True, undo=True):
+    def make_move(self, move, notify=True, undo=True, annotation=''):
         sq = self.squares
-        for m in move:
-            idx, _, newval = m
+        for idx, _, newval in move.affected_squares:
             sq[idx] = newval
         if undo:
             del self._redo_list[:]
+            move.annotation = annotation
             self._undo_list.append(move)
         self.to_move ^= COLORS
 
@@ -162,15 +163,17 @@ class Checkerboard(object):
             if redo:
                 move = self._undo_list.pop()
                 self._redo_list.append(move)
-        rev_updates = [[idx, dest, src] for idx, src, dest in move]
-        self.make_move(rev_updates, notify, False)
+        rev_move = Move([[idx, dest, src] for idx, src, dest
+                        in move.affected_squares])
+        self.make_move(rev_move, notify, False)
 
     def undo_all_moves(self):
         while self._undo_list:
             move = self._undo_list.pop()
             self._redo_list.append(move)
-            rev_updates = [[idx, dest, src] for idx, src, dest in move]
-            self.make_move(rev_updates, True, False)
+            rev_move = Move([[idx, dest, src] for idx, src, dest
+                            in move.affected_squares])
+            self.make_move(rev_move, True, False)
 
     def redo_move(self, move=None):
         if move is None:
@@ -202,8 +205,8 @@ class Checkerboard(object):
             c = captures.pop()
             new_captures = []
             for j in valid_moves:
-                move = c[:]
-                last_pos = move[-1][0]
+                capture = c.affected_squares[:]
+                last_pos = capture[-1][0]
                 mid = last_pos+j
                 dest = last_pos+j*2
                 if ((last_pos, mid, dest) not in visited and
@@ -211,14 +214,14 @@ class Checkerboard(object):
                     squares[mid] & enemy and
                     squares[dest] & FREE):
                     sq2, sq3 = add_sq_func(player, squares, mid, dest, last_pos)
-                    move[-1][2] = FREE
-                    move.extend([sq2, sq3])
+                    capture[-1][2] = FREE
+                    capture.extend([sq2, sq3])
                     visited.add((last_pos, mid, dest))
-                    new_captures.append(move)
+                    new_captures.append(Move(capture))
             if new_captures:
                 captures.extend(new_captures)
             else:
-                final_captures.append(move)
+                final_captures.append(Move(capture))
         return final_captures
 
     def _capture_man(self, player, squares, mid, dest, last_pos):
@@ -239,11 +242,11 @@ class Checkerboard(object):
         player = self.to_move
         enemy = self.enemy
         squares = self.squares
-        valid_moves = self.white_moves if player == WHITE else self.black_moves
+        valid_indices = self.white_idx if player == WHITE else self.black_idx
         captures = []
         for i in self.valid_squares:
             if squares[i] & player and squares[i] & MAN:
-                for j in valid_moves:
+                for j in valid_indices:
                     mid = i+j
                     dest = i+j*2
                     if squares[mid] & enemy and squares[dest] & FREE:
@@ -254,24 +257,23 @@ class Checkerboard(object):
                             sq3 = [dest, FREE, player | KING]
                         else:
                             sq3 = [dest, FREE, player | MAN]
-                        captures.append([sq1, sq2, sq3])
+                        captures.append(Move([sq1, sq2, sq3]))
                         visited = set((i, mid, dest))
-                        captures = self._find_more_captures(valid_moves,
+                        captures = self._find_more_captures(valid_indices,
                                                             captures,
                                                             self._capture_man,
                                                             visited)
             if squares[i] & player and squares[i] & KING:
-                for j in self.king_moves:
+                for j in self.king_idx:
                     mid = i+j
                     dest = i+j*2
                     if squares[mid] & enemy and squares[dest] & FREE:
                         sq1 = [i, player | KING, FREE]
                         sq2 = [mid, squares[mid], FREE]
                         sq3 = [dest, squares[dest], player | KING]
-                        captures.append([sq1, sq2, sq3])
+                        captures.append(Move([sq1, sq2, sq3]))
                         visited = set((i, mid, dest))
-                        tmp1, tmp2 = squares[i], squares[mid]
-                        captures = self._find_more_captures(self.king_moves,
+                        captures = self._find_more_captures(self.king_idx,
                                                             captures,
                                                             self._capture_king,
                                                             visited)
@@ -282,10 +284,10 @@ class Checkerboard(object):
     def _get_moves(self):
         player = self.to_move
         squares = self.squares
-        valid_moves = self.white_moves if player == WHITE else self.black_moves
+        valid_indices = self.white_idx if player == WHITE else self.black_idx
         moves = []
         for i in self.valid_squares:
-            for j in valid_moves:
+            for j in valid_indices:
                 dest = i+j
                 if (squares[i] & player and
                     squares[i] & MAN and
@@ -296,15 +298,15 @@ class Checkerboard(object):
                         sq2 = [dest, FREE, player | KING]
                     else:
                         sq2 = [dest, FREE, player | MAN]
-                    moves.append([sq1, sq2])
-            for j in self.king_moves:
+                    moves.append(Move([sq1, sq2]))
+            for j in self.king_idx:
                 dest = i+j
                 if (squares[i] & player and
                     squares[i] & KING and
                     squares[dest] & FREE):
                     sq1 = [i, player | KING, FREE]
                     sq2 = [dest, FREE, player | KING]
-                    moves.append([sq1, sq2])
+                    moves.append(Move([sq1, sq2]))
         return moves
     moves = property(_get_moves,
                         doc="Available moves for the current player")
@@ -488,9 +490,10 @@ class Checkers(games.Game):
         state = curr_state or self.curr_state
         return state.captures or state.moves
 
-    def make_move(self, move, curr_state=None, notify=True):
+    def make_move(self, move, curr_state=None, notify=True, undo=True,
+                  annotation=''):
         state = curr_state or self.curr_state
-        return state.make_move(move, notify)
+        return state.make_move(move, notify, undo, annotation)
 
     def undo_move(self, move=None, curr_state=None, notify=True, redo=True):
         state = curr_state or self.curr_state

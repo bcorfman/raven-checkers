@@ -1,7 +1,10 @@
 from Tkinter import *
+from Tkconstants import END
 from command import *
 from observer import *
 from globalconst import *
+from textserialize import dump_text_widget, restore_text_widget
+from tkFont import Font
 
 class BoardView(Observer):
     def __init__(self, root, **props):
@@ -24,8 +27,23 @@ class BoardView(Observer):
         self.canvas = Canvas(root, width=self._board_side,
                              height=self._board_side)
         self.canvas.pack(side=TOP)
-        self.txt = Text(root, width=0, height=4, font=('Helvetica', 10))
-        self.txt.pack(side=TOP, fill=X)
+        self.toolbar = Frame(root)
+        self.bold = Button(name='bold', text='B', borderwidth=1,
+                           font=('Times New Roman', '9', 'bold'),
+                           command=self._on_bold)
+        self.bold.pack(in_=self.toolbar, side='left')
+        self.italic = Button(name='italic', text='I', borderwidth=1, padx=2,
+                             font=('Times New Roman', '9', ('bold', 'italic')),
+                             command=self._on_italic)
+        self.italic.pack(in_=self.toolbar, side='left')
+        font, size = get_preferences_from_file()
+        self._b_font = Font(root, (font, size, 'bold'))
+        self._i_font = Font(root, (font, size, 'italic'))
+        self.toolbar.pack(side='top', fill='x')
+        self.txt = Text(root, width=0, height=4, font=(font,size))
+        self.txt.pack(side=TOP, fill=BOTH, expand=True)
+        self.txt.tag_config('bold', font=self._b_font)
+        self.txt.tag_config('italic', font=self._i_font)
         self._setup_board(root)
         starting_squares = [i for i in self._model.curr_state.valid_squares
                             if self._model.curr_state.squares[i] &
@@ -34,6 +52,29 @@ class BoardView(Observer):
         self.flip_view = False # black on bottom
         self._label_board()
         self.update_statusbar()
+
+    def _toggle_state(self, tag, btn, other_btns):
+        # toggle the text state based on the first character in the
+        # selected range.
+        if self.txt.tag_ranges('sel'):
+            current_tags = self.txt.tag_names('sel.first')
+            already_tagged = tag in current_tags
+            for t in current_tags:
+                if t != 'sel':
+                    self.txt.tag_remove(t, 'sel.first', 'sel.last')
+            if not already_tagged:
+                self.txt.tag_add(tag, 'sel.first', 'sel.last')
+                btn.configure(relief='sunken')
+                for b in other_btns:
+                    b.configure(relief='raised')
+            else:
+                btn.configure(relief='raised')
+
+    def _on_bold(self):
+        self._toggle_state('bold', self.bold, [self.italic])
+
+    def _on_italic(self):
+        self._toggle_state('italic', self.italic, [self.bold])
 
     def reset_view(self, model):
         self._model = model
@@ -70,14 +111,18 @@ class BoardView(Observer):
     def notify(self, move):
         add_lst = []
         rem_lst = []
-        for m in move:
-            idx, _, newval = m
+        for idx, _, newval in move.affected_squares:
             if newval & FREE:
                 rem_lst.append(idx)
             else:
                 add_lst.append(idx)
         cmd = Command(add=add_lst, remove=rem_lst)
         self._draw_checkers(cmd)
+        self.txt.delete('1.0', END)
+        restore_text_widget(move.annotation, self.txt)
+
+    def get_annotation(self):
+        return dump_text_widget(self.txt)
 
     def erase_checker(self, index):
         self.canvas.delete('c'+str(index))

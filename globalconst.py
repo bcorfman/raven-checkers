@@ -1,4 +1,5 @@
-import math
+import math, os
+from ConfigParser import RawConfigParser
 
 DEFAULT_SIZE = 400
 BOARD_SIZE = 8
@@ -23,11 +24,9 @@ COMPUTER = 1
 MIN = 0
 MAX = 1
 
-START = 0
-MID = 1
-END = 2
-
-CROWN_IMAGE = 'crown.gif'
+IMAGE_DIR = 'images' + os.sep
+RAVEN_ICON = IMAGE_DIR + '_raven.ico'
+CROWN_IMAGE = IMAGE_DIR + 'crown.gif'
 LIGHT_SQUARES = 'tan'
 DARK_SQUARES = 'dark green'
 OUTLINE_COLOR = 'white'
@@ -217,3 +216,27 @@ def similarity(pattern, pieces):
     p1 = [grid[i] for i in pattern]
     p2 = [grid[j] for j in pieces]
     return sum(min(math.hypot(x1-x2, y1-y2) for x1, y1 in p1) for x2, y2 in p2)
+
+def get_preferences_from_file():
+    config = RawConfigParser()
+    if not os.access('raven.ini',os.F_OK):
+        # no .ini file yet, so make one
+        config.add_section('AnnotationWindow')
+        config.set('AnnotationWindow', 'font', 'Arial')
+        config.set('AnnotationWindow', 'size', '12')
+        # Writing our configuration file to 'raven.ini'
+        with open('raven.ini', 'wb') as configfile:
+            config.write(configfile)
+    config.read('raven.ini')
+    font = config.get('AnnotationWindow', 'font')
+    size = config.get('AnnotationWindow', 'size')
+    return font, size
+
+def write_preferences_to_file(font, size):
+    config = RawConfigParser()
+    config.add_section('AnnotationWindow')
+    config.set('AnnotationWindow', 'font', font)
+    config.set('AnnotationWindow', 'size', size)
+    # Writing our configuration file to 'raven.ini'
+    with open('raven.ini', 'wb') as configfile:
+        config.write(configfile)

@@ -88,19 +88,20 @@ class PlayerController(Controller):
     def _filter_moves(self, pos, moves, idx):
         del_list = []
         for i, m in enumerate(moves):
-            if pos != m[idx][0]:
+            if pos != m.affected_squares[idx][0]:
                 del_list.append(i)
         for i in reversed(del_list):
             del moves[i]
         return moves
 
     def _make_move(self):
-        move = self.moves[0]
+        move = self.moves[0].affected_squares
         step = 2 if len(move) > 2 else 1
         # highlight remaining board squares used in move
         for m in move[step::step]:
             idx = m[0]
             self._view.highlight_square(idx, OUTLINE_COLOR)
             self._highlights.append(idx)
-        self._model.make_move(move)
+        self._model.make_move(self.moves[0], None, True, True,
+                              self._view.get_annotation())
         self._move_in_progress = False
