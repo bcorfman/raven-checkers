@@ -58,14 +58,16 @@ class MainFrame(object, CenteredWindow):
 
     def _undo_single_move(self, *args):
         self.stop_processes()
-        self.manager.model.undo_move()
+        self.manager.model.undo_move(None, None, True, True,
+                                     self.manager.view.get_annotation())
         self.manager._controller1.remove_highlights()
         self.manager._controller2.remove_highlights()
         self.manager.view.update_statusbar()
 
     def _redo_single_move(self, *args):
         self.stop_processes()
-        self.manager.model.redo_move()
+        annotation = self.manager.view.get_annotation()
+        self.manager.model.redo_move(None, None, annotation)
         self.manager._controller1.remove_highlights()
         self.manager._controller2.remove_highlights()
         self.manager.view.update_statusbar()
@@ -76,10 +78,15 @@ class MainFrame(object, CenteredWindow):
         gameBtn.menu = Menu(gameBtn, tearoff=0)
         gameBtn.menu.add_command(label='New game', underline=0,
                                  command=self.manager.new_game)
-        gameBtn.menu.add_command(label='Load game', underline=0,
-                                 command=self.manager.load_game)
+        gameBtn.menu.add_command(label='Open game ...', underline=0,
+                                 command=self.manager.open_game)
         gameBtn.menu.add_separator()
-        gameBtn.menu.add_command(label='Set up board ...', underline=0,
+        gameBtn.menu.add_command(label='Save game', underline=0,
+                                 command=self.manager.save_game)
+        gameBtn.menu.add_command(label='Save game As ...', underline=10,
+                                 command=self.manager.save_game_as)
+        gameBtn.menu.add_separator()
+        gameBtn.menu.add_command(label='Set up Board ...', underline=7,
                                  command=self.show_setup_board_dialog)
         gameBtn.menu.add_command(label='Flip board', underline=0,
                                  command=self.flip_board)
