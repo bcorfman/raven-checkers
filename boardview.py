@@ -98,7 +98,6 @@ class BoardView(Observer):
 
     def _on_remove_link(self):
         self._toggle_state(['hyper'], self.addLink)
-
     def reset_view(self, model):
         self._model = model
         self.txt.delete('1.0', END)
