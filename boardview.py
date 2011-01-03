@@ -3,7 +3,9 @@ from Tkconstants import END
 from command import *
 from observer import *
 from globalconst import *
-from textserialize import dump_text_widget, restore_text_widget
+from textserialize import Serializer
+from hyperlinkmgr import HyperlinkManager
+from tkFileDialog import askopenfilename
 from tkFont import Font
 
 class BoardView(Observer):
@@ -12,6 +14,7 @@ class BoardView(Observer):
         self.root = root
         self._model = props['model']
         self._model.curr_state.attach(self)
+        self._gameMgr = props['parent']
         self._board_side = props.get('side') or DEFAULT_SIZE
         self.light_squares = props.get('lightsquares') or LIGHT_SQUARES
         self.dark_squares = props.get('darksquares') or DARK_SQUARES
@@ -22,28 +25,38 @@ class BoardView(Observer):
         self._crownpic = PhotoImage(file=CROWN_IMAGE)
         self._boardpos = create_position_map()
         self._gridpos = create_grid_map()
-        self._keymap = create_key_map()
-        self.squaremap = self._flip_map(self._keymap)
         self.canvas = Canvas(root, width=self._board_side,
                              height=self._board_side)
         self.canvas.pack(side=TOP)
         self.toolbar = Frame(root)
-        self.bold = Button(name='bold', text='B', borderwidth=1,
-                           font=('Times New Roman', '9', 'bold'),
-                           command=self._on_bold)
+        self.bold_image = PhotoImage(file=BOLD_IMAGE)
+        self.bold = Button(name='bold', image=self.bold_image,
+                           borderwidth=1, command=self._on_bold)
         self.bold.pack(in_=self.toolbar, side='left')
         self.italic = Button(name='italic', text='I', borderwidth=1, padx=2,
                              font=('Times New Roman', '9', ('bold', 'italic')),
                              command=self._on_italic)
         self.italic.pack(in_=self.toolbar, side='left')
+        self.addLink = Button(name='addlink', text='+', borderwidth=1,
+                                   font=('Times New Roman', '9'),
+                                   command=self._on_add_link)
+        self.addLink.pack(in_=self.toolbar, side='left')
+        self.remLink = Button(name='remlink', text='-', borderwidth=1,
+                                   font=('Times New Roman', '9'),
+                                   command=self._on_remove_link)
+        self.remLink.pack(in_=self.toolbar, side='left')
+        self.btns = set([self.bold, self.italic, self.addLink, self.remLink])
         font, size = get_preferences_from_file()
+        self._r_font = Font(root, (font, size))
         self._b_font = Font(root, (font, size, 'bold'))
         self._i_font = Font(root, (font, size, 'italic'))
         self.toolbar.pack(side='top', fill='x')
-        self.txt = Text(root, width=0, height=4, font=(font,size))
+        self.txt = Text(root, width=0, height=7, font=(font,size), wrap='word')
         self.txt.pack(side=TOP, fill=BOTH, expand=True)
-        self.txt.tag_config('bold', font=self._b_font)
-        self.txt.tag_config('italic', font=self._i_font)
+        self.txt.tag_config('bold', font=self._b_font, wrap='word')
+        self.txt.tag_config('italic', font=self._i_font, wrap='word')
+        self.hypermgr = HyperlinkManager(self.txt, self._gameMgr.load_game)
+        self.serializer = Serializer(self.txt)
         self._setup_board(root)
         starting_squares = [i for i in self._model.curr_state.valid_squares
                             if self._model.curr_state.squares[i] &
@@ -53,31 +66,42 @@ class BoardView(Observer):
         self._label_board()
         self.update_statusbar()
 
-    def _toggle_state(self, tag, btn, other_btns):
+    def _toggle_state(self, tags, btn):
         # toggle the text state based on the first character in the
         # selected range.
         if self.txt.tag_ranges('sel'):
             current_tags = self.txt.tag_names('sel.first')
-            already_tagged = tag in current_tags
-            for t in current_tags:
-                if t != 'sel':
-                    self.txt.tag_remove(t, 'sel.first', 'sel.last')
-            if not already_tagged:
-                self.txt.tag_add(tag, 'sel.first', 'sel.last')
-                btn.configure(relief='sunken')
-                for b in other_btns:
-                    b.configure(relief='raised')
-            else:
-                btn.configure(relief='raised')
+            for tag in tags:
+                already_tagged = any((x for x in current_tags if
+                                      x.startswith(tag)))
+                for t in current_tags:
+                    if t != 'sel':
+                        self.txt.tag_remove(t, 'sel.first', 'sel.last')
+                if not already_tagged:
+                    self.txt.tag_add(tag, 'sel.first', 'sel.last')
+                    btn.configure(relief='sunken')
+                    other_btns = self.btns.difference([btn])
+                    for b in other_btns:
+                        b.configure(relief='raised')
+                else:
+                    btn.configure(relief='raised')
 
     def _on_bold(self):
-        self._toggle_state('bold', self.bold, [self.italic])
+        self._toggle_state(['bold'], self.bold)
 
     def _on_italic(self):
-        self._toggle_state('italic', self.italic, [self.bold])
+        self._toggle_state(['italic'], self.italic)
+
+    def _on_add_link(self):
+        filename = askopenfilename(initialdir='training')
+        self._toggle_state(self.hypermgr.add(filename), self.addLink)
+
+    def _on_remove_link(self):
+        self._toggle_state(['hyper'], self.addLink)
 
     def reset_view(self, model):
         self._model = model
+        self.txt.delete('1.0', END)
         sq = self._model.curr_state.valid_squares
         self.canvas.delete(self.dark_color)
         self.canvas.delete(self.light_color)
@@ -119,10 +143,10 @@ class BoardView(Observer):
         cmd = Command(add=add_lst, remove=rem_lst)
         self._draw_checkers(cmd)
         self.txt.delete('1.0', END)
-        restore_text_widget(move.annotation, self.txt)
+        self.serializer.restore(move.annotation)
 
     def get_annotation(self):
-        return dump_text_widget(self.txt)
+        return self.serializer.dump()
 
     def erase_checker(self, index):
         self.canvas.delete('c'+str(index))
@@ -133,30 +157,14 @@ class BoardView(Observer):
         self.canvas.delete(self.light_color)
         if self.flip_view != flip:
             self.flip_view = flip
-            self._gridpos = self._reverse_map(self._gridpos)
-            self._boardpos = self._reverse_map(self._boardpos)
+            self._gridpos = reverse_dict(self._gridpos)
+            self._boardpos = reverse_dict(self._boardpos)
         self._label_board()
         starting_squares = [i for i in self._model.curr_state.valid_squares
                             if self._model.curr_state.squares[i] &
                             (BLACK | WHITE)]
         all_checkers = Command(add=starting_squares)
         self._draw_checkers(all_checkers)
-
-    def _flip_map(self, m):
-        d = {}
-        keys = [k for k, _ in m.iteritems()]
-        vals = [v for _, v in m.iteritems()]
-        for k, v in zip(vals, keys):
-            d[k] = v
-        return d
-
-    def _reverse_map(self, m):
-        d = {}
-        keys = [k for k, _ in m.iteritems()]
-        vals = [v for _, v in m.iteritems()]
-        for k, v in zip(keys, reversed(vals)):
-            d[k] = v
-        return d
 
     def update_statusbar(self, output=None):
         if output:
@@ -179,7 +187,7 @@ class BoardView(Observer):
             self._statusbar['text'] = "Black to move"
 
     def get_positions(self, type):
-        return map(str, sorted((self._keymap[i]
+        return map(str, sorted((keymap[i]
                 for i in self._model.curr_state.valid_squares
                 if self._model.curr_state.squares[i] == type)))
 
@@ -224,7 +232,7 @@ class BoardView(Observer):
             xpos, ypos = col * self._square_size, row * self._square_size
             self.canvas.create_text(xpos+self._square_size-7,
                                     ypos+self._square_size-7,
-                                    text=str(self._keymap[key]),
+                                    text=str(keymap[key]),
                                     fill=LIGHT_SQUARES, tag='label')
 
     def _delete_labels(self):
