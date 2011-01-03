@@ -133,16 +133,16 @@ class SetupBoard(Dialog):
         state.clear()
         sq = state.squares
         for item in self.wm_list:
-            idx = view.squaremap[item]
+            idx = squaremap[item]
             sq[idx] = WHITE | MAN
         for item in self.wk_list:
-            idx = view.squaremap[item]
+            idx = squaremap[item]
             sq[idx] = WHITE | KING
         for item in self.bm_list:
-            idx = view.squaremap[item]
+            idx = squaremap[item]
             sq[idx] = BLACK | MAN
         for item in self.bk_list:
-            idx = view.squaremap[item]
+            idx = squaremap[item]
             sq[idx] = BLACK | KING
         state.to_move = self._player_turn.get()
         state.reset_undo()
