@@ -1,0 +1,21 @@
+<description>
+**White to move and draw.**
+
+William Payne, a mathematician, wrote the first draughts book in English,
+//An Introduction to the Game of Draughts,// in 1756. The position shown here,
+which further demonstrates the inherent restrictiveness of the single-corner
+zone, was featured, and shows that 1 king against 2 kings is not always
+a hopeless cause.
+<setup>
+white_first
+flip_board 1
+black_men
+black_kings 29 30
+white_men
+white_kings 18
+<moves>
+18-22;
+30-25;
+22-26;
+25-30;
+26-22;, etc. (drawn by a see-saw operation)

@@ -1,0 +1,37 @@
+<description>
+**White to move and win.**
+
+With 3 Kings v 2 Kings, there are three cases to be considered:
+
+# Where the defending kings occupy opposite double-corners;
+# Where the defending kings occupy the same double-corner;
+# Where the defending kings occupy the same single-corner.
+
+
+The second case is illustrated in this scenario.
+
+**TIP: In the endgame, particularly when defending, it is good policy, where
+possible, to keep your kings together. For one thing, no tactical opportunities
+are available otherwise.**
+
+In this scenario, Black has succeeded in keeping his kings together, but White
+still wins by forcing a simple exchange.
+<setup>
+white_first
+flip_board 1
+black_men
+black_kings 27 28
+white_men
+white_kings 18 19 20
+<moves>
+19-23; (deemed a time-waster in many texts, but actually the best approach!)
+28-32; (27-31 allows White to exchange immediately with 23-27)
+20-16;!
+27-31; (if 27-24, White replies with 18-15; and after 24-27 exchanges with 16-11, and after 24-20 exchanges with 23-18)
+16-11;!
+32-28; (if 31-27, White replies with 18-15)
+11-15;
+28-32;
+23-26;
+31-22;
+18-25; etc.
