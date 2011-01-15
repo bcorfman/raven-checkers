@@ -1,0 +1,32 @@
+<description>
+This alternative [[./Training/Key Endgames/FirstPosition.rcf|First Position]] path also leads to a win for White.
+<setup>
+black_first
+flip_board 1
+black_men 12
+black_kings 24
+white_men
+white_kings 18 32
+<moves>
+12-16;
+18-15;
+16-20;
+15-18;
+24-19;
+32-28;
+19-16;
+18-23;
+16-11;
+23-19;
+11-8;
+28-32;
+8-11;
+32-27;
+11-8;
+27-23;
+8-3;
+23-18;
+3-8;
+18-15;
+8-12;
+15-11;. **White wins.**
