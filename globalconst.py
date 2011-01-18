@@ -1,4 +1,4 @@
-import math, os
+import math, os, sys
 from ConfigParser import RawConfigParser
 
 DEFAULT_SIZE = 400
@@ -27,6 +27,16 @@ MAX = 1
 IMAGE_DIR = 'images' + os.sep
 RAVEN_ICON = IMAGE_DIR + '_raven.ico'
 CROWN_IMAGE = IMAGE_DIR + 'crown.gif'
+BOLD_IMAGE = IMAGE_DIR + 'text_bold.gif'
+ITALIC_IMAGE = IMAGE_DIR + 'text_italic.gif'
+BULLETS_IMAGE = IMAGE_DIR + 'text_list_bullets.gif'
+NUMBERS_IMAGE = IMAGE_DIR + 'text_list_numbers.gif'
+ADDLINK_IMAGE = IMAGE_DIR + 'link.gif'
+REMLINK_IMAGE = IMAGE_DIR + 'link_break.gif'
+UNDO_IMAGE = IMAGE_DIR + 'resultset_previous.gif'
+UNDOALL_IMAGE = IMAGE_DIR + 'resultset_first.gif'
+REDO_IMAGE = IMAGE_DIR + 'resultset_next.gif'
+REDOALL_IMAGE = IMAGE_DIR + 'resultset_last.gif'
 LIGHT_SQUARES = 'tan'
 DARK_SQUARES = 'dark green'
 OUTLINE_COLOR = 'white'
@@ -41,7 +51,9 @@ OCCUPIED_CHAR = '-'
 
 INFINITY = 9999999
 MAXDEPTH = 10
-VERSION = '0.3.5'
+VERSION = '0.4'
+PROGRAM_TITLE = 'Raven Checkers'
+TRAINING_DIR = sys.path[0] + os.path.sep + 'training'
 
 # search values for transposition table
 hashfALPHA, hashfBETA, hashfEXACT = range(3)
@@ -60,6 +72,14 @@ OPENING = 2   # multipliers for tempo
 MIDGAME = -1
 ENDGAME = 2
 INTACTDOUBLECORNER = 3
+
+BLACK_IDX = [5,6]
+WHITE_IDX = [-5,-6]
+KING_IDX = [-6,-5,5,6]
+
+FIRST = 0
+MID = 1
+LAST = -1
 
 #   (white)
 #            45  46  47  48
@@ -209,7 +229,22 @@ def create_grid_map():
     grd[45] = (0,1); grd[46] = (0,3); grd[47] = (0,5); grd[48] = (0,7)
     return grd
 
-grid = create_grid_map()
+def flip_dict(m):
+    d = {}
+    keys = [k for k, _ in m.iteritems()]
+    vals = [v for _, v in m.iteritems()]
+    for k, v in zip(vals, keys):
+        d[k] = v
+    return d
+
+def reverse_dict(m):
+    d = {}
+    keys = [k for k, _ in m.iteritems()]
+    vals = [v for _, v in m.iteritems()]
+    for k, v in zip(keys, reversed(vals)):
+        d[k] = v
+    return d
+
 
 def similarity(pattern, pieces):
     global grid
@@ -240,3 +275,7 @@ def write_preferences_to_file(font, size):
     # Writing our configuration file to 'raven.ini'
     with open('raven.ini', 'wb') as configfile:
         config.write(configfile)
+
+grid = create_grid_map()
+keymap = create_key_map()
+squaremap = flip_dict(keymap)
