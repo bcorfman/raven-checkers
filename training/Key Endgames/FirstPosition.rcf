@@ -11,15 +11,15 @@ follows:
 # Black's other piece, which becomes a king in the double-corner, is unable to reach the opposite double-corner.
 
 White's winning procedure consists of attacking Black's king, immobilizing it,
-and forcing Black's single man to advance into trouble. Black naturally tries
-to delay this advance for as long as possible.
+and forcing Black's single man to advance into trouble. Black naturally tries to
+delay this advance for as long as possible.
 <setup>
 white_first
 flip_board 1
-black_men 12
-black_kings 28
-white_men
-white_kings 19 23
+black_men 12 
+black_kings 28 
+white_men 
+white_kings 19 23 
 <moves>
 23-27;
 28-32;
@@ -27,14 +27,14 @@ white_kings 19 23
 32-28;
 27-32;
 28-24;. The early advance with 12-16 instead [[./Training/Key Endgames/FirstPosition_AlternativeA.rcf|loses quickly for Black]].
-23-18;. (Of course, 32-28 would permit the exchange with 24-19.)
+23-18;. Of course, 32-28 instead would permit the exchange with 24-19.
 24-28;. This is Black's most stubborn defense. However, White needs to master [[./Training/Key Endgames/FirstPosition_AlternativeB1.rcf|three]] [[./Training/Key Endgames/FirstPosition_AlternativeB2.rcf|alternate]] [[./Training/Key Endgames/FirstPosition_AlternativeB3.rcf|defenses]] as well.
 18-15;
 28-24;
 32-28;
 24-27;. Black could alternately play 24-20 here, leading to [[./Training/Key Endgames/FirstPosition_AlternativeC.rcf|this line of play]].
 15-18;
-12-16;. (forced now, as 27-32 loses quickly after 18-23)
+12-16;. This is forced now, as 27-32 loses quickly after 18-23.
 28-32;
 27-24;
 18-15;
