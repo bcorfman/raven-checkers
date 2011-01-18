@@ -1,124 +1,194 @@
 from Tkconstants import *
-from parser import Parser
-
-from parser import Parser
+from creoleparser import Parser
 from rules import LinkRules
-
 
 class TextTagEmitter(object):
     """
     Generate tagged output compatible with the Tkinter Text widget
     """
-
-    def __init__(self, root, link_rules=None):
+    def __init__(self, root, txtWidget, hyperMgr, link_rules=None):
         self.root = root
         self.link_rules = link_rules or LinkRules()
+        self.txtWidget = txtWidget
+        self.hyperMgr = hyperMgr
+        self.line = 1
+        self.index = 0
+        self.number = 1
+        self.begin_italic = ''
+        self.begin_bold = ''
+        self.begin_list_item = ''
+        self.list_item = ''
 
-    # *_emit methods for emitting nodes of the document:
-    def document_emit(self, node):
-        return self.emit_children(node)
+    # visit/leave methods for emitting nodes of the document:
+    def visit_document(self, node):
+        pass
 
-    def text_emit(self, node):
-        return node.content
+    def leave_document(self, node):
+        # leave_paragraph always leaves two extra carriage returns at the
+        # end of the text. This deletes them.
+        txtindex = '%d.%d' % (self.line-1, self.index)
+        self.txtWidget.delete(txtindex, END)
 
-    def separator_emit(self, node):
+    def visit_text(self, node):
+        if self.begin_list_item:
+            self.list_item = node.content
+        else:
+            txtindex = '%d.%d' % (self.line, self.index)
+            self.txtWidget.insert(txtindex, node.content)
+
+    def leave_text(self, node):
+        if not self.begin_list_item:
+            self.index += len(node.content)
+
+    def visit_separator(self, node):
         raise NotImplementedError
 
-    def paragraph_emit(self, node):
-        return u'%s\n' % self.emit_children(node)
-
-    def bullet_list_emit(self, node):
-        return self.emit_children(node)
-
-    def number_list_emit(self, node):
-        return self.emit_children(node)
-
-    def list_item_emit(self, node):
-        return self.emit_children(node)
-
-    def table_emit(self, node):
+    def leave_separator(self, node):
         raise NotImplementedError
 
-    def table_row_emit(self, node):
+    def visit_paragraph(self, node):
+        pass
+
+    def leave_paragraph(self, node):
+        txtindex = '%d.%d' % (self.line, self.index)
+        self.txtWidget.insert(txtindex, '\n\n')
+        self.line += 2
+        self.index = 0
+        self.number = 1
+
+    def visit_bullet_list(self, node):
         raise NotImplementedError
 
-    def table_cell_emit(self, node):
+    def leave_bullet_list(self, node):
         raise NotImplementedError
 
-    def table_head_emit(self, node):
-        raise NotImplementedError
+    def visit_number_list(self, node):
+        self.number = 1
 
-    def emphasis_emit(self, node):
-        return [('tagon','italics',node.index), self.emit_children(node),
-                ('tagoff','italics',node.index)]
+    def leave_number_list(self, node):
+        txtindex = '%d.%d' % (self.line, self.index)
+        self.txtWidget.insert(txtindex, '\n')
+        self.line += 1
+        self.number = 0
 
-    def strong_emit(self, node):
-        return [('tagon','bold',node.index), self.emit_children(node),
-                ('tagoff','bold',node.index)]
+    def visit_list_item(self, node):
+        self.begin_list_item = '%d.%d' % (self.line, self.index)
 
-    def header_emit(self, node):
-        raise NotImplementedError
+    def leave_list_item(self, node):
+        content = '%d. %s\n' % (self.number, self.list_item)
+        txtindex = '%d.%d' % (self.line, self.index)
+        end_list_item = '%d.%d' % (self.line, self.index + len(content))
+        self.txtWidget.insert(self.begin_list_item, content)
+        self.txtWidget.tag_add('number', self.begin_list_item, end_list_item)
+        self.begin_list_item = ''
+        self.list_item = ''
+        self.number += 1
+        self.line += 1
+        self.index = 0
 
-    def code_emit(self, node):
-        raise NotImplementedError
+    def visit_emphasis(self, node):
+        self.begin_italic = '%d.%d' % (self.line, self.index)
 
-    def link_emit(self, node):
-        return ''
+    def leave_emphasis(self, node):
+        end_italic = '%d.%d' % (self.line, self.index)
+        self.txtWidget.tag_add('italic', self.begin_italic, end_italic)
 
-    def image_emit(self, node):
-        raise NotImplementedError
+    def visit_strong(self, node):
+        self.begin_bold = '%d.%d' % (self.line, self.index)
 
-    def macro_emit(self, node):
-        raise NotImplementedError
+    def leave_strong(self, node):
+        end_bold = '%d.%d' % (self.line, self.index)
+        self.txtWidget.tag_add('bold', self.begin_bold, end_bold)
 
-    def break_emit(self, node):
-        raise NotImplementedError
+    def visit_link(self, node):
+        self.begin_link = '%d.%d' % (self.line, self.index)
 
-    def preformatted_emit(self, node):
-        raise NotImplementedError
+    def leave_link(self, node):
+        end_link = '%d.%d' % (self.line, self.index)
+        self.txtWidget.insert(self.begin_link, node.children[0].content,
+                              self.hyperMgr.add(str(node.content)))
 
-    def default_emit(self, node):
-        """Fallback function for emitting unknown nodes."""
+    def visit_break(self, node):
+        txtindex = '%d.%d' % (self.line, self.index)
+        self.txtWidget.insert(txtindex, '\n')
+
+    def leave_break(self, node):
+        self.line += 1
+        self.index = 0
+
+    def visit_default(self, node):
+        """Fallback function for visiting unknown nodes."""
+        raise TypeError
+
+    def leave_default(self, node):
+        """Fallback function for leaving unknown nodes."""
         raise TypeError
 
     def emit_children(self, node):
         """Emit all the children of a node."""
-        return u''.join([self.emit_node(child) for child in node.children])
+        for child in node.children:
+            self.emit_node(child)
 
-def dump_text_widget_to_rst(txtWidget, index1='1.0', index2=END):
-    # outputs contents from Text widget in RestructuredText format.
-    rst = ""
-    tags = {}
-    try:
-        for key, value, index in txtWidget.dump(index1, index2):
+    def emit_node(self, node):
+        """Visit/depart a single node and its children."""
+        visit = getattr(self, 'visit_%s' % node.kind, self.visit_default)
+        visit(node)
+        self.emit_children(node)
+        leave = getattr(self, 'leave_%s' % node.kind, self.leave_default)
+        leave(node)
+
+    def emit(self):
+        """Emit the document represented by self.root DOM tree."""
+        return self.emit_node(self.root)
+
+class Serializer(object):
+    def __init__(self, txtWidget, hyperMgr):
+        self.txt = txtWidget
+        self.hyperMgr = hyperMgr
+        self.number = 0
+        self.filename = ''
+        self.link_start = False
+
+    def dump(self, index1='1.0', index2=END):
+        # outputs contents from Text widget in Creole format.
+        creole = ''
+        #try:
+        for key, value, index in self.txt.dump(index1, index2):
             if key == 'tagon':
                 if value == 'bold':
-                    rst += '**'
+                    creole += '**'
                 elif value == 'italic':
-                    rst += '*'
+                    creole += '//'
                 elif value == 'bullet':
-                    rst += '-'
-                elif value == 'link':
-                    if not tags.get(value):
-                        tagname = value
-                        tags[tagname] = []
-                        for item in txtWidget.tag_configure(tagname):
-                            value = item[4]
-                            if len(value) > 0:
-                                option = item[0]
-                                tags[tagname].append((option, value))
+                    creole += '*'
+                elif value.startswith('hyper-'):
+                    self.filename = self.hyperMgr.filenames[value]
+                    self.link_start = True
+                elif value == 'number':
+                    creole += '#'
+                    self.number += 1
             elif key == 'tagoff':
                 if value == 'bold':
-                    rst += '**'
+                    creole += '**'
                 elif value == 'italic':
-                    rst += '*'
-                elif value == 'link':
-                    rst += '<link>'
+                    creole += '//'
+                elif value.startswith('hyper-'):
+                    creole += ']]'
             elif key == 'text':
-                rst += value
-    finally:
-        return rst
+                if self.number:
+                    numstr = '%d.' % self.number
+                    if value.startswith(numstr):
+                        value = value.replace(numstr, '', 1)
+                    elif value != '\n':
+                        self.number = 0
+                if self.link_start:
+                    value = '[[%s|%s' % (self.filename, value)
+                    self.link_start = False
+                creole += value
+        #finally:
+        return creole
 
-def restore_text_widget_from_rst(rst, txtWidget):
-    document = Parser(unicode(rst, 'utf-8', 'ignore')).parse()
-    return TextTagEmitter(document).emit().encode('utf-8', 'ignore')
+    def restore(self, creole):
+        self.hyperMgr.reset()
+        document = Parser(unicode(creole, 'utf-8', 'ignore')).parse()
+        return TextTagEmitter(document, self.txt, self.hyperMgr).emit()
