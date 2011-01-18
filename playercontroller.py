@@ -104,4 +104,6 @@ class PlayerController(Controller):
             self._highlights.append(idx)
         self._model.make_move(self.moves[0], None, True, True,
                               self._view.get_annotation())
+        # a new move obliterates any more redo's along a branch of the game tree
+        self._model.curr_state.delete_redo_list()
         self._move_in_progress = False
