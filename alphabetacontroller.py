@@ -75,6 +75,8 @@ class AlphaBetaController(Controller):
         self._model.curr_state.attach(self._view)
         self._model.make_move(move, None, True, True,
                               self._view.get_annotation())
+        # a new move obliterates any more redo's along a branch of the game tree
+        self._model.curr_state.delete_redo_list()
         self._end_turn_event()
 
     def set_search_time(self, time):
