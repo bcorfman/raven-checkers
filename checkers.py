@@ -5,7 +5,7 @@ from globalconst import BLACK, WHITE, KING, MAN, OCCUPIED, BLACK_CHAR, WHITE_CHA
 from globalconst import BLACK_KING, WHITE_KING, FREE, OCCUPIED_CHAR, FREE_CHAR
 from globalconst import COLORS, TYPES, TURN, CRAMP, BRV, KEV, KCV, MEV, MCV
 from globalconst import INTACTDOUBLECORNER, ENDGAME, OPENING, MIDGAME
-from globalconst import create_grid_map
+from globalconst import create_grid_map, KING_IDX, BLACK_IDX, WHITE_IDX
 import copy
 
 class Checkerboard(object):
@@ -22,9 +22,6 @@ class Checkerboard(object):
     valid_squares = [6,7,8,9,12,13,14,15,17,18,19,20,23,24,25,26,
                      28,29,30,31,34,35,36,37,39,40,41,42,45,46,
                      47,48]
-    black_idx = [5,6]
-    white_idx = [-5,-6]
-    king_idx = [-6,-5,5,6]
     # values of pieces (KING, MAN, BLACK, WHITE, FREE)
     value = [0,0,0,0,0,1,256,0,0,16,4096,0,0,0,0,0,0]
     edge = [6,7,8,9,15,17,26,28,37,39,45,46,47,48]
@@ -50,8 +47,8 @@ class Checkerboard(object):
         self.observers = []
         self.white_pieces = []
         self.black_pieces = []
-        self._undo_list = []
-        self._redo_list = []
+        self.undo_list = []
+        self.redo_list = []
         self.white_total = 12
         self.black_total = 12
         self.gridmap = create_grid_map()
@@ -128,73 +125,114 @@ class Checkerboard(object):
     def row_col_for_index(self, idx):
         return self.gridmap[idx]
 
+    def update_piece_count(self):
+        self.white_pieces = []
+        for i, piece in enumerate(self.squares):
+            if piece & COLORS == WHITE:
+                self.white_pieces.append((i, piece))
+
+        self.black_pieces = []
+        for i, piece in enumerate(self.squares):
+            if piece & COLORS == BLACK:
+                self.black_pieces.append((i, piece))
+
+        self.white_total = len(self.white_pieces)
+        self.black_total = len(self.black_pieces)
+
+    def delete_redo_list(self):
+        del self.redo_list[:]
+
     def make_move(self, move, notify=True, undo=True, annotation=''):
         sq = self.squares
         for idx, _, newval in move.affected_squares:
             sq[idx] = newval
-        if undo:
-            del self._redo_list[:]
-            move.annotation = annotation
-            self._undo_list.append(move)
         self.to_move ^= COLORS
 
         if notify:
-            self.white_pieces = []
-            for i, piece in enumerate(self.squares):
-                if piece & COLORS == WHITE:
-                    self.white_pieces.append((i, piece))
-
-            self.black_pieces = []
-            for i, piece in enumerate(self.squares):
-                if piece & COLORS == BLACK:
-                    self.black_pieces.append((i, piece))
-
-            self.white_total = len(self.white_pieces)
-            self.black_total = len(self.black_pieces)
-
+            self.update_piece_count()
             for o in self.observers:
                 o.notify(move)
+        if undo:
+            move.annotation = annotation
+            self.undo_list.append(move)
         return self
 
-    def undo_move(self, move=None, notify=True, redo=True):
+    def undo_move(self, move=None, notify=True, redo=True, annotation=''):
         if move is None:
-            if not self._undo_list:
+            if not self.undo_list:
                 return
             if redo:
-                move = self._undo_list.pop()
-                self._redo_list.append(move)
+                move = self.undo_list.pop()
         rev_move = Move([[idx, dest, src] for idx, src, dest
                         in move.affected_squares])
+        rev_move.annotation = move.annotation
         self.make_move(rev_move, notify, False)
+        if redo:
+            move.annotation = annotation
+            self.redo_list.append(move)
 
-    def undo_all_moves(self):
-        while self._undo_list:
-            move = self._undo_list.pop()
-            self._redo_list.append(move)
+    def undo_all_moves(self, annotation=''):
+        while self.undo_list:
+            move = self.undo_list.pop()
             rev_move = Move([[idx, dest, src] for idx, src, dest
                             in move.affected_squares])
+            rev_move.annotation = move.annotation
             self.make_move(rev_move, True, False)
+            move.annotation = annotation
+            self.redo_list.append(move)
+            annotation = rev_move.annotation
 
-    def redo_move(self, move=None):
+    def redo_move(self, move=None, annotation=''):
         if move is None:
-            if not self._redo_list:
+            if not self.redo_list:
                 return
-            move = self._redo_list.pop()
-            self._undo_list.append(move)
-        self.make_move(move, True, False)
+            move = self.redo_list.pop()
+        self.make_move(move, True, True, annotation)
 
-    def redo_all_moves(self):
-        while self._redo_list:
-            move = self._redo_list.pop()
-            self._undo_list.append(move)
-            self.make_move(move, True, False)
+    def redo_all_moves(self, annotation=''):
+        while self.redo_list:
+            move = self.redo_list.pop()
+            next_annotation = move.annotation
+            self.make_move(move, True, True, annotation)
+            annotation = next_annotation
 
     def reset_undo(self):
-        self._undo_list = []
-        self._redo_list = []
+        self.undo_list = []
+        self.redo_list = []
 
-    def create_game(self, gameinfo):
-        pass
+    def utility(self, player):
+        """ Player evaluation function """
+        sq = self.squares
+        code = sum(self.value[s] for s in sq)
+        nwm = code % 16
+        nwk = (code >> 4) % 16
+        nbm = (code >> 8) % 16
+        nbk = (code >> 12) % 16
+
+        v1 = 100 * nbm + 130 * nbk
+        v2 = 100 * nwm + 130 * nwk
+
+        eval = v1 - v2 # material values
+        # favor exchanges if in material plus
+        eval += (250 * (v1 - v2))/(v1 + v2)
+
+        nm = nbm + nwm
+        nk = nbk + nwk
+
+        # fine evaluation below
+        if player == BLACK:
+            eval += TURN
+            mult = -1
+        else:
+            eval -= TURN
+            mult = 1
+
+        return mult * \
+                (eval + self._eval_cramp(sq) + self._eval_backrankguard(sq) +
+                self._eval_doublecorner(sq) + self._eval_center(sq) +
+                self._eval_edge(sq) +
+                self._eval_tempo(sq, nm, nbk, nbm, nwk, nwm) +
+                self._eval_playeropposition(sq, nwm, nwk, nbk, nbm, nm, nk))
 
     def _find_more_captures(self, valid_moves, captures, add_sq_func, visited):
         player = self.to_move
@@ -242,7 +280,7 @@ class Checkerboard(object):
         player = self.to_move
         enemy = self.enemy
         squares = self.squares
-        valid_indices = self.white_idx if player == WHITE else self.black_idx
+        valid_indices = WHITE_IDX if player == WHITE else BLACK_IDX
         captures = []
         for i in self.valid_squares:
             if squares[i] & player and squares[i] & MAN:
@@ -264,7 +302,7 @@ class Checkerboard(object):
                                                             self._capture_man,
                                                             visited)
             if squares[i] & player and squares[i] & KING:
-                for j in self.king_idx:
+                for j in KING_IDX:
                     mid = i+j
                     dest = i+j*2
                     if squares[mid] & enemy and squares[dest] & FREE:
@@ -273,7 +311,7 @@ class Checkerboard(object):
                         sq3 = [dest, squares[dest], player | KING]
                         captures.append(Move([sq1, sq2, sq3]))
                         visited = set((i, mid, dest))
-                        captures = self._find_more_captures(self.king_idx,
+                        captures = self._find_more_captures(KING_IDX,
                                                             captures,
                                                             self._capture_king,
                                                             visited)
@@ -284,7 +322,7 @@ class Checkerboard(object):
     def _get_moves(self):
         player = self.to_move
         squares = self.squares
-        valid_indices = self.white_idx if player == WHITE else self.black_idx
+        valid_indices = WHITE_IDX if player == WHITE else BLACK_IDX
         moves = []
         for i in self.valid_squares:
             for j in valid_indices:
@@ -299,7 +337,7 @@ class Checkerboard(object):
                     else:
                         sq2 = [dest, FREE, player | MAN]
                     moves.append(Move([sq1, sq2]))
-            for j in self.king_idx:
+            for j in KING_IDX:
                 dest = i+j
                 if (squares[i] & player and
                     squares[i] & KING and
@@ -310,40 +348,6 @@ class Checkerboard(object):
         return moves
     moves = property(_get_moves,
                         doc="Available moves for the current player")
-
-    def utility(self, player):
-        """ Player evaluation function """
-        sq = self.squares
-        code = sum(self.value[s] for s in sq)
-        nwm = code % 16
-        nwk = (code >> 4) % 16
-        nbm = (code >> 8) % 16
-        nbk = (code >> 12) % 16
-
-        v1 = 100 * nbm + 130 * nbk
-        v2 = 100 * nwm + 130 * nwk
-
-        eval = v1 - v2 # material values
-        # favor exchanges if in material plus
-        eval += (250 * (v1 - v2))/(v1 + v2)
-
-        nm = nbm + nwm
-        nk = nbk + nwk
-
-        # fine evaluation below
-        if player == BLACK:
-            eval += TURN
-            mult = -1
-        else:
-            eval -= TURN
-            mult = 1
-
-        return mult * \
-                (eval + self._eval_cramp(sq) + self._eval_backrankguard(sq) +
-                self._eval_doublecorner(sq) + self._eval_center(sq) +
-                self._eval_edge(sq) +
-                self._eval_tempo(sq, nm, nbk, nbm, nwk, nwm) +
-                self._eval_playeropposition(sq, nwm, nwk, nbk, nbm, nm, nk))
 
     def _eval_cramp(self, sq):
         eval = 0
@@ -495,21 +499,22 @@ class Checkers(games.Game):
         state = curr_state or self.curr_state
         return state.make_move(move, notify, undo, annotation)
 
-    def undo_move(self, move=None, curr_state=None, notify=True, redo=True):
+    def undo_move(self, move=None, curr_state=None, notify=True, redo=True,
+                  annotation=''):
         state = curr_state or self.curr_state
-        return state.undo_move(move, notify, redo)
+        return state.undo_move(move, notify, redo, annotation)
 
-    def undo_all_moves(self, curr_state=None):
+    def undo_all_moves(self, curr_state=None, annotation=''):
         state = curr_state or self.curr_state
-        return state.undo_all_moves()
+        return state.undo_all_moves(annotation)
 
-    def redo_move(self, move=None, curr_state=None):
+    def redo_move(self, move=None, curr_state=None, annotation=''):
         state = curr_state or self.curr_state
-        return state.redo_move(move)
+        return state.redo_move(move, annotation)
 
-    def redo_all_moves(self, curr_state=None):
+    def redo_all_moves(self, curr_state=None, annotation=''):
         state = curr_state or self.curr_state
-        return state.redo_all_moves()
+        return state.redo_all_moves(annotation)
 
     def utility(self, player, curr_state=None):
         state = curr_state or self.curr_state
