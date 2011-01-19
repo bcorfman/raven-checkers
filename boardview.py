@@ -29,7 +29,7 @@ class BoardView(Observer):
                              height=self._board_side)
         self.canvas.pack(side=TOP)
         self.toolbar = Frame(root)
- self.bold_image = PhotoImage(file=BOLD_IMAGE)
+        self.bold_image = PhotoImage(file=BOLD_IMAGE)
         self.italic_image = PhotoImage(file=ITALIC_IMAGE)
         self.addlink_image = PhotoImage(file=ADDLINK_IMAGE)
         self.remlink_image = PhotoImage(file=REMLINK_IMAGE)
@@ -71,15 +71,18 @@ class BoardView(Observer):
         self.redoall = Button(name='redoall', image=self.redoall_image,
                               borderwidth=1, command=self._on_redo_all)
         self.redoall.pack(in_=self.toolbar, side='left')
-        self.btns = set([self.bold, self.italic, self.addLink, self.remLink])        font, size = get_preferences_from_file()
+        self.btns = set([self.bold, self.italic, self.addLink, self.remLink])        
+        font, size = get_preferences_from_file()
         self._r_font = Font(root, (font, size))
         self._b_font = Font(root, (font, size, 'bold'))
         self._i_font = Font(root, (font, size, 'italic'))
         self.toolbar.pack(side='top', fill='x')
         self.txt = Text(root, width=0, height=7, font=(font,size), wrap='word')
         self.txt.pack(side=TOP, fill=BOTH, expand=True)
-        self.txt.tag_config('bold', font=self._b_font)
-        self.txt.tag_config('italic', font=self._i_font)
+        self.txt.tag_config('bold', font=self._b_font, wrap='word')
+        self.txt.tag_config('italic', font=self._i_font, wrap='word')
+        self.hypermgr = HyperlinkManager(self.txt, self._gameMgr.load_game)
+        self.serializer = Serializer(self.txt, self.hypermgr)
         self._setup_board(root)
         starting_squares = [i for i in self._model.curr_state.valid_squares
                             if self._model.curr_state.squares[i] &
@@ -88,7 +91,6 @@ class BoardView(Observer):
         self.flip_view = False # black on bottom
         self._label_board()
         self.update_statusbar()
-
     def _toggle_state(self, tags, btn):
         # toggle the text state based on the first character in the
         # selected range.
@@ -113,7 +115,7 @@ class BoardView(Observer):
         self._toggle_state(['bold'], self.bold)
 
     def _on_italic(self):
-        self._toggle_state(['italic'], self.italic)
+        self._toggle_state('italic', self.italic, [self.bold])
 
     def _on_bullets(self):
         pass
