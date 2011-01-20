@@ -13,7 +13,7 @@ class GameManager(object):
     def __init__(self, **props):
         self.model = Checkers()
         self._root = props['root']
-        self._parent = props['parent']
+        self.parent = props['parent']
         statusbar = Label(self._root, relief=SUNKEN, font=('Helvetica',7),
                           anchor=NW)
         statusbar.pack(side=BOTTOM, fill=X)
@@ -26,7 +26,7 @@ class GameManager(object):
         self.filename = None
 
     def set_controllers(self):
-        think_time = self._parent.thinkTime.get()
+        think_time = self.parent.thinkTime.get()
         if self.num_players == 0:
             self._controller1 = AlphaBetaController(model=self.model,
                                                     view=self.view,
@@ -69,7 +69,7 @@ class GameManager(object):
         self.model = Checkers()
         self.player_color = BLACK
         self.view.reset_view(self.model)
-        self.think_time = self._parent.thinkTime.get()
+        self.think_time = self.parent.thinkTime.get()
         self.set_controllers()
         self.view.update_statusbar()
         self._controller1.start_turn()
@@ -96,7 +96,7 @@ class GameManager(object):
             self.view.reset_view(self.model)
             self.view.serializer.restore(saved_game.description)
             self.view.flip_board(saved_game.flip_board)
-            self._parent.set_title_bar_filename(filename)
+            self.parent.set_title_bar_filename(filename)
         except IOError as (err):
             showerror(PROGRAM_TITLE, 'Invalid file. ' + str(err))
 
@@ -158,7 +158,7 @@ class GameManager(object):
                 return
             saved_game.flip_board = self.view.flip_view
             saved_game.write(filename)
-            self._parent.set_title_bar_filename(filename)
+            self.parent.set_title_bar_filename(filename)
             self.filename = filename
         except IOError:
             showerror(PROGRAM_TITLE, 'Could not save file.')
