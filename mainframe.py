@@ -20,33 +20,18 @@ class MainFrame(object, CenteredWindow):
         self.thinkTime = IntVar(value=5)
         self.manager = GameManager(root=self.root, parent=self)
         gameMenu = self.create_game_menu()
-        movesMenu = self.create_moves_menu()
         optionsMenu = self.create_options_menu()
         helpMenu = self.create_help_menu()
         self.frame.tk_menuBar(gameMenu, helpMenu)
         CenteredWindow.__init__(self, self.root)
         self.root.minsize(self.root.winfo_reqwidth(), self.root.winfo_reqheight())
         self.root.maxsize(self.root.winfo_reqwidth(), self.root.winfo_reqheight())
-        self.bind_events()
         self.root.deiconify()
 
     def set_title_bar_filename(self, filename):
         self.root.title('Raven ' + VERSION + ' - ' + os.path.basename(filename))
 
-    def bind_events(self):
-        # TODO: Move these events to PlayerController?
-        self.root.bind('<Home>', self._undo_all_moves)
-        self.root.bind('<End>', self._redo_all_moves)
-        self.root.bind('<Left>', self._undo_single_move)
-        self.root.bind('<Right>', self._redo_single_move)
-
-    def unbind_events(self):
-        self.root.unbind('<Home>')
-        self.root.unbind('<End>')
-        self.root.unbind('<Left>')
-        self.root.unbind('<Right>')
-
-    def _undo_all_moves(self, *args):
+    def undo_all_moves(self, *args):
         self.stop_processes()
         self.manager.model.undo_all_moves(None,
                                           self.manager.view.get_annotation())
@@ -54,7 +39,7 @@ class MainFrame(object, CenteredWindow):
         self.manager._controller2.remove_highlights()
         self.manager.view.update_statusbar()
 
-    def _redo_all_moves(self, *args):
+    def redo_all_moves(self, *args):
         self.stop_processes()
         self.manager.model.redo_all_moves(None,
                                           self.manager.view.get_annotation())
@@ -62,7 +47,7 @@ class MainFrame(object, CenteredWindow):
         self.manager._controller2.remove_highlights()
         self.manager.view.update_statusbar()
 
-    def _undo_single_move(self, *args):
+    def undo_single_move(self, *args):
         self.stop_processes()
         self.manager.model.undo_move(None, None, True, True,
                                      self.manager.view.get_annotation())
@@ -70,7 +55,7 @@ class MainFrame(object, CenteredWindow):
         self.manager._controller2.remove_highlights()
         self.manager.view.update_statusbar()
 
-    def _redo_single_move(self, *args):
+    def redo_single_move(self, *args):
         self.stop_processes()
         annotation = self.manager.view.get_annotation()
         self.manager.model.redo_move(None, None, annotation)
@@ -100,26 +85,6 @@ class MainFrame(object, CenteredWindow):
         gameBtn.menu.add_command(label='Exit', underline=0, command=gameBtn.quit)
         gameBtn['menu'] = gameBtn.menu
         return gameBtn
-
-    def create_moves_menu(self):
-        movesBtn = Menubutton(self.frame, text='Moves', underline=0)
-        movesBtn.pack(side=LEFT)
-        movesBtn.menu = Menu(movesBtn, tearoff=0)
-        movesBtn.menu.add_command(label='Undo one move',
-                                  command=self._undo_single_move,
-                                  accelerator='<-')
-        movesBtn.menu.add_command(label='Redo one move',
-                                  command=self._redo_single_move,
-                                  accelerator='->')
-        movesBtn.menu.add_command(label='Undo all moves',
-                                  command=self._undo_all_moves,
-                                  accelerator='Home')
-        movesBtn.menu.add_command(label='Redo all moves',
-                                  command=self._redo_all_moves,
-                                  accelerator='End')
-
-        movesBtn['menu'] = movesBtn.menu
-        return movesBtn
 
     def create_options_menu(self):
         optBtn = Menubutton(self.frame, text='Options', underline=0)
@@ -185,7 +150,7 @@ class MainFrame(object, CenteredWindow):
         font, size = get_preferences_from_file()
         dlg = PreferencesDialog(self.root, 'Preferences', font, size)
         if dlg.result:
-            self.manager.view.txt.config(font=[dlg.font, dlg.size])
+            self.manager.view.set_font_sizes(dlg.font, dlg.size)
             write_preferences_to_file(dlg.font, dlg.size)
 
     def set_think_time(self):
