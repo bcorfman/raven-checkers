@@ -7,6 +7,7 @@ from textserialize import Serializer
 from hyperlinkmgr import HyperlinkManager
 from tkFileDialog import askopenfilename
 from tkFont import Font
+from tooltip import ToolTip
 
 class BoardView(Observer):
     def __init__(self, root, **props):
@@ -29,6 +30,89 @@ class BoardView(Observer):
                              height=self._board_side)
         self.canvas.pack(side=TOP)
         self.toolbar = Frame(root)
+        self.init_images()
+        self.init_toolbar_buttons()
+        self.btns = set([self.bold, self.italic, self.addLink, self.remLink])
+        font, size = get_preferences_from_file()
+        self.txt = Text(root, width=0, height=7, font=(font,size), wrap='word')
+        self.txt.pack(side=TOP, fill=BOTH, expand=True)
+        self.init_font_sizes(font, size)
+        self.hypermgr = HyperlinkManager(self.txt, self._gameMgr.load_game)
+        self.serializer = Serializer(self.txt, self.hypermgr)
+        self._setup_board(root)
+        starting_squares = [i for i in self._model.curr_state.valid_squares
+                            if self._model.curr_state.squares[i] &
+                            (BLACK | WHITE)]
+        self._draw_checkers(Command(add=starting_squares))
+        self.flip_view = False # black on bottom
+        self._label_board()
+        self.update_statusbar()
+
+    def _toggle_state(self, tags, btn):
+        # toggle the text state based on the first character in the
+        # selected range.
+        if self.txt.tag_ranges('sel'):
+            current_tags = self.txt.tag_names('sel.first')
+            for tag in tags:
+                already_tagged = any((x for x in current_tags if
+                                      x.startswith(tag)))
+                for t in current_tags:
+                    if t != 'sel':
+                        self.txt.tag_remove(t, 'sel.first', 'sel.last')
+                if not already_tagged:
+                    self.txt.tag_add(tag, 'sel.first', 'sel.last')
+                    btn.configure(relief='sunken')
+                    other_btns = self.btns.difference([btn])
+                    for b in other_btns:
+                        b.configure(relief='raised')
+                else:
+                    btn.configure(relief='raised')
+
+    def _on_bold(self):
+        self.bold_tooltip.hide()
+        self._toggle_state(['bold'], self.bold)
+
+    def _on_italic(self):
+        self.italic_tooltip.hide()
+        self._toggle_state('italic', self.italic, [self.bold])
+
+    def _on_bullets(self):
+        self.bullets_tooltip.hide()
+
+    def _on_numbers(self):
+        self.numbers_tooltip.hide()
+
+    def _on_undo(self):
+        self.undo_tooltip.hide()
+        self._gameMgr.parent.undo_single_move()
+
+    def _on_undo_all(self):
+        self.undoall_tooltip.hide()
+        self._gameMgr.parent.undo_all_moves()
+
+    def _on_redo(self):
+        self.redo_tooltip.hide()
+        self._gameMgr.parent.redo_single_move()
+
+    def _on_redo_all(self):
+        self.redoall_tooltip.hide()
+        self._gameMgr.parent.redo_all_moves()
+
+    def _on_add_link(self):
+        filename = askopenfilename(initialdir='training')
+        self._toggle_state(self.hypermgr.add(filename), self.addLink)
+
+    def _on_remove_link(self):
+        self._toggle_state(['hyper'], self.addLink)
+
+    def init_font_sizes(self, font, size):
+        self.txt.config(font=[font, size])
+        self._b_font = Font(self.root, (font, size, 'bold'))
+        self._i_font = Font(self.root, (font, size, 'italic'))
+        self.txt.tag_config('bold', font=self._b_font, wrap='word')
+        self.txt.tag_config('italic', font=self._i_font, wrap='word')
+
+    def init_images(self):
         self.bold_image = PhotoImage(file=BOLD_IMAGE)
         self.italic_image = PhotoImage(file=ITALIC_IMAGE)
         self.addlink_image = PhotoImage(file=ADDLINK_IMAGE)
@@ -39,6 +123,8 @@ class BoardView(Observer):
         self.undoall_image= PhotoImage(file=UNDOALL_IMAGE)
         self.redo_image = PhotoImage(file=REDO_IMAGE)
         self.redoall_image = PhotoImage(file=REDOALL_IMAGE)
+
+    def init_toolbar_buttons(self):
         self.bold = Button(name='bold', image=self.bold_image,
                            borderwidth=1, command=self._on_bold)
         self.bold.pack(in_=self.toolbar, side='left')
@@ -71,75 +157,18 @@ class BoardView(Observer):
         self.redoall = Button(name='redoall', image=self.redoall_image,
                               borderwidth=1, command=self._on_redo_all)
         self.redoall.pack(in_=self.toolbar, side='left')
-        self.btns = set([self.bold, self.italic, self.addLink, self.remLink])        
-        font, size = get_preferences_from_file()
-        self._r_font = Font(root, (font, size))
-        self._b_font = Font(root, (font, size, 'bold'))
-        self._i_font = Font(root, (font, size, 'italic'))
         self.toolbar.pack(side='top', fill='x')
-        self.txt = Text(root, width=0, height=7, font=(font,size), wrap='word')
-        self.txt.pack(side=TOP, fill=BOTH, expand=True)
-        self.txt.tag_config('bold', font=self._b_font, wrap='word')
-        self.txt.tag_config('italic', font=self._i_font, wrap='word')
-        self.hypermgr = HyperlinkManager(self.txt, self._gameMgr.load_game)
-        self.serializer = Serializer(self.txt, self.hypermgr)
-        self._setup_board(root)
-        starting_squares = [i for i in self._model.curr_state.valid_squares
-                            if self._model.curr_state.squares[i] &
-                            (BLACK | WHITE)]
-        self._draw_checkers(Command(add=starting_squares))
-        self.flip_view = False # black on bottom
-        self._label_board()
-        self.update_statusbar()
-    def _toggle_state(self, tags, btn):
-        # toggle the text state based on the first character in the
-        # selected range.
-        if self.txt.tag_ranges('sel'):
-            current_tags = self.txt.tag_names('sel.first')
-            for tag in tags:
-                already_tagged = any((x for x in current_tags if
-                                      x.startswith(tag)))
-                for t in current_tags:
-                    if t != 'sel':
-                        self.txt.tag_remove(t, 'sel.first', 'sel.last')
-                if not already_tagged:
-                    self.txt.tag_add(tag, 'sel.first', 'sel.last')
-                    btn.configure(relief='sunken')
-                    other_btns = self.btns.difference([btn])
-                    for b in other_btns:
-                        b.configure(relief='raised')
-                else:
-                    btn.configure(relief='raised')
+        self.bold_tooltip = ToolTip(self.bold, 'Bold')
+        self.italic_tooltip = ToolTip(self.italic, 'Italic')
+        self.bullets_tooltip = ToolTip(self.bullets, 'Bullet list')
+        self.numbers_tooltip = ToolTip(self.numbers, 'Numbered list')
+        self.addlink_tooltip = ToolTip(self.addLink, 'Add hyperlink')
+        self.remlink_tooltip = ToolTip(self.remLink, 'Remove hyperlink')
+        self.undoall_tooltip = ToolTip(self.undoall, 'First move')
+        self.undo_tooltip = ToolTip(self.undo, 'Back one move')
+        self.redo_tooltip = ToolTip(self.redo, 'Forward one move')
+        self.redoall_tooltip = ToolTip(self.redoall, 'Last move')
 
-    def _on_bold(self):
-        self._toggle_state(['bold'], self.bold)
-
-    def _on_italic(self):
-        self._toggle_state('italic', self.italic, [self.bold])
-
-    def _on_bullets(self):
-        pass
-
-    def _on_numbers(self):
-        pass
-
-    def _on_undo(self):
-        pass
-
-    def _on_undo_all(self):
-        pass
-
-    def _on_redo(self):
-        pass
-
-    def _on_redo_all(self):
-        pass
-    def _on_add_link(self):
-        filename = askopenfilename(initialdir='training')
-        self._toggle_state(self.hypermgr.add(filename), self.addLink)
-
-    def _on_remove_link(self):
-        self._toggle_state(['hyper'], self.addLink)
     def reset_view(self, model):
         self._model = model
         self.txt.delete('1.0', END)
