@@ -75,7 +75,7 @@ class TextTagEmitter(object):
         self.begin_list_item = '%d.%d' % (self.line, self.index)
 
     def leave_list_item(self, node):
-        content = '%d. %s\n' % (self.number, self.list_item)
+        content = '\t%d.\t%s\n' % (self.number, self.list_item)
         txtindex = '%d.%d' % (self.line, self.index)
         end_list_item = '%d.%d' % (self.line, self.index + len(content))
         self.txtWidget.insert(self.begin_list_item, content)
