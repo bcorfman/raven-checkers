@@ -1,5 +1,6 @@
 import os
 from Tkinter import *
+from Tkconstants import W, E
 import Tkinter as tk
 from multiprocessing import freeze_support
 from globalconst import *
@@ -14,18 +15,17 @@ class MainFrame(object, CenteredWindow):
         self.root = master
         self.root.withdraw()
         self.root.iconbitmap(RAVEN_ICON)
-        self.root.title("Raven "+VERSION)
-        self.frame = Frame(self.root)
-        self.frame.pack(fill=X)
+        self.root.title('Raven ' + VERSION)
         self.thinkTime = IntVar(value=5)
         self.manager = GameManager(root=self.root, parent=self)
-        gameMenu = self.create_game_menu()
-        optionsMenu = self.create_options_menu()
-        helpMenu = self.create_help_menu()
-        self.frame.tk_menuBar(gameMenu, helpMenu)
+        self.menubar = tk.Menu(self.root)
+        self.create_game_menu()
+        self.create_options_menu()
+        self.create_help_menu()
+        self.root.config(menu=self.menubar)
         CenteredWindow.__init__(self, self.root)
-        self.root.minsize(self.root.winfo_reqwidth(), self.root.winfo_reqheight())
-        self.root.maxsize(self.root.winfo_reqwidth(), self.root.winfo_reqheight())
+        #self.root.minsize(self.root.winfo_reqwidth(), self.root.winfo_reqheight())
+        #self.root.maxsize(self.root.winfo_reqwidth(), self.root.winfo_reqheight())
         self.root.deiconify()
 
     def set_title_bar_filename(self, filename):
@@ -64,73 +64,65 @@ class MainFrame(object, CenteredWindow):
         self.manager.view.update_statusbar()
 
     def create_game_menu(self):
-        gameBtn = Menubutton(self.frame, text='Game', underline=0)
-        gameBtn.pack(side=LEFT)
-        gameBtn.menu = Menu(gameBtn, tearoff=0)
-        gameBtn.menu.add_command(label='New game', underline=0,
-                                 command=self.manager.new_game)
-        gameBtn.menu.add_command(label='Open game ...', underline=0,
-                                 command=self.manager.open_game)
-        gameBtn.menu.add_separator()
-        gameBtn.menu.add_command(label='Save game', underline=0,
-                                 command=self.manager.save_game)
-        gameBtn.menu.add_command(label='Save game As ...', underline=10,
-                                 command=self.manager.save_game_as)
-        gameBtn.menu.add_separator()
-        gameBtn.menu.add_command(label='Set up Board ...', underline=7,
-                                 command=self.show_setup_board_dialog)
-        gameBtn.menu.add_command(label='Flip board', underline=0,
-                                 command=self.flip_board)
-        gameBtn.menu.add_separator()
-        gameBtn.menu.add_command(label='Exit', underline=0, command=gameBtn.quit)
-        gameBtn['menu'] = gameBtn.menu
-        return gameBtn
+        game = Menu(self.menubar, tearoff=0)
+        game.add_command(label='New game', underline=0,
+                         command=self.manager.new_game)
+        game.add_command(label='Open game ...', underline=0,
+                         command=self.manager.open_game)
+        game.add_separator()
+        game.add_command(label='Save game', underline=0,
+                         command=self.manager.save_game)
+        game.add_command(label='Save game As ...', underline=10,
+                         command=self.manager.save_game_as)
+        game.add_separator()
+        game.add_command(label='Set up Board ...', underline=7,
+                         command=self.show_setup_board_dialog)
+        game.add_command(label='Flip board', underline=0,
+                         command=self.flip_board)
+        game.add_separator()
+        game.add_command(label='Exit', underline=0,
+                         command=self.menubar.quit)
+        self.menubar.add_cascade(label='Game', menu=game)
 
     def create_options_menu(self):
-        optBtn = Menubutton(self.frame, text='Options', underline=0)
-        optBtn.pack(side=LEFT)
-        optBtn.menu = Menu(optBtn, tearoff=0)
-        thinkMenu = Menu(optBtn.menu, tearoff=0)
-        thinkMenu.add_radiobutton(label="1 second", underline=None,
-                                  command=self.set_think_time,
-                                  variable=self.thinkTime,
-                                  value=1)
-        thinkMenu.add_radiobutton(label="2 seconds", underline=None,
-                                  command=self.set_think_time,
-                                  variable=self.thinkTime,
-                                  value=2)
-        thinkMenu.add_radiobutton(label="5 seconds", underline=None,
-                                  command=self.set_think_time,
-                                  variable=self.thinkTime,
-                                  value=5)
-        thinkMenu.add_radiobutton(label="10 seconds", underline=None,
-                                  command=self.set_think_time,
-                                  variable=self.thinkTime,
-                                  value=10)
-        thinkMenu.add_radiobutton(label="30 seconds", underline=None,
-                                  command=self.set_think_time,
-                                  variable=self.thinkTime,
-                                  value=30)
-        thinkMenu.add_radiobutton(label="1 minute", underline=None,
-                                  command=self.set_think_time,
-                                  variable=self.thinkTime,
-                                  value=60)
-        optBtn.menu.add_cascade(label='CPU think time', underline=0,
-                                menu=thinkMenu)
-        optBtn.menu.add_separator()
-        optBtn.menu.add_command(label='Preferences ...', underline=0,
-                                command=self.show_preferences_dialog)
-        optBtn['menu'] = optBtn.menu
-        return optBtn
+        options = Menu(self.menubar, tearoff=0)
+        think = Menu(options, tearoff=0)
+        think.add_radiobutton(label="1 second", underline=None,
+                              command=self.set_think_time,
+                              variable=self.thinkTime,
+                              value=1)
+        think.add_radiobutton(label="2 seconds", underline=None,
+                              command=self.set_think_time,
+                              variable=self.thinkTime,
+                              value=2)
+        think.add_radiobutton(label="5 seconds", underline=None,
+                              command=self.set_think_time,
+                              variable=self.thinkTime,
+                              value=5)
+        think.add_radiobutton(label="10 seconds", underline=None,
+                              command=self.set_think_time,
+                              variable=self.thinkTime,
+                              value=10)
+        think.add_radiobutton(label="30 seconds", underline=None,
+                              command=self.set_think_time,
+                              variable=self.thinkTime,
+                              value=30)
+        think.add_radiobutton(label="1 minute", underline=None,
+                              command=self.set_think_time,
+                              variable=self.thinkTime,
+                              value=60)
+        options.add_cascade(label='CPU think time', underline=0,
+                            menu=think)
+        options.add_separator()
+        options.add_command(label='Preferences ...', underline=0,
+                            command=self.show_preferences_dialog)
+        self.menubar.add_cascade(label='Options', menu=options)
 
     def create_help_menu(self):
-        helpBtn = Menubutton(self.frame, text='Help', underline=0)
-        helpBtn.pack(side=LEFT)
-        helpBtn.menu = Menu(helpBtn, tearoff=0)
-        helpBtn.menu.add_command(label='About Raven ...', underline=0,
-                                 command=self.show_about_box)
-        helpBtn['menu'] = helpBtn.menu
-        return helpBtn
+        helpmenu = Menu(self.menubar, tearoff=0)
+        helpmenu.add_command(label='About Raven ...', underline=0,
+                             command=self.show_about_box)
+        self.menubar.add_cascade(label='Help', menu=helpmenu)
 
     def stop_processes(self):
         # stop any controller processes from making moves
@@ -150,7 +142,7 @@ class MainFrame(object, CenteredWindow):
         font, size = get_preferences_from_file()
         dlg = PreferencesDialog(self.root, 'Preferences', font, size)
         if dlg.result:
-            self.manager.view.set_font_sizes(dlg.font, dlg.size)
+            self.manager.view.init_font_sizes(dlg.font, dlg.size)
             write_preferences_to_file(dlg.font, dlg.size)
 
     def set_think_time(self):
