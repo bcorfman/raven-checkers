@@ -1,4 +1,5 @@
 from Tkinter import *
+from Tkconstants import W, E, N, S
 from tkFileDialog import askopenfilename, asksaveasfilename
 from tkMessageBox import showerror
 from globalconst import *
@@ -16,7 +17,7 @@ class GameManager(object):
         self.parent = props['parent']
         statusbar = Label(self._root, relief=SUNKEN, font=('Helvetica',7),
                           anchor=NW)
-        statusbar.pack(side=BOTTOM, fill=X)
+        statusbar.pack(side='bottom', fill='x')
         self.view = BoardView(self._root, model=self.model, parent=self,
                               statusbar=statusbar)
         self.player_color = BLACK
