@@ -1,8 +1,9 @@
 from Tkinter import *
-from Tkconstants import END
+from Tkconstants import END, N, S, E, W
 from command import *
 from observer import *
 from globalconst import *
+from autoscrollbar import AutoScrollbar
 from textserialize import Serializer
 from hyperlinkmgr import HyperlinkManager
 from tkFileDialog import askopenfilename
@@ -27,16 +28,30 @@ class BoardView(Observer):
         self._boardpos = create_position_map()
         self._gridpos = create_grid_map()
         self.canvas = Canvas(root, width=self._board_side,
-                             height=self._board_side)
-        self.canvas.pack(side=TOP)
+                             height=self._board_side, borderwidth=0,
+                             highlightthickness=0)
+        right_panel = Frame(root, borderwidth=1, relief='sunken')
+
         self.toolbar = Frame(root)
+        font, size = get_preferences_from_file()
+        self.scrollbar = AutoScrollbar(root, container=right_panel,
+                                       row=1, column=1, sticky='ns')
+        self.txt = Text(root, width=40, height=1, borderwidth=0,
+                        font=(font,size), wrap='word',
+                        yscrollcommand=self.scrollbar.set)
+        self.scrollbar.config(command=self.txt.yview)
+        self.canvas.pack(side='left', fill='both', expand=False)
+        self.toolbar.grid(in_=right_panel, row=0, column=0, sticky='ew')
+        right_panel.pack(side='right', fill='both', expand=True)
+        self.txt.grid(in_=right_panel, row=1, column=0, sticky='nsew')
+
+        right_panel.grid_rowconfigure(1, weight=1)
+        right_panel.grid_columnconfigure(0, weight=1)
         self.init_images()
         self.init_toolbar_buttons()
         self.btns = set([self.bold, self.italic, self.addLink, self.remLink])
-        font, size = get_preferences_from_file()
-        self.txt = Text(root, width=0, height=7, font=(font,size), wrap='word')
-        self.txt.pack(side=TOP, fill=BOTH, expand=True)
         self.init_font_sizes(font, size)
+        self.init_tags()
         self.hypermgr = HyperlinkManager(self.txt, self._gameMgr.load_game)
         self.serializer = Serializer(self.txt, self.hypermgr)
         self._setup_board(root)
@@ -107,11 +122,17 @@ class BoardView(Observer):
 
     def init_font_sizes(self, font, size):
         self.txt.config(font=[font, size])
+        normal = Font(self.root, (font, size))
         self._b_font = Font(self.root, (font, size, 'bold'))
         self._i_font = Font(self.root, (font, size, 'italic'))
+
+    def init_tags(self):
         self.txt.tag_config('bold', font=self._b_font, wrap='word')
         self.txt.tag_config('italic', font=self._i_font, wrap='word')
-
+        self.txt.tag_config('number', tabs='.5c center 1c left',
+                            lmargin1='0', lmargin2='1c')
+        self.txt.tag_config('bullet', tabs='.5c center 1c left',
+                            lmargin1='0', lmargin2='1c')
     def init_images(self):
         self.bold_image = PhotoImage(file=BOLD_IMAGE)
         self.italic_image = PhotoImage(file=ITALIC_IMAGE)
@@ -123,41 +144,41 @@ class BoardView(Observer):
         self.undoall_image= PhotoImage(file=UNDOALL_IMAGE)
         self.redo_image = PhotoImage(file=REDO_IMAGE)
         self.redoall_image = PhotoImage(file=REDOALL_IMAGE)
+        self.bullet = PhotoImage(file=BULLET_IMAGE)
 
     def init_toolbar_buttons(self):
         self.bold = Button(name='bold', image=self.bold_image,
                            borderwidth=1, command=self._on_bold)
-        self.bold.pack(in_=self.toolbar, side='left')
+        self.bold.grid(in_=self.toolbar, row=0, column=0, sticky=W)
         self.italic = Button(name='italic', image=self.italic_image,
                              borderwidth=1, command=self._on_italic)
-        self.italic.pack(in_=self.toolbar, side='left')
+        self.italic.grid(in_=self.toolbar, row=0, column=1, sticky=W)
         self.bullets = Button(name='bullets', image=self.bullets_image,
                              borderwidth=1, command=self._on_bullets)
-        self.bullets.pack(in_=self.toolbar, side='left')
+        self.bullets.grid(in_=self.toolbar, row=0, column=2, sticky=W)
         self.numbers = Button(name='numbers', image=self.numbers_image,
                              borderwidth=1, command=self._on_numbers)
-        self.numbers.pack(in_=self.toolbar, side='left')
+        self.numbers.grid(in_=self.toolbar, row=0, column=3, sticky=W)
         self.addLink = Button(name='addlink', image=self.addlink_image,
                               borderwidth=1, command=self._on_add_link)
-        self.addLink.pack(in_=self.toolbar, side='left')
+        self.addLink.grid(in_=self.toolbar, row=0, column=4, sticky=W)
         self.remLink = Button(name='remlink', image=self.remlink_image,
                               borderwidth=1, command=self._on_remove_link)
-        self.remLink.pack(in_=self.toolbar, side='left')
+        self.remLink.grid(in_=self.toolbar, row=0, column=5, sticky=W)
         self.frame = Frame(width=0)
-        self.frame.pack(in_=self.toolbar, side='left', padx=5)
+        self.frame.grid(in_=self.toolbar, padx=5, row=0, column=6, sticky=W)
         self.undoall = Button(name='undoall', image=self.undoall_image,
                               borderwidth=1, command=self._on_undo_all)
-        self.undoall.pack(in_=self.toolbar, side='left')
+        self.undoall.grid(in_=self.toolbar, row=0, column=7, sticky=W)
         self.undo = Button(name='undo', image=self.undo_image,
                            borderwidth=1, command=self._on_undo)
-        self.undo.pack(in_=self.toolbar, side='left')
+        self.undo.grid(in_=self.toolbar, row=0, column=8, sticky=W)
         self.redo = Button(name='redo', image=self.redo_image,
                            borderwidth=1, command=self._on_redo)
-        self.redo.pack(in_=self.toolbar, side='left')
+        self.redo.grid(in_=self.toolbar, row=0, column=9, sticky=W)
         self.redoall = Button(name='redoall', image=self.redoall_image,
                               borderwidth=1, command=self._on_redo_all)
-        self.redoall.pack(in_=self.toolbar, side='left')
-        self.toolbar.pack(side='top', fill='x')
+        self.redoall.grid(in_=self.toolbar, row=0, column=10, sticky=W)
         self.bold_tooltip = ToolTip(self.bold, 'Bold')
         self.italic_tooltip = ToolTip(self.italic, 'Italic')
         self.bullets_tooltip = ToolTip(self.bullets, 'Bullet list')
