@@ -26,7 +26,7 @@ MAX = 1
 
 IMAGE_DIR = 'images' + os.sep
 RAVEN_ICON = IMAGE_DIR + '_raven.ico'
-BULLET_IMAGE = IMAGE_DIR + 'bullet_black.gif'
+BULLET_IMAGE = IMAGE_DIR + 'bullet_green.gif'
 CROWN_IMAGE = IMAGE_DIR + 'crown.gif'
 BOLD_IMAGE = IMAGE_DIR + 'text_bold.gif'
 ITALIC_IMAGE = IMAGE_DIR + 'text_italic.gif'
