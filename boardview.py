@@ -44,7 +44,6 @@ class BoardView(Observer):
         self.toolbar.grid(in_=right_panel, row=0, column=0, sticky='ew')
         right_panel.pack(side='right', fill='both', expand=True)
         self.txt.grid(in_=right_panel, row=1, column=0, sticky='nsew')
-
         right_panel.grid_rowconfigure(1, weight=1)
         right_panel.grid_columnconfigure(0, weight=1)
         self.init_images()
@@ -144,7 +143,6 @@ class BoardView(Observer):
         self.undoall_image= PhotoImage(file=UNDOALL_IMAGE)
         self.redo_image = PhotoImage(file=REDO_IMAGE)
         self.redoall_image = PhotoImage(file=REDOALL_IMAGE)
-        self.bullet = PhotoImage(file=BULLET_IMAGE)
 
     def init_toolbar_buttons(self):
         self.bold = Button(name='bold', image=self.bold_image,
