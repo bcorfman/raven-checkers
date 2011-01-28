@@ -165,13 +165,13 @@ class Serializer(object):
         self.hyperMgr = hyperMgr
         self.bullet_image = PhotoImage(file=BULLET_IMAGE)
         self.number = 0
+        self.bullet = False
         self.filename = ''
         self.link_start = False
 
     def dump(self, index1='1.0', index2=END):
         # outputs contents from Text widget in Creole format.
         creole = ''
-        #try:
         for key, value, index in self.txt.dump(index1, index2):
             if key == 'tagon':
                 if value == 'bold':
@@ -180,6 +180,7 @@ class Serializer(object):
                     creole += '//'
                 elif value == 'bullet':
                     creole += '*'
+                    self.bullet = True
                 elif value.startswith('hyper-'):
                     self.filename = self.hyperMgr.filenames[value]
                     self.link_start = True
@@ -200,11 +201,14 @@ class Serializer(object):
                         value = value.replace(numstr, '', 1)
                     elif value != '\n':
                         self.number = 0
-                if self.link_start:
+                elif self.bullet:
+                    value = value.replace('\t', ' ')
+                    if value != '\n' and value != ' ':
+                        self.bullet = False
+                elif self.link_start:
                     value = '[[%s|%s' % (self.filename, value)
                     self.link_start = False
                 creole += value
-        #finally:
         return creole
 
     def restore(self, creole):
