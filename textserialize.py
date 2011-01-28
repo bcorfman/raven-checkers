@@ -1,4 +1,6 @@
+from Tkinter import PhotoImage
 from Tkconstants import *
+from globalconst import BULLET_IMAGE
 from creoleparser import Parser
 from rules import LinkRules
 
@@ -6,7 +8,8 @@ class TextTagEmitter(object):
     """
     Generate tagged output compatible with the Tkinter Text widget
     """
-    def __init__(self, root, txtWidget, hyperMgr, link_rules=None):
+    def __init__(self, root, txtWidget, hyperMgr, bulletImage,
+                 link_rules=None):
         self.root = root
         self.link_rules = link_rules or LinkRules()
         self.txtWidget = txtWidget
@@ -14,6 +17,8 @@ class TextTagEmitter(object):
         self.line = 1
         self.index = 0
         self.number = 1
+        self.bullet = False
+        self.bullet_image = bulletImage
         self.begin_italic = ''
         self.begin_bold = ''
         self.begin_list_item = ''
@@ -57,10 +62,13 @@ class TextTagEmitter(object):
         self.number = 1
 
     def visit_bullet_list(self, node):
-        raise NotImplementedError
+        self.bullet = True
 
     def leave_bullet_list(self, node):
-        raise NotImplementedError
+        txtindex = '%d.%d' % (self.line, self.index)
+        self.txtWidget.insert(txtindex, '\n')
+        self.line += 1
+        self.bullet = False
 
     def visit_number_list(self, node):
         self.number = 1
@@ -75,14 +83,24 @@ class TextTagEmitter(object):
         self.begin_list_item = '%d.%d' % (self.line, self.index)
 
     def leave_list_item(self, node):
-        content = '\t%d.\t%s\n' % (self.number, self.list_item)
         txtindex = '%d.%d' % (self.line, self.index)
-        end_list_item = '%d.%d' % (self.line, self.index + len(content))
-        self.txtWidget.insert(self.begin_list_item, content)
-        self.txtWidget.tag_add('number', self.begin_list_item, end_list_item)
+        if self.bullet:
+            self.txtWidget.insert(self.begin_list_item, '\t')
+            next = '%d.%d' % (self.line, self.index+1)
+            self.txtWidget.image_create(next, image=self.bullet_image)
+            next = '%d.%d' % (self.line, self.index+2)
+            content = '\t%s\n' % self.list_item
+            self.txtWidget.insert(next, content)
+            end_list_item = '%d.%d' % (self.line, self.index + len(content)+2)
+            self.txtWidget.tag_add('bullet', self.begin_list_item, end_list_item)
+        elif self.number:
+            content = '\t%d.\t%s\n' % (self.number, self.list_item)
+            end_list_item = '%d.%d' % (self.line, self.index + len(content))
+            self.txtWidget.insert(self.begin_list_item, content)
+            self.txtWidget.tag_add('number', self.begin_list_item, end_list_item)
+            self.number += 1
         self.begin_list_item = ''
         self.list_item = ''
-        self.number += 1
         self.line += 1
         self.index = 0
 
@@ -145,6 +163,7 @@ class Serializer(object):
     def __init__(self, txtWidget, hyperMgr):
         self.txt = txtWidget
         self.hyperMgr = hyperMgr
+        self.bullet_image = PhotoImage(file=BULLET_IMAGE)
         self.number = 0
         self.filename = ''
         self.link_start = False
@@ -191,4 +210,5 @@ class Serializer(object):
     def restore(self, creole):
         self.hyperMgr.reset()
         document = Parser(unicode(creole, 'utf-8', 'ignore')).parse()
-        return TextTagEmitter(document, self.txt, self.hyperMgr).emit()
+        return TextTagEmitter(document, self.txt, self.hyperMgr,
+                              self.bullet_image).emit()
