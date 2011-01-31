@@ -277,6 +277,13 @@ def write_preferences_to_file(font, size):
     with open('raven.ini', 'wb') as configfile:
         config.write(configfile)
 
+def parse_index(idx):
+    line, _, char = idx.partition('.')
+    return int(line), int(char)
+
+def to_string(line, char):
+    return "%d.%d" % (line, char)
+
 grid = create_grid_map()
 keymap = create_key_map()
 squaremap = flip_dict(keymap)
