@@ -48,9 +48,13 @@ class BoardView(Observer):
         right_panel.grid_columnconfigure(0, weight=1)
         self.init_images()
         self.init_toolbar_buttons()
-        self.btns = set([self.bold, self.italic, self.addLink, self.remLink])
         self.init_font_sizes(font, size)
         self.init_tags()
+        self._register_event_handlers()
+        self.btnset = set([self.bold, self.italic, self.addLink, self.remLink])
+        self.btnmap = {'bold': self.bold, 'italic': self.italic,
+                       'bullet': self.bullets, 'number': self.numbers,
+                       'hyper': self.addLink}
         self.hypermgr = HyperlinkManager(self.txt, self._gameMgr.load_game)
         self.serializer = Serializer(self.txt, self.hypermgr)
         self._setup_board(root)
@@ -67,20 +71,24 @@ class BoardView(Observer):
         # selected range.
         if self.txt.tag_ranges('sel'):
             current_tags = self.txt.tag_names('sel.first')
-            for tag in tags:
-                already_tagged = any((x for x in current_tags if
-                                      x.startswith(tag)))
-                for t in current_tags:
-                    if t != 'sel':
-                        self.txt.tag_remove(t, 'sel.first', 'sel.last')
-                if not already_tagged:
-                    self.txt.tag_add(tag, 'sel.first', 'sel.last')
-                    btn.configure(relief='sunken')
-                    other_btns = self.btns.difference([btn])
-                    for b in other_btns:
-                        b.configure(relief='raised')
-                else:
-                    btn.configure(relief='raised')
+        elif self.txt.tag_ranges('insert'):
+            current_tags = self.txt.tag_names('insert')
+        else:
+            return
+        for tag in tags:
+            already_tagged = any((x for x in current_tags if
+                                  x.startswith(tag)))
+            for t in current_tags:
+                if t != 'sel':
+                    self.txt.tag_remove(t, 'sel.first', 'sel.last')
+            if not already_tagged:
+                self.txt.tag_add(tag, 'sel.first', 'sel.last')
+                btn.configure(relief='sunken')
+                other_btns = self.btnset.difference([btn])
+                for b in other_btns:
+                    b.configure(relief='raised')
+            else:
+                btn.configure(relief='raised')
 
     def _on_bold(self):
         self.bold_tooltip.hide()
@@ -88,10 +96,33 @@ class BoardView(Observer):
 
     def _on_italic(self):
         self.italic_tooltip.hide()
-        self._toggle_state('italic', self.italic, [self.bold])
+        self._toggle_state(['italic'], self.italic)
 
     def _on_bullets(self):
         self.bullets_tooltip.hide()
+        line, char = parse_index(self.txt.index(INSERT))
+        current_tags = self.txt.tag_names('insert')
+        if 'bullet' not in current_tags:
+            start = '%d.0' % line
+            end = '%d.end' % line
+            self.txt.insert(start, '\t')
+            next = '%d.%d' % (line, 1)
+            self.txt.image_create(start, image=self.bullet_image)
+            next = '%d.%d' % (line, 2)
+            self.txt.insert(start, '\t')
+            self.txt.tag_add('bullet', start, end)
+            self.bullets.configure(relief='sunken')
+            self.numbers.configure(relief='raised')
+        else:
+            start = '%d.0' % line
+            end = '%d.end' % line
+            self.txt.tag_remove('bullet', start, end)
+            start = '%d.0' % line
+            end = '%d.1' % line
+            self.txt.delete(start, end)
+            start = '%d.2' % line
+            end = '%d.3' % line
+            self.txt.delete(start, end)
 
     def _on_numbers(self):
         self.numbers_tooltip.hide()
@@ -117,7 +148,49 @@ class BoardView(Observer):
         self._toggle_state(self.hypermgr.add(filename), self.addLink)
 
     def _on_remove_link(self):
-        self._toggle_state(['hyper'], self.addLink)
+        if self.txt.tag_ranges('sel'):
+            current_tags = self.txt.tag_names('sel.first')
+            if 'hyper' in current_tags:
+                self._toggle_state(['hyper'], self.addLink)
+
+    def _register_event_handlers(self):
+        self.txt.event_add('<<KeyRel>>', '<KeyRelease-Home>', '<KeyRelease-End>',
+                           '<KeyRelease-Left>', '<KeyRelease-Right>',
+                           '<KeyRelease-Up>', '<KeyRelease-Down>',
+                           '<KeyRelease-Delete>', '<KeyRelease-BackSpace>')
+        Widget.bind(self.txt, '<<Selection>>', self._sel_changed)
+        Widget.bind(self.txt, '<ButtonRelease-1>', self._sel_changed)
+        Widget.bind(self.txt, '<<KeyRel>>', self._key_release)
+
+    def _key_release(self, event):
+        line, char = parse_index(self.txt.index(INSERT))
+        self.update_button_state(to_string(line, char))
+
+    def _sel_changed(self, event):
+        self.update_button_state(self.txt.index(INSERT))
+
+    def update_button_state(self, index):
+        if self.txt.tag_ranges('sel'):
+            current_tags = self.txt.tag_names('sel.first')
+            #for tag in current_tags:
+            #    if
+            #    if not already_tagged:
+            #        self.txt.tag_add(tag, 'sel.first', 'sel.last')
+            #        btn.configure(relief='sunken')
+            #        other_btns = self.btns.difference([btn])
+            #        for b in other_btns:
+            #            b.configure(relief='raised')
+            #    else:
+            #        btn.configure(relief='raised')
+        else:
+            current_tags = self.txt.tag_names(index)
+            for tag in current_tags:
+                print tag
+            for btn in self.btnmap.itervalues():
+                btn.configure(relief='raised')
+            for tag in current_tags:
+                if tag in self.btnmap.keys():
+                    self.btnmap[tag].configure(relief='sunken')
 
     def init_font_sizes(self, font, size):
         self.txt.config(font=[font, size])
@@ -132,12 +205,14 @@ class BoardView(Observer):
                             lmargin1='0', lmargin2='1c')
         self.txt.tag_config('bullet', tabs='.5c center 1c left',
                             lmargin1='0', lmargin2='1c')
+
     def init_images(self):
         self.bold_image = PhotoImage(file=BOLD_IMAGE)
         self.italic_image = PhotoImage(file=ITALIC_IMAGE)
         self.addlink_image = PhotoImage(file=ADDLINK_IMAGE)
         self.remlink_image = PhotoImage(file=REMLINK_IMAGE)
         self.bullets_image = PhotoImage(file=BULLETS_IMAGE)
+        self.bullet_image = PhotoImage(file=BULLET_IMAGE)
         self.numbers_image = PhotoImage(file=NUMBERS_IMAGE)
         self.undo_image = PhotoImage(file=UNDO_IMAGE)
         self.undoall_image= PhotoImage(file=UNDOALL_IMAGE)
