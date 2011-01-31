@@ -131,6 +131,7 @@ class MainFrame(object, CenteredWindow):
         self.manager._controller2.stop_process()
 
     def show_about_box(self):
+        self.stop_processes()
         AboutBox(self.root, 'About Raven')
 
     def show_setup_board_dialog(self):
