@@ -100,8 +100,9 @@ class BoardView(Observer):
 
     def _on_bullets(self):
         self.bullets_tooltip.hide()
+        # TODO: add check for tag_ranges as well as single line
         line, char = parse_index(self.txt.index(INSERT))
-        current_tags = self.txt.tag_names('insert')
+        current_tags = self.txt.tag_names('%d.0' % line)
         if 'bullet' not in current_tags:
             start = '%d.0' % line
             end = '%d.end' % line
@@ -118,14 +119,34 @@ class BoardView(Observer):
             end = '%d.end' % line
             self.txt.tag_remove('bullet', start, end)
             start = '%d.0' % line
-            end = '%d.1' % line
-            self.txt.delete(start, end)
-            start = '%d.2' % line
             end = '%d.3' % line
             self.txt.delete(start, end)
+            self.bullets.configure(relief='raised')
 
     def _on_numbers(self):
         self.numbers_tooltip.hide()
+        # TODO: change to handle numbers, not bullets
+        line, char = parse_index(self.txt.index(INSERT))
+        current_tags = self.txt.tag_names('%d.0' % line)
+        if 'bullet' not in current_tags:
+            start = '%d.0' % line
+            end = '%d.end' % line
+            self.txt.insert(start, '\t')
+            next = '%d.%d' % (line, 1)
+            self.txt.image_create(start, image=self.bullet_image)
+            next = '%d.%d' % (line, 2)
+            self.txt.insert(start, '\t')
+            self.txt.tag_add('bullet', start, end)
+            self.numbers.configure(relief='sunken')
+            self.bullets.configure(relief='raised')
+        else:
+            start = '%d.0' % line
+            end = '%d.end' % line
+            self.txt.tag_remove('bullet', start, end)
+            start = '%d.0' % line
+            end = '%d.3' % line
+            self.txt.delete(start, end)
+            self.numbers.configure(relief='raised')
 
     def _on_undo(self):
         self.undo_tooltip.hide()
