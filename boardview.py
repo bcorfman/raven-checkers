@@ -171,6 +171,9 @@ class BoardView(Observer):
                 start = '%d.0' % line
                 end = '%d.end' % line
                 self.txt.tag_remove('number', start, end)
+                # Regex to match a tab, followed by any number of digits,
+                # followed by a period, all at the start of a line.
+                # The cnt variable stores the number of characters matched.
                 pos = self.txt.search('^\t\d+\.\t', start, end, None, None,
                                       None, True, None, cnt)
                 if pos:
