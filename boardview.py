@@ -99,54 +99,84 @@ class BoardView(Observer):
         self._toggle_state(['italic'], self.italic)
 
     def _on_bullets(self):
-        self.bullets_tooltip.hide()
-        # TODO: add check for tag_ranges as well as single line
-        line, char = parse_index(self.txt.index(INSERT))
-        current_tags = self.txt.tag_names('%d.0' % line)
-        if 'bullet' not in current_tags:
-            start = '%d.0' % line
-            end = '%d.end' % line
-            self.txt.insert(start, '\t')
-            next = '%d.%d' % (line, 1)
-            self.txt.image_create(start, image=self.bullet_image)
-            next = '%d.%d' % (line, 2)
-            self.txt.insert(start, '\t')
-            self.txt.tag_add('bullet', start, end)
-            self.bullets.configure(relief='sunken')
-            self.numbers.configure(relief='raised')
-        else:
-            start = '%d.0' % line
-            end = '%d.end' % line
-            self.txt.tag_remove('bullet', start, end)
-            start = '%d.0' % line
-            end = '%d.3' % line
-            self.txt.delete(start, end)
-            self.bullets.configure(relief='raised')
+        self._process_button_click('bullet', self.bullets_tooltip,
+                                   self._add_bullets_if_needed,
+                                   self._remove_bullets_if_needed)
 
     def _on_numbers(self):
-        self.numbers_tooltip.hide()
-        # TODO: change to handle numbers, not bullets
-        line, char = parse_index(self.txt.index(INSERT))
-        current_tags = self.txt.tag_names('%d.0' % line)
-        if 'bullet' not in current_tags:
-            start = '%d.0' % line
-            end = '%d.end' % line
-            self.txt.insert(start, '\t')
-            next = '%d.%d' % (line, 1)
-            self.txt.image_create(start, image=self.bullet_image)
-            next = '%d.%d' % (line, 2)
-            self.txt.insert(start, '\t')
-            self.txt.tag_add('bullet', start, end)
-            self.numbers.configure(relief='sunken')
-            self.bullets.configure(relief='raised')
+        self._process_button_click('number', self.numbers_tooltip,
+                                   self._add_numbers_if_needed,
+                                   self._remove_numbers_if_needed)
+
+    def _process_button_click(self, tag, tooltip, add_func, remove_func):
+        tooltip.hide()
+        if self.txt.tag_ranges('sel'):
+            startline, _ = parse_index(self.txt.index('sel.first'))
+            endline, _ = parse_index(self.txt.index('sel.last'))
         else:
-            start = '%d.0' % line
-            end = '%d.end' % line
-            self.txt.tag_remove('bullet', start, end)
-            start = '%d.0' % line
-            end = '%d.3' % line
-            self.txt.delete(start, end)
-            self.numbers.configure(relief='raised')
+            startline, _ = parse_index(self.txt.index(INSERT))
+            endline = startline
+        current_tags = self.txt.tag_names('%d.0' % startline)
+        if tag not in current_tags:
+            add_func(startline, endline)
+        else:
+            remove_func(startline, endline)
+
+    def _add_bullets_if_needed(self, startline, endline):
+        for line in range(startline, endline+1):
+            current_tags = self.txt.tag_names('%d.0' % line)
+            if 'bullet' not in current_tags:
+                start = '%d.0' % line
+                end = '%d.end' % line
+                self.txt.insert(start, '\t')
+                self.txt.image_create(start, image=self.bullet_image)
+                self.txt.insert(start, '\t')
+                self.txt.tag_add('bullet', start, end)
+                self.bullets.configure(relief='sunken')
+                self.numbers.configure(relief='raised')
+
+    def _remove_bullets_if_needed(self, startline, endline):
+        for line in range(startline, endline+1):
+            current_tags = self.txt.tag_names('%d.0' % line)
+            if 'bullet' in current_tags:
+                start = '%d.0' % line
+                end = '%d.end' % line
+                self.txt.tag_remove('bullet', start, end)
+                start = '%d.0' % line
+                end = '%d.3' % line
+                self.txt.delete(start, end)
+                self.bullets.configure(relief='raised')
+
+    def _add_numbers_if_needed(self, startline, endline):
+        num = 1
+        for line in range(startline, endline+1):
+            current_tags = self.txt.tag_names('%d.0' % line)
+            if 'number' not in current_tags:
+                start = '%d.0' % line
+                end = '%d.end' % line
+                self.txt.insert(start, '\t')
+                numstr = '%d.' % num
+                self.txt.insert(start, numstr)
+                self.txt.insert(start, '\t')
+                self.txt.tag_add('number', start, end)
+                num += 1
+        self.numbers.configure(relief='sunken')
+        self.bullets.configure(relief='raised')
+
+    def _remove_numbers_if_needed(self, startline, endline):
+        cnt = IntVar()
+        for line in range(startline, endline+1):
+            current_tags = self.txt.tag_names('%d.0' % line)
+            if 'number' in current_tags:
+                start = '%d.0' % line
+                end = '%d.end' % line
+                self.txt.tag_remove('number', start, end)
+                pos = self.txt.search('^\t\d+\.\t', start, end, None, None,
+                                      None, True, None, cnt)
+                if pos:
+                    end = '%d.%d' % (line, cnt.get())
+                    self.txt.delete(start, end)
+                self.bullets.configure(relief='raised')
 
     def _on_undo(self):
         self.undo_tooltip.hide()
@@ -193,25 +223,13 @@ class BoardView(Observer):
     def update_button_state(self, index):
         if self.txt.tag_ranges('sel'):
             current_tags = self.txt.tag_names('sel.first')
-            #for tag in current_tags:
-            #    if
-            #    if not already_tagged:
-            #        self.txt.tag_add(tag, 'sel.first', 'sel.last')
-            #        btn.configure(relief='sunken')
-            #        other_btns = self.btns.difference([btn])
-            #        for b in other_btns:
-            #            b.configure(relief='raised')
-            #    else:
-            #        btn.configure(relief='raised')
         else:
             current_tags = self.txt.tag_names(index)
-            for tag in current_tags:
-                print tag
-            for btn in self.btnmap.itervalues():
-                btn.configure(relief='raised')
-            for tag in current_tags:
-                if tag in self.btnmap.keys():
-                    self.btnmap[tag].configure(relief='sunken')
+        for btn in self.btnmap.itervalues():
+            btn.configure(relief='raised')
+        for tag in current_tags:
+            if tag in self.btnmap.keys():
+                self.btnmap[tag].configure(relief='sunken')
 
     def init_font_sizes(self, font, size):
         self.txt.config(font=[font, size])
