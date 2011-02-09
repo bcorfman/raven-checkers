@@ -89,7 +89,7 @@ class TextTagEmitter(object):
             next = '%d.%d' % (self.line, self.index+1)
             self.txtWidget.image_create(next, image=self.bullet_image)
             next = '%d.%d' % (self.line, self.index+2)
-            content = '\t%s\n' % self.list_item
+            content = '\t%s\t\n' % self.list_item
             self.txtWidget.insert(next, content)
             end_list_item = '%d.%d' % (self.line, self.index + len(content)+2)
             self.txtWidget.tag_add('bullet', self.begin_list_item, end_list_item)
@@ -168,6 +168,7 @@ class Serializer(object):
         self.bullet = False
         self.filename = ''
         self.link_start = False
+        self.first_tab = True
 
     def dump(self, index1='1.0', index2=END):
         # outputs contents from Text widget in Creole format.
@@ -196,15 +197,20 @@ class Serializer(object):
                     creole += ']]'
             elif key == 'text':
                 if self.number:
-                    numstr = '%d.' % self.number
+                    numstr = '\t%d.\t' % self.number
                     if value.startswith(numstr):
-                        value = value.replace(numstr, '', 1)
+                        value = value.replace(numstr, ' ', 1)
                     elif value != '\n':
                         self.number = 0
                 elif self.bullet:
-                    value = value.replace('\t', ' ')
+                    if self.first_tab:
+                        value = value.replace('\t', ' ')
+                        self.first_tab = False
+                    else:
+                        value = value.replace('\t', '')
                     if value != '\n' and value != ' ':
                         self.bullet = False
+                        self.first_tab = True
                 elif self.link_start:
                     value = '[[%s|%s' % (self.filename, value)
                     self.link_start = False
