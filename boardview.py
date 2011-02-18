@@ -132,8 +132,8 @@ class BoardView(Observer):
                 self.txt.image_create(start, image=self.bullet_image)
                 self.txt.insert(start, '\t')
                 self.txt.tag_add('bullet', start, end)
-                self.bullets.configure(relief='sunken')
-                self.numbers.configure(relief='raised')
+        self.bullets.configure(relief='sunken')
+        self.numbers.configure(relief='raised')
 
     def _remove_bullets_if_needed(self, startline, endline):
         for line in range(startline, endline+1):
@@ -145,7 +145,7 @@ class BoardView(Observer):
                 start = '%d.0' % line
                 end = '%d.3' % line
                 self.txt.delete(start, end)
-                self.bullets.configure(relief='raised')
+        self.bullets.configure(relief='raised')
 
     def _add_numbers_if_needed(self, startline, endline):
         num = 1
@@ -179,7 +179,7 @@ class BoardView(Observer):
                 if pos:
                     end = '%d.%d' % (line, cnt.get())
                     self.txt.delete(start, end)
-                self.bullets.configure(relief='raised')
+        self.numbers.configure(relief='raised')
 
     def _on_undo(self):
         self.undo_tooltip.hide()
@@ -236,7 +236,6 @@ class BoardView(Observer):
 
     def init_font_sizes(self, font, size):
         self.txt.config(font=[font, size])
-        normal = Font(self.root, (font, size))
         self._b_font = Font(self.root, (font, size, 'bold'))
         self._i_font = Font(self.root, (font, size, 'italic'))
 
