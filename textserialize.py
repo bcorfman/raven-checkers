@@ -23,20 +23,20 @@ class TextTagEmitter(object):
         self.begin_bold = ''
         self.begin_list_item = ''
         self.list_item = ''
+        self.begin_link = ''
 
     # visit/leave methods for emitting nodes of the document:
     def visit_document(self, node):
         pass
 
     def leave_document(self, node):
-        # leave_paragraph always leaves two extra carriage returns at the
-        # end of the text. This deletes them.
-        txtindex = '%d.%d' % (self.line-1, self.index)
-        self.txtWidget.delete(txtindex, END)
+        pass
 
     def visit_text(self, node):
         if self.begin_list_item:
             self.list_item = node.content
+        elif self.begin_link:
+            pass
         else:
             txtindex = '%d.%d' % (self.line, self.index)
             self.txtWidget.insert(txtindex, node.content)
@@ -77,13 +77,11 @@ class TextTagEmitter(object):
         txtindex = '%d.%d' % (self.line, self.index)
         self.txtWidget.insert(txtindex, '\n')
         self.line += 1
-        self.number = 0
 
     def visit_list_item(self, node):
         self.begin_list_item = '%d.%d' % (self.line, self.index)
 
     def leave_list_item(self, node):
-        txtindex = '%d.%d' % (self.line, self.index)
         if self.bullet:
             self.txtWidget.insert(self.begin_list_item, '\t')
             next = '%d.%d' % (self.line, self.index+1)
@@ -125,6 +123,7 @@ class TextTagEmitter(object):
         end_link = '%d.%d' % (self.line, self.index)
         self.txtWidget.insert(self.begin_link, node.children[0].content,
                               self.hyperMgr.add(str(node.content)))
+        self.begin_link = ''
 
     def visit_break(self, node):
         txtindex = '%d.%d' % (self.line, self.index)
@@ -169,10 +168,13 @@ class Serializer(object):
         self.filename = ''
         self.link_start = False
         self.first_tab = True
+        self.list_end = False
 
     def dump(self, index1='1.0', index2=END):
         # outputs contents from Text widget in Creole format.
         creole = ''
+        for i in self.txt.dump(index1, index2):
+            print i
         for key, value, index in self.txt.dump(index1, index2):
             if key == 'tagon':
                 if value == 'bold':
@@ -182,6 +184,7 @@ class Serializer(object):
                 elif value == 'bullet':
                     creole += '*'
                     self.bullet = True
+                    self.list_end = False
                 elif value.startswith('hyper-'):
                     self.filename = self.hyperMgr.filenames[value]
                     self.link_start = True
@@ -195,6 +198,8 @@ class Serializer(object):
                     creole += '//'
                 elif value.startswith('hyper-'):
                     creole += ']]'
+                elif value == 'bullet' or value == 'number':
+                    self.list_end = True
             elif key == 'text':
                 if self.number:
                     numstr = '\t%d.\t' % self.number
@@ -214,6 +219,9 @@ class Serializer(object):
                 elif self.link_start:
                     value = '[[%s|%s' % (self.filename, value)
                     self.link_start = False
+                if self.list_end and value != '\n' and not (self.bullet or self.number):
+                    creole += '\n'
+                    self.list_end = False
                 creole += value
         return creole
 

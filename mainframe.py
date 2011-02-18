@@ -144,6 +144,7 @@ class MainFrame(object, CenteredWindow):
         dlg = PreferencesDialog(self.root, 'Preferences', font, size)
         if dlg.result:
             self.manager.view.init_font_sizes(dlg.font, dlg.size)
+            self.manager.view.init_tags()
             write_preferences_to_file(dlg.font, dlg.size)
 
     def set_think_time(self):
