@@ -30,7 +30,10 @@ class TextTagEmitter(object):
         pass
 
     def leave_document(self, node):
-        pass
+        # leave_paragraph always leaves two extra carriage returns at the
+        # end of the text. This deletes them.
+        txtindex = '%d.%d' % (self.line-1, self.index)
+        self.txtWidget.delete(txtindex, END)
 
     def visit_text(self, node):
         if self.begin_list_item:
@@ -68,6 +71,7 @@ class TextTagEmitter(object):
         txtindex = '%d.%d' % (self.line, self.index)
         self.txtWidget.insert(txtindex, '\n')
         self.line += 1
+        self.index = 0
         self.bullet = False
 
     def visit_number_list(self, node):
@@ -77,6 +81,7 @@ class TextTagEmitter(object):
         txtindex = '%d.%d' % (self.line, self.index)
         self.txtWidget.insert(txtindex, '\n')
         self.line += 1
+        self.index = 0
 
     def visit_list_item(self, node):
         self.begin_list_item = '%d.%d' % (self.line, self.index)
@@ -163,6 +168,9 @@ class Serializer(object):
         self.txt = txtWidget
         self.hyperMgr = hyperMgr
         self.bullet_image = PhotoImage(file=BULLET_IMAGE)
+        self._reset()
+
+    def _reset(self):
         self.number = 0
         self.bullet = False
         self.filename = ''
@@ -173,8 +181,7 @@ class Serializer(object):
     def dump(self, index1='1.0', index2=END):
         # outputs contents from Text widget in Creole format.
         creole = ''
-        for i in self.txt.dump(index1, index2):
-            print i
+        self._reset()
         for key, value, index in self.txt.dump(index1, index2):
             if key == 'tagon':
                 if value == 'bold':
@@ -198,29 +205,23 @@ class Serializer(object):
                     creole += '//'
                 elif value.startswith('hyper-'):
                     creole += ']]'
-                elif value == 'bullet' or value == 'number':
+                elif value == 'number':
+                    numstr = '#\t%d.\t' % self.number
+                    if numstr in creole:
+                        creole = creole.replace(numstr, '# ', 1)
+                    self.list_end = True
+                elif value == 'bullet':
+                    creole = creole.replace('\n*\t\t', '\n* ', 1)
+                    self.bullet = False
                     self.list_end = True
             elif key == 'text':
-                if self.number:
-                    numstr = '\t%d.\t' % self.number
-                    if value.startswith(numstr):
-                        value = value.replace(numstr, ' ', 1)
-                    elif value != '\n':
-                        self.number = 0
-                elif self.bullet:
-                    if self.first_tab:
-                        value = value.replace('\t', ' ')
-                        self.first_tab = False
-                    else:
-                        value = value.replace('\t', '')
-                    if value != '\n' and value != ' ':
-                        self.bullet = False
-                        self.first_tab = True
-                elif self.link_start:
+                if self.link_start:
                     value = '[[%s|%s' % (self.filename, value)
                     self.link_start = False
-                if self.list_end and value != '\n' and not (self.bullet or self.number):
+                numstr = '%d.\t' % self.number
+                if self.list_end and value != '\n' and numstr not in value:
                     creole += '\n'
+                    self.number = 0
                     self.list_end = False
                 creole += value
         return creole
