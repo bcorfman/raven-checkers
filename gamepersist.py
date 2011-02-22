@@ -34,7 +34,7 @@ class SavedGame(object):
             movestr = '%d-%d' % (start, dest)
             annotation = move.annotation
             if annotation.startswith(movestr):
-                annotation = annotation.replace(movestr, '', 1)
+                annotation = annotation.replace(movestr, '', 1).rstrip()
             f.write('%s;%s\n' % (movestr, annotation))
 
     def write(self, filename):
@@ -348,6 +348,7 @@ class SavedGame(object):
         while idx < linelen:
             line = lines[idx].strip()
             if line == "":
+                idx += 1
                 continue # ignore blank lines
 
             try:
