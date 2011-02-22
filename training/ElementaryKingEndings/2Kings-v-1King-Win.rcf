@@ -1,8 +1,8 @@
 <description>
 **White to move and win.**
 
-Winning with two kings against one from an open position is simplicity
-itself once the correct procedure is known. It falls into three phases:
+Winning with two kings against one from an open position is simplicity itself
+once the correct procedure is known. It falls into three phases:
 
 # The two kings force the lone king back into the double-corner (to retreat elsewhere would lead to instant defeat).
 # One of the two kings enters the double-corner, forcing the lone king out.
@@ -16,6 +16,8 @@ white_men
 white_kings 6 9
 <moves>
 9-14;
+
+
 15-19;
 6-10;
 19-23;
@@ -39,4 +41,4 @@ white_kings 6 9
 31-26;
 15-18;
 26-31;
-18-22;
+18-22;. **White wins.**
