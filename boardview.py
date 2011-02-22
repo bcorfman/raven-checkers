@@ -349,6 +349,11 @@ class BoardView(Observer):
         self._draw_checkers(cmd)
         self.txt.delete('1.0', END)
         self.serializer.restore(move.annotation)
+        if self.txt.get('1.0','end').strip() == '':
+            start = keymap[move.affected_squares[FIRST][0]]
+            dest = keymap[move.affected_squares[LAST][0]]
+            movestr = '%d-%d' % (start, dest)
+            self.txt.insert('1.0', movestr)
 
     def get_annotation(self):
         return self.serializer.dump()
