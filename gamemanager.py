@@ -67,6 +67,7 @@ class GameManager(object):
     def new_game(self):
         self._stop_updates()
         self.filename = None
+        self._root.title('Raven ' + VERSION)
         self.model = Checkers()
         self.player_color = BLACK
         self.view.reset_view(self.model)
@@ -137,6 +138,13 @@ class GameManager(object):
     def _write_file(self, filename):
         try:
             saved_game = SavedGame()
+            # undo moves back to the beginning of play
+            undo_steps = 0
+            while self.model.curr_state.undo_list:
+                undo_steps += 1
+                self.model.curr_state.undo_move(None, True, True,
+                                                self.view.get_annotation())
+            # save the state of the board
             saved_game.to_move = self.model.curr_state.to_move
             saved_game.black_men = []
             saved_game.black_kings = []
@@ -151,14 +159,15 @@ class GameManager(object):
                     saved_game.white_men.append(keymap[i])
                 elif sq == WHITE | KING:
                     saved_game.white_kings.append(keymap[i])
-            if not self.model.curr_state.undo_list:
-                saved_game.description = self.view.serializer.dump()
-                saved_game.moves = self.model.curr_state.redo_list
-            else:
-                showerror(PROGRAM_TITLE, 'Undo list in invalid state.')
-                return
+            saved_game.description = self.view.serializer.dump()
+            saved_game.moves = self.model.curr_state.redo_list
             saved_game.flip_board = self.view.flip_view
             saved_game.write(filename)
+            # redo moves forward to the previous state
+            for i in range(undo_steps):
+                annotation = self.view.get_annotation()
+                self.model.curr_state.redo_move(None, annotation)
+            # record current filename in title bar
             self.parent.set_title_bar_filename(filename)
             self.filename = filename
         except IOError:
