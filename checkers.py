@@ -234,7 +234,7 @@ class Checkerboard(object):
                 self._eval_tempo(sq, nm, nbk, nbm, nwk, nwm) +
                 self._eval_playeropposition(sq, nwm, nwk, nbk, nbm, nm, nk))
 
-    def _find_more_captures(self, valid_moves, captures, add_sq_func, visited):
+    def _extend_capture(self, valid_moves, captures, add_sq_func, visited):
         player = self.to_move
         enemy = self.enemy
         squares = self.squares
@@ -281,7 +281,7 @@ class Checkerboard(object):
         enemy = self.enemy
         squares = self.squares
         valid_indices = WHITE_IDX if player == WHITE else BLACK_IDX
-        captures = []
+        all_captures = []
         for i in self.valid_squares:
             if squares[i] & player and squares[i] & MAN:
                 for j in valid_indices:
@@ -295,12 +295,17 @@ class Checkerboard(object):
                             sq3 = [dest, FREE, player | KING]
                         else:
                             sq3 = [dest, FREE, player | MAN]
-                        captures.append(Move([sq1, sq2, sq3]))
-                        visited = set((i, mid, dest))
-                        captures = self._find_more_captures(valid_indices,
-                                                            captures,
-                                                            self._capture_man,
-                                                            visited)
+                        capture = [Move([sq1, sq2, sq3])]
+                        visited = set()
+                        visited.add((i, mid, dest))
+                        temp = squares[i]
+                        squares[i] = FREE
+                        captures = self._extend_capture(valid_indices,
+                                                        capture,
+                                                        self._capture_man,
+                                                        visited)
+                        squares[i] = temp
+                        all_captures.extend(captures)
             if squares[i] & player and squares[i] & KING:
                 for j in KING_IDX:
                     mid = i+j
@@ -309,13 +314,18 @@ class Checkerboard(object):
                         sq1 = [i, player | KING, FREE]
                         sq2 = [mid, squares[mid], FREE]
                         sq3 = [dest, squares[dest], player | KING]
-                        captures.append(Move([sq1, sq2, sq3]))
-                        visited = set((i, mid, dest))
-                        captures = self._find_more_captures(KING_IDX,
-                                                            captures,
-                                                            self._capture_king,
-                                                            visited)
-        return captures
+                        capture = [Move([sq1, sq2, sq3])]
+                        visited = set()
+                        visited.add((i, mid, dest))
+                        temp = squares[i]
+                        squares[i] = FREE
+                        captures = self._extend_capture(KING_IDX,
+                                                        capture,
+                                                        self._capture_king,
+                                                        visited)
+                        squares[i] = temp
+                        all_captures.extend(captures)
+        return all_captures
     captures = property(_get_captures,
                         doc="Forced captures for the current player")
 
