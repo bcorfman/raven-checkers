@@ -156,7 +156,6 @@ class SetupBoard(Dialog):
     def cancel(self, event=None):
         mgr = self._manager
         mgr.set_controllers()
-        mgr.view.reset_view(mgr.model)
         if self.parent is not None:
            self.parent.focus_set()
         self.destroy()
