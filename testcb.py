@@ -23,10 +23,11 @@ class TestBlackManSingleJump(unittest.TestCase):
         squares[12] = WHITE | MAN
 
     def testJump(self):
-        self.assertEqual(self.game.legal_moves(self.board),
-                         [[[6, BLACK | MAN, FREE],
-                           [12, WHITE | MAN, FREE],
-                           [18, FREE, BLACK | MAN]]])
+        moves = self.game.legal_moves(self.board)
+        self.assertEqual(moves[0].affected_squares,
+                         [[6, BLACK | MAN, FREE],
+                          [12, WHITE | MAN, FREE],
+                          [18, FREE, BLACK | MAN]])
 
 class TestBlackManDoubleJump(unittest.TestCase):
     def setUp(self):
@@ -39,12 +40,13 @@ class TestBlackManDoubleJump(unittest.TestCase):
         squares[23] = WHITE | MAN
 
     def testJump(self):
-        self.assertEqual(self.game.legal_moves(self.board),
-                        [[[6, BLACK | MAN, FREE],
-                          [12, WHITE | MAN, FREE],
-                          [18, FREE, FREE],
-                          [23, WHITE | MAN, FREE],
-                          [28, FREE, BLACK | MAN]]])
+        moves = self.game.legal_moves(self.board)
+        self.assertEqual(moves[0].affected_squares,
+                        [[6, BLACK | MAN, FREE],
+                         [12, WHITE | MAN, FREE],
+                         [18, FREE, FREE],
+                         [23, WHITE | MAN, FREE],
+                         [28, FREE, BLACK | MAN]])
 
 class TestBlackManCrownKingOnJump(unittest.TestCase):
     def setUp(self):
@@ -71,14 +73,15 @@ class TestBlackManCrownKingOnJump(unittest.TestCase):
         squares[40] = WHITE | MAN
 
     def testJump(self):
-        self.assertEqual(self.game.legal_moves(self.board),
-                         [[[12, BLACK | MAN, FREE],
-                           [18, WHITE | MAN, FREE],
-                           [24, FREE, FREE],
-                           [30, WHITE | MAN, FREE],
-                           [36, FREE, FREE],
-                           [41, WHITE | MAN, FREE],
-                           [46, FREE, BLACK | KING]]])
+        moves = self.game.legal_moves(self.board)
+        self.assertEqual(moves[0].affected_squares,
+                         [[12, BLACK | MAN, FREE],
+                          [18, WHITE | MAN, FREE],
+                          [24, FREE, FREE],
+                          [30, WHITE | MAN, FREE],
+                          [36, FREE, FREE],
+                          [41, WHITE | MAN, FREE],
+                          [46, FREE, BLACK | KING]])
 
 class TestBlackManCrownKingOnMove(unittest.TestCase):
     def setUp(self):
@@ -90,9 +93,10 @@ class TestBlackManCrownKingOnMove(unittest.TestCase):
         squares[18] = WHITE | MAN
 
     def testJump(self):
-        self.assertEqual(self.game.legal_moves(self.board),
-                         [[[39, BLACK | MAN, FREE],
-                           [45, FREE, BLACK | KING]]])
+        moves = self.game.legal_moves(self.board)
+        self.assertEqual(moves[0].affected_squares,
+                         [[39, BLACK | MAN, FREE],
+                          [45, FREE, BLACK | KING]])
 
 
 class TestBlackKingOptionalJumpDiamond(unittest.TestCase):
@@ -108,17 +112,19 @@ class TestBlackKingOptionalJumpDiamond(unittest.TestCase):
         squares[18] = WHITE | MAN
 
     def testJump(self):
-        self.assertEqual(self.game.legal_moves(self.board),
-                         [[[13, BLACK | KING, FREE], [19, WHITE | MAN, FREE],
-                           [25, FREE, FREE], [30, WHITE | MAN, FREE],
-                           [35, FREE, FREE], [29, WHITE | MAN, FREE],
-                           [23, FREE, FREE], [18, WHITE | MAN, FREE],
-                           [13, FREE, BLACK | KING]],
-                          [[13, BLACK | KING, FREE], [18, WHITE | MAN, FREE],
-                           [23, FREE, FREE], [29, WHITE | MAN, FREE],
-                           [35, FREE, FREE], [30, WHITE | MAN, FREE],
-                           [25, FREE, FREE], [19, WHITE | MAN, FREE],
-                           [13, FREE, BLACK | KING]]])
+        moves = self.game.legal_moves(self.board)
+        self.assertEqual(moves[0].affected_squares,
+                         [[13, BLACK | KING, FREE], [18, WHITE | MAN, FREE],
+                          [23, FREE, FREE], [29, WHITE | MAN, FREE],
+                          [35, FREE, FREE], [30, WHITE | MAN, FREE],
+                          [25, FREE, FREE], [19, WHITE | MAN, FREE],
+                          [13, FREE, BLACK | KING]])
+        self.assertEqual(moves[1].affected_squares,
+                         [[13, BLACK | KING, FREE], [19, WHITE | MAN, FREE],
+                          [25, FREE, FREE], [30, WHITE | MAN, FREE],
+                          [35, FREE, FREE], [29, WHITE | MAN, FREE],
+                          [23, FREE, FREE], [18, WHITE | MAN, FREE],
+                          [13, FREE, BLACK | KING]])
 
 class TestWhiteManSingleJump(unittest.TestCase):
     def setUp(self):
@@ -131,10 +137,11 @@ class TestWhiteManSingleJump(unittest.TestCase):
         squares[36] = BLACK | MAN
 
     def testJump(self):
-        self.assertEqual(self.game.legal_moves(self.board),
-                         [[[41, WHITE | MAN, FREE],
-                           [36, BLACK | MAN, FREE],
-                           [31, FREE, WHITE | MAN]]])
+        moves = self.game.legal_moves(self.board)
+        self.assertEqual(moves[0].affected_squares,
+                         [[41, WHITE | MAN, FREE],
+                          [36, BLACK | MAN, FREE],
+                          [31, FREE, WHITE | MAN]])
 
 
 class TestWhiteManDoubleJump(unittest.TestCase):
@@ -149,12 +156,13 @@ class TestWhiteManDoubleJump(unittest.TestCase):
         squares[25] = BLACK | MAN
 
     def testJump(self):
-        self.assertEqual(self.game.legal_moves(self.board),
-                         [[[41, WHITE | MAN, FREE],
-                           [36, BLACK | MAN, FREE],
-                           [31, FREE, FREE],
-                           [25, BLACK | MAN, FREE],
-                           [19, FREE, WHITE | MAN]]])
+        moves = self.game.legal_moves(self.board)
+        self.assertEqual(moves[0].affected_squares,
+                         [[41, WHITE | MAN, FREE],
+                          [36, BLACK | MAN, FREE],
+                          [31, FREE, FREE],
+                          [25, BLACK | MAN, FREE],
+                          [19, FREE, WHITE | MAN]])
 
 class TestWhiteManCrownKingOnMove(unittest.TestCase):
     def setUp(self):
@@ -167,9 +175,10 @@ class TestWhiteManCrownKingOnMove(unittest.TestCase):
         squares[36] = BLACK | MAN
 
     def testJump(self):
-        self.assertEqual(self.game.legal_moves(self.board),
-                         [[[15, WHITE | MAN, FREE],
-                           [9, FREE, WHITE | KING]]])
+        moves = self.game.legal_moves(self.board)
+        self.assertEqual(moves[0].affected_squares,
+                         [[15, WHITE | MAN, FREE],
+                          [9, FREE, WHITE | KING]])
 
 
 class TestWhiteManCrownKingOnJump(unittest.TestCase):
@@ -188,14 +197,15 @@ class TestWhiteManCrownKingOnJump(unittest.TestCase):
         squares[12] = BLACK | KING
 
     def testJump(self):
-        self.assertEqual(self.game.legal_moves(self.board),
-                         [[[41, WHITE | MAN, FREE],
-                           [36, BLACK | MAN, FREE],
-                           [31, FREE, FREE],
-                           [25, BLACK | MAN, FREE],
-                           [19, FREE, FREE],
-                           [13, BLACK | KING, FREE],
-                           [7, FREE, WHITE | KING]]])
+        moves = self.game.legal_moves(self.board)
+        self.assertEqual(moves[0].affected_squares,
+                         [[41, WHITE | MAN, FREE],
+                          [36, BLACK | MAN, FREE],
+                          [31, FREE, FREE],
+                          [25, BLACK | MAN, FREE],
+                          [19, FREE, FREE],
+                          [13, BLACK | KING, FREE],
+                          [7, FREE, WHITE | KING]])
 
 class TestWhiteKingOptionalJumpDiamond(unittest.TestCase):
     def setUp(self):
@@ -211,17 +221,19 @@ class TestWhiteKingOptionalJumpDiamond(unittest.TestCase):
         squares[18] = BLACK | MAN
 
     def testJump(self):
-        self.assertEqual(self.game.legal_moves(self.board),
-                         [[[13, WHITE | KING, FREE], [19, BLACK | MAN, FREE],
-                            [25, FREE, FREE], [30, BLACK | MAN, FREE],
-                            [35, FREE, FREE], [29, BLACK | MAN, FREE],
-                            [23, FREE, FREE], [18, BLACK | MAN, FREE],
-                            [13, FREE, WHITE | KING]],
-                          [[13, WHITE | KING, FREE], [18, BLACK | MAN, FREE],
-                           [23, FREE, FREE], [29, BLACK | MAN, FREE],
-                           [35, FREE, FREE], [30, BLACK | MAN, FREE],
-                           [25, FREE, FREE], [19, BLACK | MAN, FREE],
-                           [13, FREE, WHITE | KING]]])
+        moves = self.game.legal_moves(self.board)
+        self.assertEqual(moves[0].affected_squares,
+                         [[13, WHITE | KING, FREE], [18, BLACK | MAN, FREE],
+                          [23, FREE, FREE], [29, BLACK | MAN, FREE],
+                          [35, FREE, FREE], [30, BLACK | MAN, FREE],
+                          [25, FREE, FREE], [19, BLACK | MAN, FREE],
+                          [13, FREE, WHITE | KING]])
+        self.assertEqual(moves[1].affected_squares,
+                         [[13, WHITE | KING, FREE], [19, BLACK | MAN, FREE],
+                          [25, FREE, FREE], [30, BLACK | MAN, FREE],
+                          [35, FREE, FREE], [29, BLACK | MAN, FREE],
+                          [23, FREE, FREE], [18, BLACK | MAN, FREE],
+                          [13, FREE, WHITE | KING]])
 
 class TestUtilityFunc(unittest.TestCase):
     def setUp(self):
@@ -260,20 +272,27 @@ class TestSuccessorFuncForBlack(unittest.TestCase):
         # Tests whether initial game moves are correct from
         # Black's perspective
         moves = [m for m, _ in self.game.successors(self.board)]
-        self.assertEqual(moves, [[[17, BLACK | MAN, FREE],
-                                  [23, FREE, BLACK | MAN]],
-                                 [[18, BLACK | MAN, FREE],
-                                  [23, FREE, BLACK | MAN]],
-                                 [[18, BLACK | MAN, FREE],
-                                  [24, FREE, BLACK | MAN]],
-                                 [[19, BLACK | MAN, FREE],
-                                  [24, FREE, BLACK | MAN]],
-                                 [[19, BLACK | MAN, FREE],
-                                  [25, FREE, BLACK | MAN]],
-                                 [[20, BLACK | MAN, FREE],
-                                  [25, FREE, BLACK | MAN]],
-                                 [[20, BLACK | MAN, FREE],
-                                  [26, FREE, BLACK | MAN]]])
+        self.assertEqual(moves[0].affected_squares,
+                         [[17, BLACK | MAN, FREE],
+                          [23, FREE, BLACK | MAN]])
+        self.assertEqual(moves[1].affected_squares,
+                         [[18, BLACK | MAN, FREE],
+                          [23, FREE, BLACK | MAN]])
+        self.assertEqual(moves[2].affected_squares,
+                         [[18, BLACK | MAN, FREE],
+                          [24, FREE, BLACK | MAN]])
+        self.assertEqual(moves[3].affected_squares,
+                         [[19, BLACK | MAN, FREE],
+                          [24, FREE, BLACK | MAN]])
+        self.assertEqual(moves[4].affected_squares,
+                         [[19, BLACK | MAN, FREE],
+                          [25, FREE, BLACK | MAN]])
+        self.assertEqual(moves[5].affected_squares,
+                         [[20, BLACK | MAN, FREE],
+                          [25, FREE, BLACK | MAN]])
+        self.assertEqual(moves[6].affected_squares,
+                         [[20, BLACK | MAN, FREE],
+                          [26, FREE, BLACK | MAN]])
 
 class TestSuccessorFuncForWhite(unittest.TestCase):
     def setUp(self):
@@ -288,17 +307,27 @@ class TestSuccessorFuncForWhite(unittest.TestCase):
         # Tests whether initial game moves are correct from
         # White's perspective
         moves = [m for m, _ in self.game.successors(self.board)]
-        self.assertEqual(moves, [[[34, WHITE | MAN, FREE],
-                                  [29, FREE, WHITE | MAN]],
-                                 [[34, WHITE | MAN, FREE],
-                                  [28, FREE, WHITE | MAN]],
-                                 [[35, WHITE | MAN, FREE],
-                                  [30, FREE, WHITE | MAN]],
-                                 [[35, WHITE | MAN, FREE],
-                                  [29, FREE, WHITE | MAN]],
-                                 [[36, WHITE | MAN, FREE],
-                                  [31, FREE, WHITE | MAN]],
-                                 [[36, WHITE | MAN, FREE],
-                                  [30, FREE, WHITE | MAN]],
-                                 [[37, WHITE | MAN, FREE],
-                                  [31, FREE, WHITE | MAN]]])
+        self.assertEqual(moves[0].affected_squares,
+                         [[34, WHITE | MAN, FREE],
+                          [29, FREE, WHITE | MAN]])
+        self.assertEqual(moves[1].affected_squares,
+                         [[34, WHITE | MAN, FREE],
+                          [28, FREE, WHITE | MAN]])
+        self.assertEqual(moves[2].affected_squares,
+                         [[35, WHITE | MAN, FREE],
+                          [30, FREE, WHITE | MAN]])
+        self.assertEqual(moves[3].affected_squares,
+                         [[35, WHITE | MAN, FREE],
+                          [29, FREE, WHITE | MAN]])
+        self.assertEqual(moves[4].affected_squares,
+                         [[36, WHITE | MAN, FREE],
+                          [31, FREE, WHITE | MAN]])
+        self.assertEqual(moves[5].affected_squares,
+                         [[36, WHITE | MAN, FREE],
+                          [30, FREE, WHITE | MAN]])
+        self.assertEqual(moves[6].affected_squares,
+                         [[37, WHITE | MAN, FREE],
+                          [31, FREE, WHITE | MAN]])
+
+if __name__ == '__main__':
+    unittest.main()
