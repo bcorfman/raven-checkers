@@ -57,7 +57,6 @@ class GameManager(object):
         self._controller1.set_before_turn_event(self._controller2.remove_highlights)
         self._controller2.set_before_turn_event(self._controller1.remove_highlights)
 
-
     def _stop_updates(self):
         # stop alphabeta threads from making any moves
         self.model.curr_state.ok_to_move = False
@@ -98,6 +97,7 @@ class GameManager(object):
             self.view.reset_view(self.model)
             self.view.serializer.restore(saved_game.description)
             self.view.flip_board(saved_game.flip_board)
+            self.view.update_statusbar()
             self.parent.set_title_bar_filename(filename)
         except IOError as (err):
             showerror(PROGRAM_TITLE, 'Invalid file. ' + str(err))
