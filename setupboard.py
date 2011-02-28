@@ -7,6 +7,7 @@ class SetupBoard(Dialog):
         self._master = parent
         self._manager = gameManager
         self._load_entry_box_vars()
+        self.result = False
         Dialog.__init__(self, parent, title)
 
     def body(self, master):
@@ -94,24 +95,6 @@ class SetupBoard(Dialog):
         else:
             self._disable_player_color()
 
-    def _load_entry_box_vars(self):
-        self._white_men = StringVar()
-        self._white_kings = StringVar()
-        self._black_men = StringVar()
-        self._black_kings = StringVar()
-        self._player_color = IntVar()
-        self._player_color.set(self._manager.player_color)
-        self._player_turn = IntVar()
-        self._num_players = IntVar()
-        self._num_players.set(self._manager.num_players)
-        model = self._manager.model
-        self._player_turn.set(model.curr_state.to_move)
-        view = self._manager.view
-        self._white_men.set(', '.join(view.get_positions(WHITE | MAN)))
-        self._white_kings.set(', '.join(view.get_positions(WHITE | KING)))
-        self._black_men.set(', '.join(view.get_positions(BLACK | MAN)))
-        self._black_kings.set(', '.join(view.get_positions(BLACK | KING)))
-
     def validate(self):
         self.wm_list = self._parse_int_list(self._white_men.get())
         self.wk_list = self._parse_int_list(self._white_kings.get())
@@ -130,36 +113,60 @@ class SetupBoard(Dialog):
         model = mgr.model
         view = mgr.view
         state = model.curr_state
-        state.clear()
-        sq = state.squares
-        for item in self.wm_list:
-            idx = squaremap[item]
-            sq[idx] = WHITE | MAN
-        for item in self.wk_list:
-            idx = squaremap[item]
-            sq[idx] = WHITE | KING
-        for item in self.bm_list:
-            idx = squaremap[item]
-            sq[idx] = BLACK | MAN
-        for item in self.bk_list:
-            idx = squaremap[item]
-            sq[idx] = BLACK | KING
-        state.to_move = self._player_turn.get()
-        state.reset_undo()
         mgr.player_color = self._player_color.get()
         mgr.num_players = self._num_players.get()
-        mgr.set_controllers()
-        view.reset_view(mgr.model)
+        mgr.model.curr_state.to_move = self._player_turn.get()
+        
+        # only reset the BoardView if men or kings have new positions
+        if (sorted(self.wm_list) != sorted(self._orig_white_men) or
+            sorted(self.wk_list) != sorted(self._orig_white_kings) or
+            sorted(self.bm_list) != sorted(self._orig_black_men) or
+            sorted(self.bk_list) != sorted(self._orig_black_kings)):
+            state.clear()
+            sq = state.squares
+            for item in self.wm_list:
+                idx = squaremap[item]
+                sq[idx] = WHITE | MAN
+            for item in self.wk_list:
+                idx = squaremap[item]
+                sq[idx] = WHITE | KING
+            for item in self.bm_list:
+                idx = squaremap[item]
+                sq[idx] = BLACK | MAN
+            for item in self.bk_list:
+                idx = squaremap[item]
+                sq[idx] = BLACK | KING
+            state.to_move = self._player_turn.get()
+            state.reset_undo()
+            view.reset_view(mgr.model)
         state.ok_to_move = True
+        self.result = True
         self.destroy()
 
     def cancel(self, event=None):
-        mgr = self._manager
-        mgr.set_controllers()
-        if self.parent is not None:
-           self.parent.focus_set()
         self.destroy()
-        mgr.turn_finished()
+
+    def _load_entry_box_vars(self):
+        self._white_men = StringVar()
+        self._white_kings = StringVar()
+        self._black_men = StringVar()
+        self._black_kings = StringVar()
+        self._player_color = IntVar()
+        self._player_turn = IntVar()
+        self._num_players = IntVar()
+        self._player_color.set(self._manager.player_color)
+        self._num_players.set(self._manager.num_players)
+        model = self._manager.model
+        self._player_turn.set(model.curr_state.to_move)
+        view = self._manager.view
+        self._white_men.set(', '.join(view.get_positions(WHITE | MAN)))
+        self._white_kings.set(', '.join(view.get_positions(WHITE | KING)))
+        self._black_men.set(', '.join(view.get_positions(BLACK | MAN)))
+        self._black_kings.set(', '.join(view.get_positions(BLACK | KING)))
+        self._orig_white_men = map(int, view.get_positions(WHITE | MAN))
+        self._orig_white_kings = map(int, view.get_positions(WHITE | KING))
+        self._orig_black_men = map(int, view.get_positions(BLACK | MAN))
+        self._orig_black_kings = map(int, view.get_positions(BLACK | KING))
 
     def _disable_player_color(self):
         self._rbColor1.configure(state=DISABLED)
