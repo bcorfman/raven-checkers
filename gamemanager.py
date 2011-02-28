@@ -38,6 +38,7 @@ class GameManager(object):
                                                     searchtime=think_time,
                                                     end_turn_event=self.turn_finished)
         elif self.num_players == 1:
+            # assumption here is that Black is the player
             self._controller1 = PlayerController(model=self.model,
                                                  view=self.view,
                                                  end_turn_event=self.turn_finished)
@@ -45,6 +46,7 @@ class GameManager(object):
                                                     view=self.view,
                                                     searchtime=think_time,
                                                     end_turn_event=self.turn_finished)
+            # swap controllers if White is selected as the player
             if self.player_color == WHITE:
                 self._controller1, self._controller2 = self._controller2, self._controller1
         elif self.num_players == 2:
@@ -82,6 +84,7 @@ class GameManager(object):
             saved_game.read(filename)
             self.model.curr_state.clear()
             self.model.curr_state.to_move = saved_game.to_move
+            self.num_players = saved_game.num_players
             squares = self.model.curr_state.squares
             for i in saved_game.black_men:
                 squares[squaremap[i]] = BLACK | MAN
@@ -146,6 +149,7 @@ class GameManager(object):
                                                 self.view.get_annotation())
             # save the state of the board
             saved_game.to_move = self.model.curr_state.to_move
+            saved_game.num_players = self.num_players
             saved_game.black_men = []
             saved_game.black_kings = []
             saved_game.white_men = []
@@ -175,12 +179,12 @@ class GameManager(object):
 
     def turn_finished(self):
         if self.model.curr_state.to_move == BLACK:
-            self._controller2.end_turn()
+            self._controller2.end_turn() # end White's turn
             self._root.update()
             self.view.update_statusbar()
-            self._controller1.start_turn()
+            self._controller1.start_turn() # begin Black's turn
         else:
-            self._controller1.end_turn()
+            self._controller1.end_turn() # end Black's turn
             self._root.update()
             self.view.update_statusbar()
-            self._controller2.start_turn()
+            self._controller2.start_turn() # begin White's turn
