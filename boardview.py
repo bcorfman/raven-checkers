@@ -1,3 +1,4 @@
+import os
 from Tkinter import *
 from Tkconstants import END, N, S, E, W
 from command import *
@@ -199,7 +200,9 @@ class BoardView(Observer):
 
     def _on_add_link(self):
         filename = askopenfilename(initialdir='training')
-        self._toggle_state(self.hypermgr.add(filename), self.addLink)
+        if filename:
+            filename = os.path.relpath(filename, CUR_DIR)
+            self._toggle_state(self.hypermgr.add(filename), self.addLink)
 
     def _on_remove_link(self):
         if self.txt.tag_ranges('sel'):
