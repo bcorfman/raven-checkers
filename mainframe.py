@@ -24,8 +24,6 @@ class MainFrame(object, CenteredWindow):
         self.create_help_menu()
         self.root.config(menu=self.menubar)
         CenteredWindow.__init__(self, self.root)
-        #self.root.minsize(self.root.winfo_reqwidth(), self.root.winfo_reqheight())
-        #self.root.maxsize(self.root.winfo_reqwidth(), self.root.winfo_reqheight())
         self.root.deiconify()
 
     def set_title_bar_filename(self, filename):
@@ -131,15 +129,16 @@ class MainFrame(object, CenteredWindow):
         self.manager._controller2.stop_process()
 
     def show_about_box(self):
-        self.stop_processes()
         AboutBox(self.root, 'About Raven')
 
     def show_setup_board_dialog(self):
         self.stop_processes()
-        SetupBoard(self.root, 'Set up board', self.manager)
+        dlg = SetupBoard(self.root, 'Set up board', self.manager)
+        self.manager.set_controllers()
+        self.root.focus_set()
+        self.manager.turn_finished()
 
     def show_preferences_dialog(self):
-        self.stop_processes()
         font, size = get_preferences_from_file()
         dlg = PreferencesDialog(self.root, 'Preferences', font, size)
         if dlg.result:
