@@ -8,6 +8,7 @@ zone, was featured, and shows that 1 king against 2 kings is not always
 a hopeless cause.
 <setup>
 white_first
+2_player_game
 flip_board 1
 black_men
 black_kings 29 30

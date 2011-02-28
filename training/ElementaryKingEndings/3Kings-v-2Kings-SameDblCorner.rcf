@@ -18,6 +18,7 @@ In this scenario, Black has succeeded in keeping his kings together, but White
 still wins by forcing a simple exchange.
 <setup>
 white_first
+2_player_game
 flip_board 1
 black_men
 black_kings 27 28

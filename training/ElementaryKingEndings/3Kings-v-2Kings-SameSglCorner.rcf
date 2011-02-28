@@ -11,6 +11,7 @@ The third case is illustrated in this scenario. White employs a neat sacrifice
 before clinching matters with a simple exchange.
 <setup>
 white_first
+2_player_game
 flip_board 1
 black_men
 black_kings 21 22

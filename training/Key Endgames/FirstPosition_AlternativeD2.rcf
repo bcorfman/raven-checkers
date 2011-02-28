@@ -2,6 +2,7 @@
 This alternative [[./Training/Key Endgames/FirstPosition.rcf|First Position]] path leads to a loss for White.
 <setup>
 black_first
+2_player_game
 flip_board 1
 black_men 19
 black_kings 28
