@@ -17,6 +17,7 @@ to 2 kings against 1 and then the 2 Kings v 1 King win shown previously. The
 defender, of course, tries to avoid this.
 <setup>
 white_first
+2_player_game
 flip_board 1
 black_men
 black_kings 9 27

@@ -2,6 +2,7 @@
 This alternative [[./Training/Key Endgames/FirstPosition.rcf|First Position]] path leads to a draw for White.
 <setup>
 white_first
+2_player_game
 flip_board 1
 black_men 16
 black_kings 28

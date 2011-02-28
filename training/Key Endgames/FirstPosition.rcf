@@ -15,11 +15,12 @@ and forcing Black's single man to advance into trouble. Black naturally tries to
 delay this advance for as long as possible.
 <setup>
 white_first
+2_player_game
 flip_board 1
-black_men 12 
-black_kings 28 
-white_men 
-white_kings 19 23 
+black_men 12
+black_kings 28
+white_men
+white_kings 19 23
 <moves>
 23-27;
 28-32;

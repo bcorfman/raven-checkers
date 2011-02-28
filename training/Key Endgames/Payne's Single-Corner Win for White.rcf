@@ -7,11 +7,12 @@ white piece, //which could be virtually anywhere on the board,// is ready to
 attack.
 <setup>
 white_first
+2_player_game
 flip_board 1
-black_men 21 
-black_kings 25 
-white_men 
-white_kings 26 27 
+black_men 21
+black_kings 25
+white_men
+white_kings 26 27
 <moves>
 27-23;
 25-29;
