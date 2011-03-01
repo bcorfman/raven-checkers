@@ -102,6 +102,7 @@ class GameManager(object):
             self.view.flip_board(saved_game.flip_board)
             self.view.update_statusbar()
             self.parent.set_title_bar_filename(filename)
+            self.filename = filename
         except IOError as (err):
             showerror(PROGRAM_TITLE, 'Invalid file. ' + str(err))
 
@@ -113,7 +114,6 @@ class GameManager(object):
         if not f:
             return
         self.load_game(f)
-        self.filename = f
 
     def save_game_as(self):
         self._stop_updates()
@@ -136,7 +136,6 @@ class GameManager(object):
             if filename == '':
                 return
         self._write_file(filename)
-        self.filename = filename
 
     def _write_file(self, filename):
         try:
