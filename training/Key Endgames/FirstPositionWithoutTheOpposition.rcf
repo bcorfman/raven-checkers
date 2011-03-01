@@ -13,10 +13,10 @@ to tempt Black into moving the man on 12, then he can win.
 black_first
 1_player_game
 flip_board 1
-black_men 12
-black_kings 28
-white_men
-white_kings 19 23
+black_men 12 
+black_kings 28 
+white_men 
+white_kings 19 23 
 <moves>
 28-32;
 23-18;
