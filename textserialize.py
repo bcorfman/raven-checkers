@@ -126,8 +126,13 @@ class TextTagEmitter(object):
 
     def leave_link(self, node):
         end_link = '%d.%d' % (self.line, self.index)
-        self.txtWidget.insert(self.begin_link, node.children[0].content,
-                              self.hyperMgr.add(str(node.content)))
+        # TODO: Revisit unicode encode/decode issues later.
+        # 1. Decode early.  2. Unicode everywhere  3. Encode late
+        # However, decoding filename and link_text here works for now.
+        fname = str(node.content).replace('%20', ' ')
+        link_text = str(node.children[0].content).replace('%20', ' ')
+        self.txtWidget.insert(self.begin_link, link_text,
+                              self.hyperMgr.add(fname))
         self.begin_link = ''
 
     def visit_break(self, node):
@@ -216,7 +221,13 @@ class Serializer(object):
                     self.list_end = True
             elif key == 'text':
                 if self.link_start:
-                    value = '[[%s|%s' % (self.filename, value)
+                    # TODO: Revisit unicode encode/decode issues later.
+                    # 1. Decode early.  2. Unicode everywhere  3. Encode late
+                    # However, encoding filename and link_text here works for
+                    # now.
+                    fname = self.filename.replace(' ', '%20').encode('utf-8')
+                    link_text = value.replace(' ', '%20')
+                    value = '[[%s|%s' % (fname, link_text)
                     self.link_start = False
                 numstr = '%d.\t' % self.number
                 if self.list_end and value != '\n' and numstr not in value:
