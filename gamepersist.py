@@ -42,9 +42,10 @@ class SavedGame(object):
         with open(filename, 'w') as f:
             f.write('<description>\n')
             for line in self.description.splitlines():
-                # numbered lists or bullet lists are not word wrapped.
-                if line.startswith('# '):
+                # numbered lists or hyperlinks are not word wrapped.
+                if line.startswith('# ') or '[[' in line:
                     f.write(line + '\n')
+                    continue
                 else:
                     f.write(textwrap.fill(line, 80) + '\n')
             f.write('<setup>\n')
