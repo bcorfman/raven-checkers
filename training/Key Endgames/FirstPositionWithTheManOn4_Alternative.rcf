@@ -1,0 +1,21 @@
+<description>
+This alternate [[training\Key%20Endgames\FirstPositionWithTheManOn4.rcf|First%20Position%20With%20The%20Man%20On%204]] path permits a draw for Black.
+<setup>
+white_first
+2_player_game
+flip_board 1
+black_men 4 
+black_kings 20 
+white_men 
+white_kings 23 28 
+<moves>
+23-18;?
+20-16;
+28-24;
+16-12;
+24-19;
+12-8;. The man on 4 effectively creates a 'triple-corner'.
+19-16;
+8-12;
+16-11;
+12-8;. **Drawn.**

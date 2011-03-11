@@ -1,0 +1,59 @@
+<description>
+**Glasgow opening**, part of the 11-15 group
+
+11-15 is considered Black's best opening move. It is so popular that it has
+branched off into more openings than any other initial move. Among the replies
+that can be recommended for White are 23-19 or 23-18 or 22-18 or 22-17. On the
+other hand, 24-20 and 24-19 and 21-17 are all considered inferior in varying
+degrees.
+
+- from //How to Win At Checkers// by Fred Reinfeld
+<setup>
+black_first
+2_player_game
+flip_board 0
+black_men 1 2 3 4 5 6 7 8 9 10 11 12 
+black_kings 
+white_men 21 22 23 24 25 26 27 28 29 30 31 32 
+white_kings 
+<moves>
+11-15;
+23-19;!
+8-11;
+22-17;
+11-16;. These moves form the opening, which is excellent for inexperienced players to adopt.
+24-20;
+16-23;
+27-11;
+7-16;
+20-11;
+3-7;
+28-24;. The alternative 11-8 is also playable.
+7-16;
+24-20;
+16-19;
+25-22;
+4-8;
+29-25;
+19-24;. This leads to interesting complications if now 32-28; 8-11, 28-19; 11-15, 20-16; 15-24,16-11; etc.
+17-14;. An interesting though only temporary sacrifice. Instead, White can play safe with 17-13; 9-14, 26-23; etc.
+9-18;
+22-15;
+10-19;
+32-28;
+6-10;! Now if White plays 26-23, Black wins with the [[training\Openings\Glasgow_BlackWin.rcf|following%20line]].
+25-22;. If now 8-11, White can draw with the [[training\Openings\Glasgow_Draw.rcf|following%20line]].
+5-9;
+22-18;. If now 8-11 White plays 21-17 and holds the position despite the fact that he is temporarily a man down. Black therefore "pitches" a man, and this leads to interesting complications.
+9-14;
+18-9;
+1-5;
+9-6;
+2-9;
+20-16;
+9-14;
+26-23;. The safest, at last recovering the sacrificed man.
+19-26;
+28-19;
+5-9;
+31-22;. Even game.

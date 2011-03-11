@@ -1,0 +1,22 @@
+<description>
+This alternate [[training\Openings\Glasgow.rcf|Glasgow]] line leads to an interesting draw for White.
+<setup>
+black_first
+2_player_game
+flip_board 0
+black_men 1 2 5 8 10 12 19 24 
+black_kings 
+white_men 20 21 22 26 28 30 31 
+white_kings 
+<moves>
+8-11;
+22-18; (to stop 11-15)
+5-9;
+21-17;
+10-15;
+26-23;
+19-26;
+28-10;
+2-6;
+31-22;
+6-15;, etc. to a draw.

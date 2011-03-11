@@ -1,5 +1,7 @@
 <description>
-**Diagnosis**
+**Payne's Single-Corner Win for White**
+
+//Diagnosis//
 
 Force: 2 v 2. Opposition: Doesn't matter. Description: The white king on 26
 stands guard over the black man on 21 and the black king on 25, until the other
@@ -9,10 +11,10 @@ attack.
 white_first
 2_player_game
 flip_board 1
-black_men 21
-black_kings 25
-white_men
-white_kings 26 27
+black_men 21 
+black_kings 25 
+white_men 
+white_kings 26 27 
 <moves>
 27-23;
 25-29;
