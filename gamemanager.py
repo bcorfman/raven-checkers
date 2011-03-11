@@ -75,6 +75,7 @@ class GameManager(object):
         self.think_time = self.parent.thinkTime.get()
         self.set_controllers()
         self.view.update_statusbar()
+        self.view.reset_toolbar_buttons()
         self._controller1.start_turn()
 
     def load_game(self, filename):
