@@ -226,6 +226,10 @@ class BoardView(Observer):
     def _sel_changed(self, event):
         self.update_button_state(self.txt.index(INSERT))
 
+    def reset_toolbar_buttons(self):
+        for btn in self.btnset:
+            btn.configure(relief='raised')
+            
     def update_button_state(self, index):
         if self.txt.tag_ranges('sel'):
             current_tags = self.txt.tag_names('sel.first')
