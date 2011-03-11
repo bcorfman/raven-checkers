@@ -91,7 +91,7 @@ class SavedGame(object):
             elif line.startswith('<moves>'):
                 i = self._parse_moves(lines, i, linelen)
             else:
-                raise IOError, 'Unrecognized section in file, line %d' % i
+                raise IOError, 'Unrecognized section in file, line %d' % (i+1)
 
     def _parse_items(self, line):
         men = line.split()[1:]
@@ -104,7 +104,7 @@ class SavedGame(object):
                 idx = squaremap[loc]
                 squares[idx] = val
         except ValueError:
-            raise IOError, 'Checker location not valid, line %d' % i
+            raise IOError, 'Checker location not valid, line %d' % (i+1)
 
     def _parse_setup(self, lines, idx, linelen):
         curr_state = self._model.curr_state
@@ -151,8 +151,7 @@ class SavedGame(object):
         return delta in KING_IDX
 
     def _is_jump(self, delta):
-        """ A jump is twice as far as a move. """
-        return delta in [x*2 for x in KING_IDX]
+        return delta not in KING_IDX
 
     def _try_move(self, idx, start, dest, state_copy, annotation):
         legal_moves = self._model.legal_moves(state_copy)
@@ -168,27 +167,29 @@ class SavedGame(object):
                 found = True
                 break
         if not found:
-            raise IOError, 'Illegal move found in file, line %d' % idx
+            raise IOError, 'Illegal move found in file, line %d' % (idx+1)
 
     def _try_jump(self, idx, start, dest, state_copy, annotation):
+        if not self._model.captures_available(state_copy):
+            return False
         legal_moves = self._model.legal_moves(state_copy)
         # match jump from file with available jumps on checkerboard
         startsq, destsq = squaremap[start], squaremap[dest]
         small, large = min(startsq, destsq), max(startsq, destsq)
-        midsq = small + (large-small) / 2
         found = False
         for move in legal_moves:
-            if (self._model.captures_available(state_copy) and
-                startsq == move.affected_squares[FIRST][0] and
-                midsq == move.affected_squares[MID][0] and
+            # a valid jump may either have a single jump in it, or
+            # multiple jumps. In the multiple jump case, startsq is the
+            # source of the first jump, and destsq is the endpoint of the
+            # last jump.
+            if (startsq == move.affected_squares[FIRST][0] and
                 destsq == move.affected_squares[LAST][0]):
                 self._model.make_move(move, state_copy, False, False)
                 move.annotation = annotation
                 self.moves.append(move)
                 found = True
                 break
-        if not found:
-            raise IOError, 'Illegal move found in file, line %d' % idx
+        return found
 
     def _parse_moves(self, lines, idx, linelen):
         """ Each move in the file lists the beginning and ending square, along
@@ -207,7 +208,7 @@ class SavedGame(object):
             try:
                 movestr, annotation = line.split(';', 1)
             except ValueError:
-                raise IOError, 'Unrecognized section in file, line %d' % idx
+                raise IOError, 'Unrecognized section in file, line %d' % (idx+1)
 
             # move is always part of the annotation; I just don't want to
             # have to repeat it explicitly in the file.
@@ -221,10 +222,11 @@ class SavedGame(object):
             delta = squaremap[start] - squaremap[dest]
             if self._is_move(delta):
                 self._try_move(idx, start, dest, state_copy, annotation)
-            elif self._is_jump(delta):
-                self._try_jump(idx, start, dest, state_copy, annotation)
             else:
-                raise IOError, 'Bad move format in file, line %d' % idx
+                jumped = self._try_jump(idx, start, dest, state_copy,
+                                        annotation)
+                if not jumped:
+                    raise IOError, 'Bad move format in file, line %d' % idx
             idx += 1
         self.moves.reverse()
         return idx
