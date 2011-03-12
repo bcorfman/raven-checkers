@@ -26,8 +26,12 @@ class MainFrame(object, CenteredWindow):
         CenteredWindow.__init__(self, self.root)
         self.root.deiconify()
 
-    def set_title_bar_filename(self, filename):
-        self.root.title('Raven ' + VERSION + ' - ' + os.path.basename(filename))
+    def set_title_bar_filename(self, filename=None):
+        if not filename:
+            self.root.title('Raven ' + VERSION)
+        else:
+            self.root.title('Raven ' + VERSION + ' - ' +
+                            os.path.basename(filename))
 
     def undo_all_moves(self, *args):
         self.stop_processes()
