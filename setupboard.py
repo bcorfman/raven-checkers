@@ -1,4 +1,5 @@
 from Tkinter import *
+from ttk import Checkbutton
 from tkSimpleDialog import Dialog
 from globalconst import *
 
@@ -90,6 +91,13 @@ class SetupBoard(Dialog):
         self._bkFrame.pack()
         self._bcFrame.pack(fill=X)
 
+        self._bsState = IntVar()
+        self._bsFrame = Frame(master, borderwidth=0)
+        self._bsCheck = Checkbutton(self._bsFrame, variable=self._bsState,
+                                    text='Start new game with the current setup?')
+        self._bsCheck.pack()
+        self._bsFrame.pack(fill=X)
+
         if self._num_players.get() == 1:
             self._enable_player_color()
         else:
@@ -116,12 +124,13 @@ class SetupBoard(Dialog):
         mgr.player_color = self._player_color.get()
         mgr.num_players = self._num_players.get()
         mgr.model.curr_state.to_move = self._player_turn.get()
-        
+
         # only reset the BoardView if men or kings have new positions
         if (sorted(self.wm_list) != sorted(self._orig_white_men) or
             sorted(self.wk_list) != sorted(self._orig_white_kings) or
             sorted(self.bm_list) != sorted(self._orig_black_men) or
-            sorted(self.bk_list) != sorted(self._orig_black_kings)):
+            sorted(self.bk_list) != sorted(self._orig_black_kings) or
+            self._bsState.get() == 1):
             state.clear()
             sq = state.squares
             for item in self.wm_list:
@@ -139,6 +148,9 @@ class SetupBoard(Dialog):
             state.to_move = self._player_turn.get()
             state.reset_undo()
             view.reset_view(mgr.model)
+        if self._bsState.get() == 1:
+            mgr.filename = None
+            mgr.parent.set_title_bar_filename()
         state.ok_to_move = True
         self.result = True
         self.destroy()
