@@ -23,7 +23,7 @@ white_kings 19 23
 28-24;
 32-28;
 24-20;
-23-19;! (vital! Instead, 23-28? [[training\Key%20Endgames\support\FirstPositionWithTheManOn4_Alternative.rcf|permits%20a%20draw]])
+23-19;! (vital! Instead, 23-28? [[training\KeyEndgames\support\FirstPositionWithTheManOn4_Alternative.rcf|permits%20a%20draw]])
 20-24;
 19-15;
 24-27;
@@ -34,4 +34,4 @@ white_kings 19 23
 28-32;
 8-12;
 32-28;
-23-27; and into [[training\Key%20Endgames\FirstPosition.rcf|the%20standard%20solution]] given in SOIC. **White wins.**
+23-27; and into [[training\KeyEndgames\FirstPosition.rcf|the%20standard%20solution]] given in SOIC. **White wins.**
