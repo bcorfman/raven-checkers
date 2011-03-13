@@ -1,0 +1,17 @@
+<description>
+This alternate [[training\Openings\Glasgow.rcf|Glasgow]] path leads to a win for Black.
+<setup>
+white_first
+2_player_game
+flip_board 0
+black_men 1 2 5 8 10 12 19 24 
+black_kings 
+white_men 20 21 25 26 28 30 31 
+white_kings 
+<moves>
+26-23;
+19-26;
+30-23;
+8-11;
+28-19;
+11-15;. Black wins from here.
