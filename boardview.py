@@ -124,6 +124,7 @@ class BoardView(Observer):
             remove_func(startline, endline)
 
     def _add_bullets_if_needed(self, startline, endline):
+        self._remove_numbers_if_needed(startline, endline)
         for line in range(startline, endline+1):
             current_tags = self.txt.tag_names('%d.0' % line)
             if 'bullet' not in current_tags:
@@ -149,6 +150,7 @@ class BoardView(Observer):
         self.bullets.configure(relief='raised')
 
     def _add_numbers_if_needed(self, startline, endline):
+        self._remove_bullets_if_needed(startline, endline)
         num = 1
         for line in range(startline, endline+1):
             current_tags = self.txt.tag_names('%d.0' % line)
@@ -229,7 +231,7 @@ class BoardView(Observer):
     def reset_toolbar_buttons(self):
         for btn in self.btnset:
             btn.configure(relief='raised')
-            
+
     def update_button_state(self, index):
         if self.txt.tag_ranges('sel'):
             current_tags = self.txt.tag_names('sel.first')
