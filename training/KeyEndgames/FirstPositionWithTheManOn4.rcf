@@ -1,0 +1,37 @@
+<description>
+**Key Endgame 12: First Position With The Man On 4**
+
+//Diagnosis//
+
+The point of this particular setting of First Position is that great care must
+be taken to prevent the black king from reaching his own single-corner. If so
+allowed, a draw will result.
+<setup>
+white_first
+2_player_game
+flip_board 1
+black_men 4 
+black_kings 28 
+white_men 
+white_kings 19 23 
+<moves>
+23-27;
+28-32;
+19-23;
+32-28;
+27-32; (forcing the king out of the double-corner)
+28-24;
+32-28;
+24-20;
+23-19;! (vital! Instead, 23-28? [[training\Key%20Endgames\support\FirstPositionWithTheManOn4_Alternative.rcf|permits%20a%20draw]])
+20-24;
+19-15;
+24-27;
+15-18;
+4-8; (might as well advance now)
+18-15;
+27-23;
+28-32;
+8-12;
+32-28;
+23-27; and into [[training\Key%20Endgames\FirstPosition.rcf|the%20standard%20solution]] given in SOIC. **White wins.**
