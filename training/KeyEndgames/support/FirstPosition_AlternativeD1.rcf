@@ -1,5 +1,5 @@
 <description>
-This alternative [[./Training/Key Endgames/FirstPosition.rcf|First Position]] path leads to a draw for White.
+This alternative [[./Training/KeyEndgames/FirstPosition.rcf|First Position]] path leads to a draw for White.
 <setup>
 white_first
 2_player_game
@@ -12,6 +12,6 @@ white_kings 15 32
 15-18;
 16-19;
 32-27;
-19-23;! (not 28-32?, which [[./Training/Key Endgames/support/FirstPosition_AlternativeD2.rcf|loses]])
+19-23;! (not 28-32?, which [[./Training/KeyEndgames/support/FirstPosition_AlternativeD2.rcf|loses]])
 27-32;
 23-26;. **Drawn.**
