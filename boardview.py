@@ -58,6 +58,7 @@ class BoardView(Observer):
                        'hyper': self.addLink}
         self.hypermgr = HyperlinkManager(self.txt, self._gameMgr.load_game)
         self.serializer = Serializer(self.txt, self.hypermgr)
+        self.curr_annotation = '\n'
         self._setup_board(root)
         starting_squares = [i for i in self._model.curr_state.valid_squares
                             if self._model.curr_state.squares[i] &
@@ -228,6 +229,9 @@ class BoardView(Observer):
     def _sel_changed(self, event):
         self.update_button_state(self.txt.index(INSERT))
 
+    def is_dirty(self):
+        return self.curr_annotation != self.get_annotation()
+
     def reset_toolbar_buttons(self):
         for btn in self.btnset:
             btn.configure(relief='raised')
@@ -358,6 +362,7 @@ class BoardView(Observer):
         self._draw_checkers(cmd)
         self.txt.delete('1.0', END)
         self.serializer.restore(move.annotation)
+        self.curr_annotation = move.annotation
         if self.txt.get('1.0','end').strip() == '':
             start = keymap[move.affected_squares[FIRST][0]]
             dest = keymap[move.affected_squares[LAST][0]]
