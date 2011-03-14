@@ -1,0 +1,17 @@
+<description>
+This is Richard Pask's variation on [[training\Openings\SingleCorner.rcf|Single%20Corner]] play.
+<setup>
+black_first
+2_player_game
+flip_board 0
+black_men 1 2 3 4 5 6 7 8 9 10 16 
+black_kings 
+white_men 18 21 23 24 25 26 27 28 30 31 32 
+white_kings 
+<moves>
+9-13;
+18-14;
+10-17;
+21-14;
+16-20;
+23-18; ...

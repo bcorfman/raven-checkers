@@ -1,0 +1,31 @@
+<description>
+**Single Corner** opening, part of the 11-15 group.
+
+11-15 is considered Black's best opening move. It is so popular that it has
+branched off into more openings than any other initial move. Among the replies
+that can be recommended for White are 23-19 or 23-18 or 22-18 or 22-17. On the
+other hand, 24-20 and 24-19 and 21-17 are all considered inferior in varying
+degrees.
+
+- from //How to Win At Checkers// by Fred Reinfeld
+<setup>
+black_first
+2_player_game
+flip_board 0
+black_men 1 2 3 4 5 6 7 8 9 10 11 12 
+black_kings 
+white_men 21 22 23 24 25 26 27 28 29 30 31 32 
+white_kings 
+<moves>
+11-15;
+22-18;. These moves form the opening, which gives Black a slight initiative -- though White possesses ample resources.
+15-22;
+25-18;. Here Richard Pask shows that an [[training\Openings\support\SingleCorner_Pask_Variation1.rcf|alternate%20line%20of%20play]] can be chosen after this point.
+12-16;. Here 8-11 may lead to a trap.
+29-25;. More conservative than 8-14, which is also playable. Richard Pask recommends a [[training\Openings\support\SingleCorner_Pask.rcf|variation%20in%20play]] starting here in Play Better Checkers and Draughts.
+10-14;
+25-22;
+16-20;
+24-19;
+6-10;. Or an alternate line with level chances.
+22-17;. Even game.
