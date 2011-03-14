@@ -53,9 +53,10 @@ OCCUPIED_CHAR = '-'
 INFINITY = 9999999
 MAXDEPTH = 10
 VERSION = '0.4'
+TITLE = 'Raven ' + VERSION
 PROGRAM_TITLE = 'Raven Checkers'
 TRAINING_DIR = sys.path[0] + os.path.sep + 'training'
-CUR_DIR = sys.path[0] 
+CUR_DIR = sys.path[0]
 
 # search values for transposition table
 hashfALPHA, hashfBETA, hashfEXACT = range(3)
