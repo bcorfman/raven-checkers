@@ -1,7 +1,7 @@
 from Tkinter import *
 from Tkconstants import W, E, N, S
 from tkFileDialog import askopenfilename, asksaveasfilename
-from tkMessageBox import showerror
+from tkMessageBox import askyesnocancel, showerror
 from globalconst import *
 from checkers import Checkers
 from boardview import BoardView
@@ -65,8 +65,23 @@ class GameManager(object):
         self._controller1.stop_process()
         self._controller2.stop_process()
 
+    def _save_curr_game_if_needed(self):
+        if self.view.is_dirty():
+            msg = 'Do you want to save your changes'
+            if self.filename:
+                msg += ' to %s?' % self.filename
+            else:
+                msg += '?'
+            result = askyesnocancel(TITLE, msg)
+            if result == True:
+                self.save_game()
+            return result
+        else:
+            return False
+
     def new_game(self):
         self._stop_updates()
+        self._save_curr_game_if_needed()
         self.filename = None
         self._root.title('Raven ' + VERSION)
         self.model = Checkers()
@@ -76,6 +91,7 @@ class GameManager(object):
         self.set_controllers()
         self.view.update_statusbar()
         self.view.reset_toolbar_buttons()
+        self.view.curr_annotation = '\n'
         self._controller1.start_turn()
 
     def load_game(self, filename):
@@ -100,6 +116,7 @@ class GameManager(object):
             self.model.curr_state.update_piece_count()
             self.view.reset_view(self.model)
             self.view.serializer.restore(saved_game.description)
+            self.view.curr_annotation = self.view.get_annotation()
             self.view.flip_board(saved_game.flip_board)
             self.view.update_statusbar()
             self.parent.set_title_bar_filename(filename)
@@ -109,6 +126,7 @@ class GameManager(object):
 
     def open_game(self):
         self._stop_updates()
+        self._save_curr_game_if_needed()
         f = askopenfilename(filetypes=(('Raven Checkers files','*.rcf'),
                                        ('All files','*.*')),
                             initialdir=TRAINING_DIR)
