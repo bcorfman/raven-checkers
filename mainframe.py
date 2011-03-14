@@ -2,6 +2,7 @@ import os
 from Tkinter import *
 from Tkconstants import W, E
 import Tkinter as tk
+from tkMessageBox import askyesnocancel
 from multiprocessing import freeze_support
 from globalconst import *
 from aboutbox import AboutBox
@@ -16,6 +17,7 @@ class MainFrame(object, CenteredWindow):
         self.root.withdraw()
         self.root.iconbitmap(RAVEN_ICON)
         self.root.title('Raven ' + VERSION)
+        self.root.protocol('WM_DELETE_WINDOW', self._on_close)
         self.thinkTime = IntVar(value=5)
         self.manager = GameManager(root=self.root, parent=self)
         self.menubar = tk.Menu(self.root)
@@ -26,12 +28,21 @@ class MainFrame(object, CenteredWindow):
         CenteredWindow.__init__(self, self.root)
         self.root.deiconify()
 
+    def _on_close(self):
+        if self.manager.view.is_dirty():
+            msg = 'Do you want to save your changes before exiting?'
+            result = askyesnocancel(TITLE, msg)
+            if result == True:
+                self.manager.save_game()
+            elif result == None:
+                return
+        self.root.destroy()
+
     def set_title_bar_filename(self, filename=None):
         if not filename:
-            self.root.title('Raven ' + VERSION)
+            self.root.title(TITLE)
         else:
-            self.root.title('Raven ' + VERSION + ' - ' +
-                            os.path.basename(filename))
+            self.root.title(TITLE + ' - ' + os.path.basename(filename))
 
     def undo_all_moves(self, *args):
         self.stop_processes()
@@ -83,7 +94,7 @@ class MainFrame(object, CenteredWindow):
                          command=self.flip_board)
         game.add_separator()
         game.add_command(label='Exit', underline=0,
-                         command=self.menubar.quit)
+                         command=self._on_close)
         self.menubar.add_cascade(label='Game', menu=game)
 
     def create_options_menu(self):
