@@ -55,8 +55,8 @@ MAXDEPTH = 10
 VERSION = '0.4'
 TITLE = 'Raven ' + VERSION
 PROGRAM_TITLE = 'Raven Checkers'
-TRAINING_DIR = sys.path[0] + os.path.sep + 'training'
 CUR_DIR = sys.path[0]
+TRAINING_DIR = CUR_DIR + os.path.sep + 'training'
 
 # search values for transposition table
 hashfALPHA, hashfBETA, hashfEXACT = range(3)
