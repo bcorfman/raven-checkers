@@ -1,49 +1,58 @@
 <description>
-**Key Endgame 9: First Position**
+**Key Ending 10: First Position**
 
-//Diagnosis//
+//Summary//
 
-Force: 2 v 2. Opposition: White has it. Description: The diagrammed position
-represents a late, and critical, phase of First Position. The key features of
-this, the most important endgame situation in the game of checkers, are as
-follows:
+Force: 2 v 2.
+Opposition: White has it.
+Terms: White to move and win.
+Description: The diagrammed position represents a late, and critical, phase of
+First Position. Before tackling the winning procedure, it would be wise for the
+student to take note of those features which distinguish First Position from a
+nondescript two against two setting. In this way he will be able to recognize it
+in its early stages, and take the appropriate action. Aside from the attacker,
+having the Opposition, here White, the following conditions must also hold:
 
-# At least one of Black's pieces is a single man.
-# White has, or can develop, two kings, while keeping Black's single man pinned to the right-hand side of the board. Typically, this man will initially be placed on square 3, 4 or 12. Of course, if it was placed on square 1 or 2, then it would have free access to White's left-hand side, and the situation would just be a draw.
-# Black's other piece, which becomes a king in the double-corner, is unable to reach the opposite double-corner.
+# At least one of the defender's pieces is a single man rather than a king.
+# The attacker has, or can develop, two kings while keeping the defender's single man pinned to the right-hand side of the board. Typically, this man will initially be placed on square 3, 4 or 12. Of course, if it was placed on square 1 or 2, then it would have free access to White's left-hand side, and the position would just be a draw.
+# The defender's other piece, which becomes a king (in the double-corner), is unable to reach the sanctuary of the opposite double-corner.
 
 
-White's winning procedure consists of attacking Black's king, immobilizing it,
-and forcing Black's single man to advance into trouble. Black naturally tries to
-delay this advance for as long as possible.
+Broadly speaking, White's winning procedure consists of attacking Black's king,
+immobilizing it, and forcing Black's single man to advance into trou- ble.
+Naturally, Black tries to avoid the advance of this man for as long as possible.
+This theme, of attacking one piece to force another to move, arises in numerous
+endings, and should be thoroughly grasped by the student.
+
+-- From //Key Endings// by Richard Pask
 <setup>
 white_first
 2_player_game
 flip_board 1
-black_men 12
-black_kings 28
-white_men
-white_kings 19 23
+black_men 12 
+black_kings 28 
+white_men 
+white_kings 19 23 
 <moves>
 23-27;
 28-32;
 19-23;
 32-28;
 27-32;
-28-24;. The early advance with 12-16 instead [[./Training/KeyEndgames/support/FirstPosition_AlternativeA.rcf|loses quickly for Black]].
-23-18;. Of course, 32-28 instead would permit the exchange with 24-19.
-24-28;. This is Black's most stubborn defense. However, White needs to master [[./Training/KeyEndgames/support/FirstPosition_AlternativeB1.rcf|three]] [[./Training/KeyEndgames/support/FirstPosition_AlternativeB2.rcf|alternate]] [[./Training/KeyEndgames/support/FirstPosition_AlternativeB3.rcf|defenses]] as well.
+28-24;. The early advance with 12-16 [[./Training/KeyEndgames/support/FirstPosition_AlternativeA.rcf|loses%20quickly%20for%20Black]].
+23-18;. Of course 32-28, and the exchange with 24-19, cannot be permitted.
+24-28;. This represents Black's most stubborn defense. However, there [[./Training/KeyEndgames/support/FirstPosition_AlternativeB1.rcf|are]] [[./Training/KeyEndgames/support/FirstPosition_AlternativeB2.rcf|three]] [[./Training/KeyEndgames/support/FirstPosition_AlternativeB3.rcf|alternatives]] for White to master.
 18-15;
 28-24;
 32-28;
-24-27;. Black could alternately play 24-20 here, leading to [[./Training/KeyEndgames/support/FirstPosition_AlternativeC.rcf|this line of play]].
+24-27;. Black could alternately play 24-20 here, leading to [[./Training/KeyEndgames/support/FirstPosition_AlternativeC.rcf|this%20line%20of%20play]].
 15-18;
-12-16;. This is forced now, as 27-32 loses quickly after 18-23.
+12-16;. Forced now, as 27-32 loses quickly after 18-23.
 28-32;
 27-24;
 18-15;
 24-28;
-15-11;! Don't be tempted by 15-18?, as it [[./Training/KeyEndgames/support/FirstPosition_AlternativeD1.rcf|leads to a draw]].
+15-11;! Don't be tempted by 15-18?, as it [[./Training/KeyEndgames/support/FirstPosition_AlternativeD1.rcf|leads%20to%20a%20draw]].
 16-19;
 32-27;
 28-32;
