@@ -1,20 +1,24 @@
 <description>
 **White to move and win.**
 
-Winning with two kings against one from an open position is simplicity itself
-once the correct procedure is known. It falls into three phases:
+Winning with two kings against one from an open position often proves difficult
+for the beginner, yet the winning procedure is simple when understood. It falls
+into three phases:
 
 # The two kings force the lone king back into the double-corner (to retreat elsewhere would lead to instant defeat).
 # One of the two kings enters the double-corner, forcing the lone king out.
 # The lone king is pinned on the side of the board.
+
+
+-- From //Key Endings// by Richard Pask
 <setup>
 white_first
 2_player_game
 flip_board 1
-black_men
-black_kings 15
-white_men
-white_kings 6 9
+black_men 
+black_kings 15 
+white_men 
+white_kings 6 9 
 <moves>
 9-14;
 15-19;
