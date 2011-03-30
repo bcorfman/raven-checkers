@@ -10,29 +10,31 @@ With 3 Kings v 2 Kings, there are three cases to be considered:
 
 The second case is illustrated in this scenario.
 
-**TIP: In the endgame, particularly when defending, it is good policy, where
-possible, to keep your kings together. For one thing, no tactical opportunities
-are available otherwise.**
+When both Black kings occupy the same double-corner, the key to the win is the
+temporary sacrifice of a piece.
 
-In this scenario, Black has succeeded in keeping his kings together, but White
-still wins by forcing a simple exchange.
+-- From //Key Endings// by Richard Pask
 <setup>
 white_first
 2_player_game
 flip_board 1
-black_men
-black_kings 27 28
-white_men
-white_kings 18 19 20
+black_men 
+black_kings 27 28 
+white_men 
+white_kings 18 19 20 
 <moves>
-19-23; (deemed a time-waster in many texts, but actually the best approach!)
-28-32; (27-31 allows White to exchange immediately with 23-27)
-20-16;!
-27-31; (if 27-24, White replies with 18-15; and after 24-27 exchanges with 16-11, and after 24-20 exchanges with 23-18)
-16-11;!
-32-28; (if 31-27, White replies with 18-15)
-11-15;
+18-15;
+28-32;. (27-31 instead leads to this White win.)
+19-24;
+27-31;
+24-28;
+31-27;. (32-27, 28-32, 27-23 permits the exchange with 15-19)
+15-19;!
+27-31;. (27-24 instead leads to this White win.)
+20-24;!
+32-27;
 28-32;
-23-26;
-31-22;
-18-25; etc.
+27-20;
+19-24;
+20-27;
+32-23;. **White wins.**

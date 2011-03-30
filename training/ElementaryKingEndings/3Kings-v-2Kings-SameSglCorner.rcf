@@ -7,16 +7,19 @@ With 3 Kings v 2 Kings, there are three cases to be considered:
 # Where the defending kings occupy the same double-corner;
 # Where the defending kings occupy the same single-corner.
 
-The third case is illustrated in this scenario. White employs a neat sacrifice
-before clinching matters with a simple exchange.
+
+The third case is illustrated in this scenario. White must employ a sacrifice
+before he can win.
+
+- Richard Pask
 <setup>
 white_first
 2_player_game
 flip_board 1
-black_men
-black_kings 21 22
-white_men
-white_kings 13 14 15
+black_men 
+black_kings 21 22 
+white_men 
+white_kings 13 14 15 
 <moves>
 15-10;
 21-25;
@@ -27,8 +30,8 @@ white_kings 13 14 15
 10-14;
 26-23;
 14-17;
-23-26; (22-18 allows White to win with either 17-14 or 17-22)
-21-25;! (just when White seemed to have achieved nothing)
+23-26; (22-18 also allows White to win)
+21-25;!
 22-29;
 17-22;
 26-17;
