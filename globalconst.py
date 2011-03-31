@@ -57,7 +57,6 @@ TITLE = 'Raven ' + VERSION
 PROGRAM_TITLE = 'Raven Checkers'
 CUR_DIR = sys.path[0]
 TRAINING_DIR = 'training'
-#TRAINING_DIR = CUR_DIR + os.path.sep + 'training'
 
 # search values for transposition table
 hashfALPHA, hashfBETA, hashfEXACT = range(3)
