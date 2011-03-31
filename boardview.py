@@ -58,7 +58,7 @@ class BoardView(Observer):
                        'hyper': self.addLink}
         self.hypermgr = HyperlinkManager(self.txt, self._gameMgr.load_game)
         self.serializer = Serializer(self.txt, self.hypermgr)
-        self.curr_annotation = '\n'
+        self.curr_annotation = ''
         self._setup_board(root)
         starting_squares = [i for i in self._model.curr_state.valid_squares
                             if self._model.curr_state.squares[i] &
