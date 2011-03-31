@@ -91,7 +91,7 @@ class GameManager(object):
         self.set_controllers()
         self.view.update_statusbar()
         self.view.reset_toolbar_buttons()
-        self.view.curr_annotation = '\n'
+        self.view.curr_annotation = ''
         self._controller1.start_turn()
 
     def load_game(self, filename):
