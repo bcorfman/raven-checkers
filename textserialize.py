@@ -235,7 +235,7 @@ class Serializer(object):
                     self.number = 0
                     self.list_end = False
                 creole += value
-        return creole
+        return creole.rstrip()
 
     def restore(self, creole):
         self.hyperMgr.reset()
