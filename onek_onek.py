@@ -1,6 +1,7 @@
 from globalconst import BLACK, WHITE, MAN, KING
 from goalevaluator import GoalEvaluator
 from onekingattack import Goal_OneKingAttack
+from onekingflee import Goal_OneKingFlee
 
 class OneKingAttackOneKingEvaluator(GoalEvaluator):
     def __init__(self, bias):
@@ -21,7 +22,7 @@ class OneKingAttackOneKingEvaluator(GoalEvaluator):
         e_idx, e_val = enemy
         e_row, e_col = board.row_col_for_index(e_idx)
         # must be two kings against each other and the distance
-        # between them at least three rows away
+        # between them at least three rows or cols away
         if ((p_val & KING) and (e_val & KING) and
             (abs(p_row - e_row) > 2 or abs(p_col - e_col) > 2)):
             return 1.0
@@ -30,11 +31,9 @@ class OneKingAttackOneKingEvaluator(GoalEvaluator):
     def setGoal(self, board):
         player = board.to_move
         board.removeAllSubgoals()
-        if player == WHITE:
-            goalset = board.addWhiteSubgoal
-        else:
-            goalset = board.addBlackSubgoal
-        goalset(Goal_OneKingAttack(board))
+        goal_set = board.addWhiteSubgoal if player == WHITE else board.addBlackSubgoal
+        goal_set(Goal_OneKingAttack(board))
+
 
 class OneKingFleeOneKingEvaluator(GoalEvaluator):
     def __init__(self, bias):
@@ -62,8 +61,5 @@ class OneKingFleeOneKingEvaluator(GoalEvaluator):
     def setGoal(self, board):
         player = board.to_move
         board.removeAllSubgoals()
-        if player == WHITE:
-            goalset = board.addWhiteSubgoal
-        else:
-            goalset = board.addBlackSubgoal
-        goalset(Goal_OneKingFlee(board))
+        goal_set = board.addWhiteSubgoal if player == WHITE else board.addBlackSubgoal
+        goal_set(Goal_OneKingFlee(board))
