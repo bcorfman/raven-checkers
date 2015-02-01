@@ -1,0 +1,191 @@
+<raven_checkers_file>
+    <game_description>
+        **Glasgow opening**, part of the 11-15 group
+
+        11-15 is considered Black's best opening move. It is so popular that it has
+        branched off into more openings than any other initial move. Among the replies
+        that can be recommended for White are 23-19 or 23-18 or 22-18 or 22-17. On the
+        other hand, 24-20 and 24-19 and 21-17 are all considered inferior in varying
+        degrees.
+
+        - from //How to Win At Checkers// by Fred Reinfeld
+    </game_description>
+    <game_setup>
+        <first_to_move>black</first_to_move>
+        <number_of_players>2</number_of_players>
+        <flip_board>True</flip_board>
+        <black_men>1 2 3 4 5 6 7 8 9 10 11 12</black_men>
+        <black_kings/>
+        <white_men>21 22 23 24 25 26 27 28 29 30 31 32</white_men>
+        <white_kings/>
+    </game_setup>
+    <game_moves>
+        <move_description>
+            <move>11-15</move>
+            <annotation/>
+        </move_description>
+        <move_description>
+            <move>23-19</move>
+            <annotation>!</annotation>
+        </move_description>
+        <move_description>
+            <move>8-11</move>
+            <annotation/>
+        </move_description>
+        <move_description>
+            <move>22-17</move>
+            <annotation/>
+        </move_description>
+        <move_description>
+            <move>11-16</move>
+            <annotation>. These moves form the opening, which is excellent for inexperienced players to adopt.
+            </annotation>
+        </move_description>
+        <move_description>
+            <move>24-20</move>
+            <annotation/>
+        </move_description>
+        <move_description>
+            <move>16-23</move>
+            <annotation/>
+        </move_description>
+        <move_description>
+            <move>27-11</move>
+            <annotation/>
+        </move_description>
+        <move_description>
+            <move>7-16</move>
+            <annotation/>
+        </move_description>
+        <move_description>
+            <move>20-11</move>
+            <annotation/>
+        </move_description>
+        <move_description>
+            <move>3-7</move>
+            <annotation/>
+        </move_description>
+        <move_description>
+            <move>28-24</move>
+            <annotation>. The alternative 11-8 is also playable.</annotation>
+        </move_description>
+        <move_description>
+            <move>7-16</move>
+            <annotation/>
+        </move_description>
+        <move_description>
+            <move>24-20</move>
+            <annotation/>
+        </move_description>
+        <move_description>
+            <move>16-19</move>
+            <annotation/>
+        </move_description>
+        <move_description>
+            <move>25-22</move>
+            <annotation/>
+        </move_description>
+        <move_description>
+            <move>4-8</move>
+            <annotation/>
+        </move_description>
+        <move_description>
+            <move>29-25</move>
+            <annotation/>
+        </move_description>
+        <move_description>
+            <move>19-24</move>
+            <annotation>. This leads to [[training\Openings\support\Glasgow_Alternate1.rcf|interesting%20complications]].
+            </annotation>
+        </move_description>
+        <move_description>
+            <move>17-14</move>
+            <annotation>. An interesting though only temporary sacrifice. Instead, White can play safe with 17-13; 9-14, 26-23; etc.
+            </annotation>
+        </move_description>
+        <move_description>
+            <move>9-18</move>
+            <annotation/>
+        </move_description>
+        <move_description>
+            <move>22-15</move>
+            <annotation/>
+        </move_description>
+        <move_description>
+            <move>10-19</move>
+            <annotation/>
+        </move_description>
+        <move_description>
+            <move>32-28</move>
+            <annotation/>
+        </move_description>
+        <move_description>
+            <move>6-10</move>
+            <annotation>! Now if White plays 26-23, Black wins with the [[training\Openings\support\Glasgow_BlackWin.rcf|following%20line]].
+            </annotation>
+        </move_description>
+        <move_description>
+            <move>25-22</move>
+            <annotation>. If now 8-11, White can draw with the [[training\Openings\support\Glasgow_Draw.rcf|following%20line]].
+            </annotation>
+        </move_description>
+        <move_description>
+            <move>5-9</move>
+            <annotation/>
+        </move_description>
+        <move_description>
+            <move>22-18</move>
+            <annotation>. If now 8-11 White plays 21-17 and holds the position despite the fact that he is temporarily a man down.
+                Black therefore "pitches" a man, and this leads to interesting complications.
+            </annotation>
+        </move_description>
+        <move_description>
+            <move>9-14</move>
+            <annotation/>
+        </move_description>
+        <move_description>
+            <move>18-9</move>
+            <annotation/>
+        </move_description>
+        <move_description>
+            <move>1-5</move>
+            <annotation/>
+        </move_description>
+        <move_description>
+            <move>9-6</move>
+            <annotation/>
+        </move_description>
+        <move_description>
+            <move>2-9</move>
+            <annotation/>
+        </move_description>
+        <move_description>
+            <move>20-16</move>
+            <annotation/>
+        </move_description>
+        <move_description>
+            <move>9-14</move>
+            <annotation/>
+        </move_description>
+        <move_description>
+            <move>26-23</move>
+            <annotation>. The safest, at last recovering the sacrificed man.</annotation>
+        </move_description>
+        <move_description>
+            <move>19-26</move>
+            <annotation/>
+        </move_description>
+        <move_description>
+            <move>28-19</move>
+            <annotation/>
+        </move_description>
+        <move_description>
+            <move>5-9</move>
+            <annotation/>
+        </move_description>
+        <move_description>
+            <move>31-22</move>
+            <annotation>. Even game.</annotation>
+        </move_description>
+    </game_moves>
+</raven_checkers_file>
