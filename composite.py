@@ -18,14 +18,14 @@ class CompositeGoal(Goal):
             subgoal = self.subgoals.pop()
             subgoal.terminate()
 
-        if (self.subgoals):
+        if self.subgoals:
             subgoal = self.subgoals.pop()
             status = subgoal.process()
-            if status == COMPLETED and len(self.subgoals) > 1:
-                return ACTIVE
+            if status == self.COMPLETED and len(self.subgoals) > 1:
+                return self.ACTIVE
             return status
         else:
-            return COMPLETED
+            return self.COMPLETED
 
 
     def addSubgoal(self, goal):
