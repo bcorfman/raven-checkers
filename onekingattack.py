@@ -1,3 +1,4 @@
+from utils import manhattan_distance
 from goal import Goal
 from composite import CompositeGoal
 
@@ -10,8 +11,8 @@ class Goal_OneKingAttack(CompositeGoal):
         self.removeAllSubgoals()
         # because goals are *pushed* onto the front of the subgoal list they must
         # be added in reverse order.
-        self.addSubgoal(Goal_MoveTowardEnemy(self.owner))
         self.addSubgoal(Goal_PinEnemy(self.owner))
+        self.addSubgoal(Goal_MoveTowardEnemy(self.owner))
 
     def process(self):
         self.activateIfInactive()
@@ -47,8 +48,9 @@ class Goal_MoveTowardEnemy(Goal):
         e_row, e_col = self.owner.row_col_for_index(e_idx)
         
         # if distance between player and enemy is already down
-        # to 2 rows or cols, then goal is complete.
-        if abs(p_row - e_row) == 2 or abs(p_col - e_col) == 2:
+        # to 2 rows or 2 cols, then goal is complete.
+        if ((abs(p_row - e_row) == 2 and abs(p_col - e_col) == 0) or
+            (abs(p_row - e_row) == 0 and abs(p_col - e_col) == 2)):
             self.status = self.COMPLETED
             
         # select the available move that decreases the distance
