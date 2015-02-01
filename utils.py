@@ -587,6 +587,9 @@ class set:
         return "{%s}" % ", ".join([str(e) for e in self.dict.keys()])
 
 
+def manhattan_distance(start_row, start_col, end_row, end_col):
+    return abs(start_row - end_row) + abs(start_col - end_col)
+
 #______________________________________________________________________________
 # Additional tests
 
