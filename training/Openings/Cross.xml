@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<raven_checkers_file>
+    <game_description>
+        **Cross opening**, part of the 11-15 group.
+
+        11-15 is considered Black's best opening move. It is so popular that it has
+        branched off into more openings than any other initial move. Among the replies
+        that can be recommended for White are 23-19 or 23-18 or 22-18 or 22-17. On the
+        other hand, 24-20 and 24-19 and 21-17 are all considered inferior in varying
+        degrees.
+
+        - from //How to Win At Checkers// by Fred Reinfeld
+    </game_description>
+    <game_setup>
+        <first_to_move>black</first_to_move>
+        <number_of_players>2</number_of_players>
+        <flip_board>False</flip_board>
+        <black_men>1 2 3 4 5 6 7 8 9 10 11 12</black_men>
+        <black_kings/>
+        <white_men>21 22 23 24 25 26 27 28 29 30 31 32</white_men>
+        <white_kings/>
+    </game_setup>
+    <game_moves>
+        <move_description>
+            <move>11-15</move>
+            <annotation>11-15</annotation>
+        </move_description>
+        <move_description>
+            <move>23-18</move>
+            <annotation>23-18. These moves form the opening. White gets excellent counter-attacking chances.</annotation>
+        </move_description>
+        <move_description>
+            <move>8-11</move>
+            <annotation>8-11. Also playable is 9-14, which may lead to a trap.</annotation>
+        </move_description>
+        <move_description>
+            <move>27-23</move>
+            <annotation>27-23. More enterprising than 26-23, which is often played here.</annotation>
+        </move_description>
+        <move_description>
+            <move>4-8</move>
+            <annotation>4-8. The alternative 10-14 may lead to a trap. Here White can also
+                [[training\Openings\support\Cross_WhiteWin.rcf|set%20a%20trap]].
+            </annotation>
+        </move_description>
+        <move_description>
+            <move>23-19</move>
+            <annotation>23-19</annotation>
+        </move_description>
+        <move_description>
+            <move>10-14</move>
+            <annotation>10-14</annotation>
+        </move_description>
+        <move_description>
+            <move>19-10</move>
+            <annotation>19-10</annotation>
+        </move_description>
+        <move_description>
+            <move>14-23</move>
+            <annotation>14-23</annotation>
+        </move_description>
+        <move_description>
+            <move>26-19</move>
+            <annotation>26-19</annotation>
+        </move_description>
+        <move_description>
+            <move>7-14</move>
+            <annotation>7-14</annotation>
+        </move_description>
+        <move_description>
+            <move>24-20</move>
+            <annotation>24-20</annotation>
+        </move_description>
+        <move_description>
+            <move>6-10</move>
+            <annotation>6-10</annotation>
+        </move_description>
+        <move_description>
+            <move>22-17</move>
+            <annotation>22-17</annotation>
+        </move_description>
+        <move_description>
+            <move>9-13</move>
+            <annotation>9-13</annotation>
+        </move_description>
+        <move_description>
+            <move>30-26</move>
+            <annotation>30-26. After simplifying exchanges (13-22, 25-9, 5-14, etc.) the game is even.</annotation>
+        </move_description>
+    </game_moves>
+</raven_checkers_file>
