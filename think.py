@@ -2,7 +2,7 @@ from composite import CompositeGoal
 from onek_onek import OneKingAttackOneKingEvaluator, OneKingFleeOneKingEvaluator
 
 
-class Goal_Think(CompositeGoal):
+class GoalThink(CompositeGoal):
     def __init__(self, owner):
         CompositeGoal.__init__(self, owner)
         self.evaluators = [OneKingAttackOneKingEvaluator(1.0),
