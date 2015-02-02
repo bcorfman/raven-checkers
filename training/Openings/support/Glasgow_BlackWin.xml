@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<raven_checkers_file>
+    <game_description>
+        This alternate [[training\Openings\Glasgow.rcf|Glasgow]] path leads to a win for Black.
+    </game_description>
+    <game_setup>
+        <first_to_move>white</first_to_move>
+        <number_of_players>2</number_of_players>
+        <flip_board>False</flip_board>
+        <black_men>1 2 5 8 10 12 19 24</black_men>
+        <black_kings/>
+        <white_men>20 21 25 26 28 30 31</white_men>
+        <white_kings/>
+    </game_setup>
+    <game_moves>
+        <move_description>
+            <move>26-23</move>
+            <annotation>26-23</annotation>
+        </move_description>
+        <move_description>
+            <move>19-26</move>
+            <annotation>19-26</annotation>
+        </move_description>
+        <move_description>
+            <move>30-23</move>
+            <annotation>30-23</annotation>
+        </move_description>
+        <move_description>
+            <move>8-11</move>
+            <annotation>8-11</annotation>
+        </move_description>
+        <move_description>
+            <move>28-19</move>
+            <annotation>28-19</annotation>
+        </move_description>
+        <move_description>
+            <move>11-15</move>
+            <annotation>11-15. Black wins from here.</annotation>
+        </move_description>
+    </game_moves>
+</raven_checkers_file>
