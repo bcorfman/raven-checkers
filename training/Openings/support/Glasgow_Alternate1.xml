@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<raven_checkers_file>
+    <game_description>
+        This alternate [[training\Openings\Glasgow.rcf|Glasgow]] path leads to interesting complications.
+    </game_description>
+    <game_setup>
+        <first_to_move>white</first_to_move>
+        <number_of_players>2</number_of_players>
+        <flip_board>False</flip_board>
+        <black_men>1 2 5 6 8 9 10 12 24</black_men>
+        <black_kings/>
+        <white_men>17 20 21 22 25 26 30 31 32</white_men>
+        <white_kings/>
+    </game_setup>
+    <game_moves>
+        <move_description>
+            <move>32-28</move>
+            <annotation>32-28</annotation>
+        </move_description>
+        <move_description>
+            <move>8-11</move>
+            <annotation>8-11</annotation>
+        </move_description>
+        <move_description>
+            <move>28-19</move>
+            <annotation>28-19</annotation>
+        </move_description>
+        <move_description>
+            <move>11-15</move>
+            <annotation>11-15</annotation>
+        </move_description>
+        <move_description>
+            <move>20-16</move>
+            <annotation>20-16</annotation>
+        </move_description>
+        <move_description>
+            <move>15-24</move>
+            <annotation>15-24</annotation>
+        </move_description>
+        <move_description>
+            <move>16-11</move>
+            <annotation>16-11. Even; both sides now have a clear path to a king.</annotation>
+        </move_description>
+    </game_moves>
+</raven_checkers_file>
