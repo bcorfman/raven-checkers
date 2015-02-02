@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<raven_checkers_file>
+    <game_description>
+This variation on the [[training\Openings\SingleCorner.rcf|Single%20Corner]] opening comes from Richard Pask in Pl//ay Better Checkers and Draughts//.
+</game_description>
+    <game_setup>
+        <first_to_move>black</first_to_move>
+        <number_of_players>2</number_of_players>
+        <flip_board>False</flip_board>
+        <black_men>1 2 3 4 5 6 7 8 9 10 12</black_men>
+        <black_kings/>
+        <white_men>18 21 23 24 26 27 28 29 30 31 32</white_men>
+        <white_kings/>
+    </game_setup>
+    <game_moves>
+        <move_description>
+            <move>8-11</move>
+            <annotation>8-11</annotation>
+        </move_description>
+        <move_description>
+            <move>29-25</move>
+            <annotation>29-25</annotation>
+        </move_description>
+        <move_description>
+            <move>4-8</move>
+            <annotation>4-8</annotation>
+        </move_description>
+        <move_description>
+            <move>24-20</move>
+            <annotation>24-20</annotation>
+        </move_description>
+        <move_description>
+            <move>12-16</move>
+            <annotation>12-16</annotation>
+        </move_description>
+        <move_description>
+            <move>26-22</move>
+            <annotation>26-22</annotation>
+        </move_description>
+        <move_description>
+            <move>8-12</move>
+            <annotation>8-12</annotation>
+        </move_description>
+        <move_description>
+            <move>28-24</move>
+            <annotation>28-24</annotation>
+        </move_description>
+    </game_moves>
+</raven_checkers_file>
