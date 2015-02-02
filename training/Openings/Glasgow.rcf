@@ -1,4 +1,4 @@
-<description>
+[description]
 **Glasgow opening**, part of the 11-15 group
 
 11-15 is considered Black's best opening move. It is so popular that it has
@@ -8,7 +8,7 @@ other hand, 24-20 and 24-19 and 21-17 are all considered inferior in varying
 degrees.
 
 - from //How to Win At Checkers// by Fred Reinfeld
-<setup>
+[setup]
 black_first
 2_player_game
 flip_board 0
@@ -16,10 +16,17 @@ black_men 1 2 3 4 5 6 7 8 9 10 11 12
 black_kings 
 white_men 21 22 23 24 25 26 27 28 29 30 31 32 
 white_kings 
-<moves>
-11-15;
-23-19;!
-8-11;
+[move]
+11-15
+[annotation]
+[move]
+23-19
+[annotation]
+!
+[move]
+8-11
+[annotation]
+
 22-17;
 11-16;. These moves form the opening, which is excellent for inexperienced players to adopt.
 24-20;

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<raven_checkers_file>
+    <game_description>
+        This alternate [[training\Openings\Glasgow.rcf|Glasgow]] line leads to an interesting draw for White.
+    </game_description>
+    <game_setup>
+        <first_to_move>black</first_to_move>
+        <number_of_players>2</number_of_players>
+        <flip_board>False</flip_board>
+        <black_men>1 2 5 8 10 12 19 24</black_men>
+        <black_kings/>
+        <white_men>20 21 22 26 28 30 31</white_men>
+        <white_kings/>
+    </game_setup>
+    <game_moves>
+        <move_description>
+            <move>8-11</move>
+            <annotation>8-11</annotation>
+        </move_description>
+        <move_description>
+            <move>22-18</move>
+            <annotation>22-18 (to stop 11-15)</annotation>
+        </move_description>
+        <move_description>
+            <move>5-9</move>
+            <annotation>5-9</annotation>
+        </move_description>
+        <move_description>
+            <move>21-17</move>
+            <annotation>21-17</annotation>
+        </move_description>
+        <move_description>
+            <move>10-15</move>
+            <annotation>10-15</annotation>
+        </move_description>
+        <move_description>
+            <move>26-23</move>
+            <annotation>26-23</annotation>
+        </move_description>
+        <move_description>
+            <move>19-26</move>
+            <annotation>19-26</annotation>
+        </move_description>
+        <move_description>
+            <move>28-10</move>
+            <annotation>28-10</annotation>
+        </move_description>
+        <move_description>
+            <move>2-6</move>
+            <annotation>2-6</annotation>
+        </move_description>
+        <move_description>
+            <move>31-22</move>
+            <annotation>31-22</annotation>
+        </move_description>
+        <move_description>
+            <move>6-15</move>
+            <annotation>6-16, etc. to a draw.</annotation>
+        </move_description>
+    </game_moves>
+</raven_checkers_file>
