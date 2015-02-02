@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<raven_checkers_file>
+    <game_description>
+        This is Richard Pask's variation on [[training\Openings\SingleCorner.rcf|Single%20Corner]] play.
+    </game_description>
+    <game_setup>
+        <first_to_move>black</first_to_move>
+        <number_of_players>2</number_of_players>
+        <flip_board>False</flip_board>
+        <black_men>1 2 3 4 5 6 7 8 9 10 16</black_men>
+        <black_kings/>
+        <white_men>18 21 23 24 25 26 27 28 30 31 32</white_men>
+        <white_kings/>
+    </game_setup>
+    <game_moves>
+        <move_description>
+            <move>9-13</move>
+            <annotation>9-13</annotation>
+        </move_description>
+        <move_description>
+            <move>18-14</move>
+            <annotation>18-14</annotation>
+        </move_description>
+        <move_description>
+            <move>10-17</move>
+            <annotation>10-17</annotation>
+        </move_description>
+        <move_description>
+            <move>21-14</move>
+            <annotation>21-14</annotation>
+        </move_description>
+        <move_description>
+            <move>16-20</move>
+            <annotation>16-20</annotation>
+        </move_description>
+        <move_description>
+            <move>23-18</move>
+            <annotation>23-18 ...</annotation>
+        </move_description>
+    </game_moves>
+</raven_checkers_file>
