@@ -197,8 +197,9 @@ def num_legal_values(csp, var, assignment):
         return count_if(lambda val: csp.nconflicts(var, val, assignment) == 0,
                         csp.domains[var])
 
-#______________________________________________________________________________
+# ______________________________________________________________________________
 # Constraint Propagation with AC-3
+
 
 def AC3(csp, queue=None):
     """[Fig. 5.7]"""
@@ -210,8 +211,9 @@ def AC3(csp, queue=None):
             for Xk in csp.neighbors[Xi]:
                 queue.append((Xk, Xi))
 
+
 def remove_inconsistent_values(csp, Xi, Xj):
-    "Return true if we remove a value."
+    """Return true if we remove a value."""
     removed = False
     for x in csp.curr_domains[Xi][:]:
         # If Xi=x conflicts with Xj=y for every possible y, eliminate Xi=x
@@ -221,17 +223,19 @@ def remove_inconsistent_values(csp, Xi, Xj):
             removed = True
     return removed
 
-#______________________________________________________________________________
+# ______________________________________________________________________________
 # Min-conflicts hillclimbing search for CSPs
 
+
 def min_conflicts(csp, max_steps=1000000): 
-    """Solve a CSP by stochastic hillclimbing on the number of conflicts."""
-    # Generate a complete assignement for all vars (probably with conflicts)
-    current = {}; csp.current = current
+    """Solve a CSP by stochastic hillclimbing on the number of conflicts.
+    Generate a complete assignment for all vars (probably with conflicts)"""
+    current = {}
+    csp.current = current
     for var in csp.vars:
         val = min_conflicts_value(csp, var, current)
         csp.assign(var, val, current)
-    # Now repeapedly choose a random conflicted variable and change it
+    # Now repeatedly choose a random conflicted variable and change it
     for i in range(max_steps):
         conflicted = csp.conflicted_vars(current)
         if not conflicted:
@@ -261,20 +265,22 @@ class UniversalDict:
     def __getitem__(self, key): return self.value
     def __repr__(self): return '{Any: %r}' % self.value
 
+
 def different_values_constraint(A, a, B, b):
-    "A constraint saying two neighboring variables must differ in value."
+    """A constraint saying two neighboring variables must differ in value."""
     return a != b
+
 
 def MapColoringCSP(colors, neighbors):
     """Make a CSP for the problem of coloring a map with different colors
     for any two adjacent regions.  Arguments are a list of colors, and a
     dict of {region: [neighbor,...]} entries.  This dict may also be
     specified as a string of the form defined by parse_neighbors"""
-
     if isinstance(neighbors, str):
         neighbors = parse_neighbors(neighbors)     
     return CSP(neighbors.keys(), UniversalDict(colors), neighbors,
                different_values_constraint)
+
 
 def parse_neighbors(neighbors, vars=()):
     """Convert a string of the form 'X: Y Z; Y: Z' into a dict mapping
@@ -309,13 +315,15 @@ usa = MapColoringCSP(list('RGBY'),
         PA: NY NJ DE MD WV; WV: MD VA; VA: MD DC NC; NC: SC; NY: VT MA CA NJ;
         NJ: DE; DE: MD; MD: DC; VT: NH MA; MA: NH RI CT; CT: RI; ME: NH;
         HI: ; AK: """)
-#______________________________________________________________________________
+# ______________________________________________________________________________
 # n-Queens Problem
+
 
 def queen_constraint(A, a, B, b):
     """Constraint is satisfied (true) if A, B are really the same variable,
     or if they are not in the same row, down diagonal, or up diagonal."""
     return A == B or (a != b and A + a != B + b and A - a != B - b)
+
 
 class NQueensCSP(CSP):
     """Make a CSP for the nQueens problem for search with min_conflicts.
@@ -394,6 +402,7 @@ class NQueensCSP(CSP):
 
 #______________________________________________________________________________
 # The Zebra Puzzle
+
 
 def Zebra():
     "Return an instance of the Zebra Puzzle."
