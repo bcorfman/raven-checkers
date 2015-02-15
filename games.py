@@ -2,10 +2,10 @@
 
 """
 
-from utils import infinity, argmax, argmax_random_tie, num_or_str, Dict, update
+from utils import infinity, argmax, argmax_random_tie_gen, num_or_str, Dict, update
 from utils import if_, Struct
 import random
-import time
+
 
 #______________________________________________________________________________
 # Minimax Search
@@ -109,9 +109,8 @@ def alphabeta_search(state, game, d=4, cutoff_test=None, eval_fn=None):
     cutoff_test = (cutoff_test or
                    (lambda state,depth: depth>d or game.terminal_test(state)))
     eval_fn = eval_fn or (lambda state: game.utility(player, state))
-    action, state = argmax_random_tie(game.successors(state),
-                                      lambda ((a, s)): min_value(s, -infinity,
-                                                       infinity, 0))
+    action, state = argmax_random_tie_gen(game.successors(state),
+                                          lambda ((a, s)): min_value(s, -infinity, infinity, 0))
     return action
 
 #______________________________________________________________________________
