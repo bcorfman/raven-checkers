@@ -8,11 +8,11 @@ class GoalEvaluator(object):
         self.bias = bias
 
     @abstractmethod
-    def calculateDesirability(self, board):
+    def calculate_desirability(self, board):
         pass
 
     @abstractmethod
-    def setGoal(self, board):
+    def set_goal(self, board):
         pass
     
 
