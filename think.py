@@ -13,8 +13,8 @@ class GoalThink(CompositeGoal):
         self.status = self.ACTIVE
 
     def process(self):
-        self.activateIfInactive()
-        status = self.processSubgoals()
+        self.activate_if_inactive()
+        status = self.process_subgoals()
         if status == self.COMPLETED or status == self.FAILED:
             self.status = self.INACTIVE
         return status
@@ -26,13 +26,12 @@ class GoalThink(CompositeGoal):
         most_desirable = None
         best_score = 0
         for e in self.evaluators:
-            d = e.calculateDesirability()
+            d = e.calculate_desirability()
             if d > best_score:
                 most_desirable = e
                 best_score = d
         if most_desirable:
-            most_desirable.setGoal(self.owner)
-        return best_score
+            most_desirable.set_goal(self.owner)
 
     
 
