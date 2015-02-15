@@ -3,11 +3,12 @@ from goalevaluator import GoalEvaluator
 from onekingattack import Goal_OneKingAttack
 from onekingflee import Goal_OneKingFlee
 
+
 class OneKingAttackOneKingEvaluator(GoalEvaluator):
     def __init__(self, bias):
         GoalEvaluator.__init__(self, bias)
 
-    def calculateDesirability(self, board):
+    def calculate_desirability(self, board):
         plr_color = board.to_move
         enemy_color = board.enemy
         # if we don't have one man on each side or the player
@@ -28,10 +29,10 @@ class OneKingAttackOneKingEvaluator(GoalEvaluator):
             return 1.0
         return 0.0
 
-    def setGoal(self, board):
+    def set_goal(self, board):
         player = board.to_move
-        board.removeAllSubgoals()
-        goal_set = board.addWhiteSubgoal if player == WHITE else board.addBlackSubgoal
+        board.remove_all_subgoals()
+        goal_set = board.add_white_subgoal if player == WHITE else board.add_black_subgoal
         goal_set(Goal_OneKingAttack(board))
 
 
@@ -39,7 +40,7 @@ class OneKingFleeOneKingEvaluator(GoalEvaluator):
     def __init__(self, bias):
         GoalEvaluator.__init__(self, bias)
 
-    def calculateDesirability(self, board):
+    def calculate_desirability(self, board):
         plr_color = board.to_move
         enemy_color = board.enemy
         # if we don't have one man on each side or the player
@@ -58,8 +59,8 @@ class OneKingFleeOneKingEvaluator(GoalEvaluator):
             return 0.0
         return 1.0
 
-    def setGoal(self, board):
+    def set_goal(self, board):
         player = board.to_move
-        board.removeAllSubgoals()
-        goal_set = board.addWhiteSubgoal if player == WHITE else board.addBlackSubgoal
+        board.remove_all_subgoals()
+        goal_set = board.add_white_subgoal if player == WHITE else board.add_black_subgoal
         goal_set(Goal_OneKingFlee(board))
