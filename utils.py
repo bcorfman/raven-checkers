@@ -143,7 +143,7 @@ def flatten(x):
 # Functions on sequences of numbers
 # NOTE: these take the sequence argument first, like min and max,
 # and like standard math notation: \sigma (i = 1..n) fn(i)
-# A lot of programing is finding the best value that satisfies some condition;
+# A lot of programming is finding the best value that satisfies some condition;
 # so there are three versions of argmin/argmax, depending on what you want to
 # do with ties: return the first one, return them all, or pick at random.
 
@@ -171,7 +171,7 @@ def argmin(gen, fn):
             best, best_score = x, x_score
     return best
 
-def argmin_list(gen, fn):
+def argmin_gen(gen, fn):
     """Return a list of elements of gen with the lowest fn(x) scores.
     Ex: argmin_list(['one', 'to', 'three', 'or'], len) ==>  ['to', 'or']"""
     best_score, best = fn(gen.next()), []
@@ -183,19 +183,19 @@ def argmin_list(gen, fn):
             best.append(x)
     return best
 
-#def argmin_list(seq, fn):
-#    """Return a list of elements of seq[i] with the lowest fn(seq[i]) scores.
-#    Ex: argmin_list(['one', 'to', 'three', 'or'], len) ==>  ['to', 'or']"""
-#    best_score, best = fn(seq[0]), []
-#    for x in seq:
-#        x_score = fn(x)
-#        if x_score < best_score:
-#            best, best_score = [x], x_score
-#        elif x_score == best_score:
-#            best.append(x)
-#    return best
+def argmin_list(seq, fn):
+    """Return a list of elements of seq[i] with the lowest fn(seq[i]) scores.
+    Ex: argmin_list(['one', 'to', 'three', 'or'], len) ==>  ['to', 'or']"""
+    best_score, best = fn(seq[0]), []
+    for x in seq:
+        x_score = fn(x)
+        if x_score < best_score:
+            best, best_score = [x], x_score
+        elif x_score == best_score:
+            best.append(x)
+    return best
 
-def argmin_random_tie(gen, fn):
+def argmin_random_tie_gen(gen, fn):
     """Return an element with lowest fn(x) score; break ties at random.
     Thus, for all s,f: argmin_random_tie(s, f) in argmin_list(s, f)"""
     try:
@@ -213,19 +213,19 @@ def argmin_random_tie(gen, fn):
                 best = x
     return best
 
-#def argmin_random_tie(seq, fn):
-#    """Return an element with lowest fn(seq[i]) score; break ties at random.
-#    Thus, for all s,f: argmin_random_tie(s, f) in argmin_list(s, f)"""
-#    best_score = fn(seq[0]); n = 0
-#    for x in seq:
-#        x_score = fn(x)
-#        if x_score < best_score:
-#            best, best_score = x, x_score; n = 1
-#        elif x_score == best_score:
-#            n += 1
-#            if random.randrange(n) == 0:
-#                    best = x
-#    return best
+def argmin_random_tie(seq, fn):
+    """Return an element with lowest fn(seq[i]) score; break ties at random.
+    Thus, for all s,f: argmin_random_tie(s, f) in argmin_list(s, f)"""
+    best_score = fn(seq[0]); n = 0
+    for x in seq:
+        x_score = fn(x)
+        if x_score < best_score:
+            best, best_score = x, x_score; n = 1
+        elif x_score == best_score:
+            n += 1
+            if random.randrange(n) == 0:
+                    best = x
+    return best
 
 def argmax(gen, fn):
     """Return an element with highest fn(x) score; tie goes to first one.
@@ -240,6 +240,10 @@ def argmax_list(seq, fn):
 def argmax_random_tie(seq, fn):
     "Return an element with highest fn(x) score; break ties at random."
     return argmin_random_tie(seq, lambda x: -fn(x))
+
+def argmax_random_tie_gen(gen, fn):
+    "Return an element with highest fn(x) score; break ties at random."
+    return argmin_random_tie_gen(gen, lambda x: -fn(x))
 #______________________________________________________________________________
 # Statistical and mathematical functions
 
