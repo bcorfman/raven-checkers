@@ -24,11 +24,8 @@ class GoalThink(CompositeGoal):
 
     def terminate(self):
         pass
-        
+
     def arbitrate(self):
         most_desirable = argmax_random_tie(self.evaluators, lambda s: s.calculate_desirability(self.owner))
         most_desirable.set_goal(self.owner)
-
-    
-
     
