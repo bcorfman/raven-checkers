@@ -1,4 +1,3 @@
-from utils import manhattan_distance
 from goal import Goal
 from composite import CompositeGoal
 
