@@ -224,7 +224,7 @@ def argmin_random_tie(seq, fn):
         elif x_score == best_score:
             n += 1
             if random.randrange(n) == 0:
-                    best = x
+                best = x
     return best
 
 def argmax(gen, fn):

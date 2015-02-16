@@ -1,8 +1,7 @@
 __author__ = 'brandon_corfman'
 
-from goalevaluator import GoalEvaluator
 from csp import CSP, different_values_constraint, backtracking_search
-from globalconst import BLACK_MAP, WHITE_MAP, BLACK, WHITE, MAN
+from globalconst import BLACK_MAP, WHITE_MAP, BLACK, MAN
 import unittest
 import checkers
 
@@ -17,24 +16,6 @@ def formation_csp(variables, board):
         domains[var] = [pos for pos in pos_map[var] if board.squares[pos] == player + MAN]
         neighbors[var] = set(variables) - {var}
     return CSP(variables, domains, neighbors, different_values_constraint)
-
-
-class ShortDykeEvaluator(GoalEvaluator):
-    def __init__(self, bias):
-        GoalEvaluator.__init__(self, bias)
-
-    def calculateDesirability(self, board):
-        short_dyke_csp = formation_csp([8, 9, 14, 17, 23, 29], board)
-        if backtracking_search(short_dyke_csp):
-            return 1.0
-        else:
-            return 0.0
-
-    def setGoal(self, board):
-        player = board.to_move
-        board.removeAllSubgoals()
-        goal_set = board.addWhiteSubgoal if player == WHITE else board.addBlackSubgoal
-        # goal_set(Goal_ShortDyke(board))
 
 
 class TestShortDykePossibleFromStart(unittest.TestCase):
