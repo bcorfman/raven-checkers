@@ -4,6 +4,7 @@
 
 from utils import infinity, argmax, argmax_random_tie_gen, num_or_str, Dict, update
 from utils import if_, Struct
+from abc import ABCMeta, abstractmethod
 import random
 
 
@@ -33,8 +34,7 @@ def minimax_decision(state, game):
         return v
 
     # Body of minimax_decision starts here:
-    action, state = argmax(game.successors(state),
-                           lambda ((a, s)): min_value(s))
+    action, state = argmax(game.successors(state), lambda ((a, s)): min_value(s))
     return action
 
 
@@ -151,17 +151,22 @@ class Game:
     methods. You will also need to set the .initial attribute to the
     initial state; this can be done in the constructor."""
 
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
     def legal_moves(self, state):
         "Return a list of the allowable moves at this point."
-        abstract
+        pass
 
+    @abstractmethod
     def make_move(self, move, state):
         "Return the state that results from making a move from a state."
-        abstract
+        pass
 
+    @abstractmethod
     def utility(self, state, player):
         "Return the value of this final state to player."
-        abstract
+        pass
 
     def terminal_test(self, state):
         "Return True if this is a final state for the game."
