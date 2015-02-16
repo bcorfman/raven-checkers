@@ -1,12 +1,15 @@
 from composite import CompositeGoal
-from onek_onek import OneKingAttackOneKingEvaluator, OneKingFleeOneKingEvaluator
+from shortdyke_eval import ShortDykeEvaluator
+from longdyke_eval import LongDykeEvaluator
+from utils import argmax_random_tie
 
 
 class GoalThink(CompositeGoal):
     def __init__(self, owner):
         CompositeGoal.__init__(self, owner)
-        self.evaluators = [OneKingAttackOneKingEvaluator(1.0),
-                           OneKingFleeOneKingEvaluator(1.0)]
+        self.owner = owner
+        self.evaluators = [ShortDykeEvaluator(1.0),
+                           LongDykeEvaluator(1.0)]
 
     def activate(self):
         self.arbitrate()
@@ -23,15 +26,8 @@ class GoalThink(CompositeGoal):
         pass
         
     def arbitrate(self):
-        most_desirable = None
-        best_score = 0
-        for e in self.evaluators:
-            d = e.calculate_desirability()
-            if d > best_score:
-                most_desirable = e
-                best_score = d
-        if most_desirable:
-            most_desirable.set_goal(self.owner)
+        most_desirable = argmax_random_tie(self.evaluators, lambda s: s.calculate_desirability(self.owner))
+        most_desirable.set_goal(self.owner)
 
     
 

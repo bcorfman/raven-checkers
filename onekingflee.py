@@ -3,21 +3,22 @@ from utils import manhattan_distance
 from goal import Goal
 from composite import CompositeGoal
 
-class Goal_OneKingFlee(CompositeGoal):
+
+class GoalOneKingFlee(CompositeGoal):
     def __init__(self, owner):
         CompositeGoal.__init__(self, owner)
 
     def activate(self):
         self.status = self.ACTIVE
-        self.removeAllSubgoals()
+        self.remove_all_subgoals()
         # because goals are *pushed* onto the front of the subgoal list they must
         # be added in reverse order.
-        self.addSubgoal(Goal_MoveTowardBestDoubleCorner(self.owner))
-        self.addSubgoal(Goal_SeeSaw(self.owner))
+        self.add_subgoal(GoalMoveTowardBestDoubleCorner(self.owner))
+        self.add_subgoal(GoalSeeSaw(self.owner))
 
     def process(self):
-        self.activateIfInactive()
-        return self.processSubgoals()
+        self.activate_if_inactive()
+        return self.process_subgoals()
 
     def terminate(self):
         self.status = self.INACTIVE
@@ -33,7 +34,8 @@ class Goal_OneKingFlee(CompositeGoal):
 #          6   7   8   9
 #   (black)
 
-class Goal_MoveTowardBestDoubleCorner(Goal):
+
+class GoalMoveTowardBestDoubleCorner(Goal):
     def __init__(self, owner):
         Goal.__init__(self, owner)
         self.dc = [9, 15, 39, 45]
@@ -43,7 +45,7 @@ class Goal_MoveTowardBestDoubleCorner(Goal):
 
     def process(self):
         # if status is inactive, activate
-        self.activateIfInactive()
+        self.activate_if_inactive()
         
         # only moves (not captures) are a valid goal
         if self.owner.captures:
@@ -99,8 +101,9 @@ class Goal_MoveTowardBestDoubleCorner(Goal):
         
     def terminate(self):
         self.status = self.INACTIVE
-    
-class Goal_SeeSaw(Goal):
+
+
+class GoalSeeSaw(Goal):
     def __init__(self, owner):
         Goal.__init__(self, owner)
 

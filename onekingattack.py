@@ -2,26 +2,28 @@ from utils import manhattan_distance
 from goal import Goal
 from composite import CompositeGoal
 
-class Goal_OneKingAttack(CompositeGoal):
+
+class GoalOneKingAttack(CompositeGoal):
     def __init__(self, owner):
         CompositeGoal.__init__(self, owner)
 
     def activate(self):
         self.status = self.ACTIVE
-        self.removeAllSubgoals()
+        self.remove_all_subgoals()
         # because goals are *pushed* onto the front of the subgoal list they must
         # be added in reverse order.
-        self.addSubgoal(Goal_PinEnemy(self.owner))
-        self.addSubgoal(Goal_MoveTowardEnemy(self.owner))
+        self.add_subgoal(GoalPinEnemy(self.owner))
+        self.add_subgoal(GoalMoveTowardEnemy(self.owner))
 
     def process(self):
-        self.activateIfInactive()
-        return self.processSubgoals()
+        self.activate_if_inactive()
+        return self.process_subgoals()
 
     def terminate(self):
         self.status = self.INACTIVE
 
-class Goal_MoveTowardEnemy(Goal):
+
+class GoalMoveTowardEnemy(Goal):
     def __init__(self, owner):
         Goal.__init__(self, owner)
 
@@ -30,7 +32,7 @@ class Goal_MoveTowardEnemy(Goal):
 
     def process(self):
         # if status is inactive, activate
-        self.activateIfInactive()
+        self.activate_if_inactive()
         
         # only moves (not captures) are a valid goal
         if self.owner.captures:
@@ -77,7 +79,8 @@ class Goal_MoveTowardEnemy(Goal):
     def terminate(self):
         self.status = self.INACTIVE
 
-class Goal_PinEnemy(Goal):
+
+class GoalPinEnemy(Goal):
     def __init__(self, owner):
         Goal.__init__(self, owner)
 
