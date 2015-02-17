@@ -89,3 +89,6 @@ def formation_csp(formation, board):
         domains[f] = [pos for pos in pos_map[f] if board.squares[pos] == player + MAN]
         neighbors[f] = set(formation) - {f}
     return CSP(formation, domains, neighbors, different_values_constraint)
+
+
+
