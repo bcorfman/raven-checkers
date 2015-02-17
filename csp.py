@@ -282,7 +282,7 @@ def MapColoringCSP(colors, neighbors):
                different_values_constraint)
 
 
-def parse_neighbors(neighbors, vars=()):
+def parse_neighbors(neighbors, vars=(), parseAsInt=False):
     """Convert a string of the form 'X: Y Z; Y: Z' into a dict mapping
     regions to neighbors.  The syntax is a region name followed by a ':'
     followed by zero or more region names, followed by ';', repeated for
@@ -296,8 +296,12 @@ def parse_neighbors(neighbors, vars=()):
     specs = [spec.split(':') for spec in neighbors.split(';')]
     for (A, Aneighbors) in specs:
         A = A.strip()
+        if parseAsInt:
+            A = int(A)
         dict.setdefault(A, [])
         for B in Aneighbors.split():
+            if parseAsInt:
+                B = int(B)
             dict[A].append(B)
             dict[B].append(A)
     return dict
