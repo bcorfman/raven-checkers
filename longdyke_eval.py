@@ -31,7 +31,7 @@ class LongDykeEvaluator(GoalEvaluator):
 
     def set_goal(self, board):
         player = board.to_move
-        board.removeAllSubgoals()
-        goal_set = board.addWhiteSubgoal if player == WHITE else board.addBlackSubgoal
+        board.remove_all_subgoals()
+        goal_set = board.add_white_subgoal if player == WHITE else board.add_black_subgoal
         goal_set(GoalLongDyke(board))
 
