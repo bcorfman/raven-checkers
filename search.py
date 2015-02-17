@@ -7,6 +7,7 @@ functions."""
 from __future__ import generators
 from utils import *
 import math, random, sys, time, bisect, string
+from abc import ABCMeta, abstractmethod
 
 # ______________________________________________________________________________
 
@@ -16,19 +17,21 @@ class Problem:
     implement the method successor, and possibly __init__, goal_test, and
     path_cost. Then you will create instances of your subclass and solve them
     with the various search functions."""
+    __metaclass__ = ABCMeta
 
     def __init__(self, initial, goal=None):
         """The constructor specifies the initial state, and possibly a goal
         state, if there is a unique goal.  Your subclass's constructor can add
         other arguments."""
         self.initial = initial; self.goal = goal
-        
+
+    @abstractmethod
     def successor(self, state):
         """Given a state, return a sequence of (action, state) pairs reachable
         from this state. If there are many successors, consider an iterator
         that yields the successors one at a time, rather than building them
         all at once. Iterators will work fine within the framework."""
-        abstract
+        pass
     
     def goal_test(self, state):
         """Return True if the state is a goal. The default method compares the
@@ -44,10 +47,11 @@ class Problem:
         and action. The default method costs 1 for every step in the path."""
         return c + 1
 
+    @abstractmethod
     def value(self):
         """For optimization problems, each state has a value.  Hill-climbing
         and related algorithms try to maximize this value."""
-        abstract
+        pass
 # ______________________________________________________________________________
     
 
@@ -690,13 +694,13 @@ class InstrumentedProblem(Problem):
         self.found = None
         
     def successor(self, state):
-        "Return a list of (action, state) pairs reachable from this state."
-        result =  self.problem.successor(state)
+        """Return a list of (action, state) pairs reachable from this state."""
+        result = self.problem.successor(state)
         self.succs += 1; self.states += len(result)
         return result
     
     def goal_test(self, state):
-        "Return true if the state is a goal."
+        """Return true if the state is a goal."""
         self.goal_tests += 1
         result = self.problem.goal_test(state)
         if result: 
