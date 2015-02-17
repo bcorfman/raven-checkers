@@ -68,23 +68,24 @@ WHITE_MAP = {6: {6,12,17,18,23,24,28,29,30,34,35,36,39,40,41,42,45,46,47,48},
              45: {45},
              46: {46},
              47: {47},
-             48: {48} }
+             48: {48}}
 
-NEIGHBOR_SQUARES = "6: 12; 7: 12, 13; 8: 13, 14; 9: 14, 15; " \
-                   "12: 6, 7, 17, 18; 13: 7, 8, 18, 19; 14: 8, 9, 19, 20; 15: 9, 20;" \
-                   "17: 12, 23; 18: 12, 13, 23, 24; 19: 13, 14, 24, 25; 20: 14, 15, 25, 26;" \
-                   "28: 23, 34; 29: 23, 24, 34, 35; 30: 24, 25, 35, 36; 31: 25, 26, 36, 37;" \
-                   "34: 28, 29, 39, 40; 35: 29, 30, 40, 41; 36: 30, 31, 41, 42; 37: 31, 42;" \
-                   "39: 34, 45; 40: 34, 35, 45, 46; 41: 35, 36, 46, 47; 42: 36, 37, 47, 48;" \
-                   "45: 39, 40; 46: 40, 41; 47: 41, 42; 48: 42"
+NEIGHBOR_SQUARES = "6: 12; 7: 12 13; 8: 13 14; 9: 14 15; " \
+                   "12: 6 7 17 18; 13: 7 8 18 19; 14: 8 9 19 20; 15: 9 20;" \
+                   "17: 12 23; 18: 12 13 23 24; 19: 13 14 24 25; 20: 14 15 25 26;" \
+                   "28: 23 34; 29: 23 24 34 35; 30: 24 25 35 36; 31: 25 26 36 37;" \
+                   "34: 28 29 39 40; 35: 29 30 40 41; 36: 30 31 41 42; 37: 31 42;" \
+                   "39: 34 45; 40: 34 35 45 46; 41: 35 36 46 47; 42: 36 37 47 48;" \
+                   "45: 39 40; 46: 40 41; 47: 41 42; 48: 42"
+
 
 def formation_csp(formation, board):
     """Return an instance of the CSP to see if the formation can be obtained."""
     domains = {}
     player = board.to_move
     pos_map = BLACK_MAP if player == BLACK else WHITE_MAP
+    neighbors = {}
     for f in formation:
         domains[f] = [pos for pos in pos_map[f] if board.squares[pos] == player + MAN]
-        #neighbors[f] = set(formation) - {f}
-    neighbors = parse_neighbors(NEIGHBOR_SQUARES, (), True)
+        neighbors[f] = set(formation) - {f}
     return CSP(formation, domains, neighbors, different_values_constraint)
