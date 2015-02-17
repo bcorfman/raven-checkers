@@ -172,11 +172,11 @@ def recursive_backtracking(assignment, csp):
 
 def select_unassigned_variable(assignment, csp):
     """Select the variable to work on next.  Find"""
-    if csp.mcv: # Most Constrained Variable 
+    if csp.mcv:  # Most Constrained Variable
         unassigned = [v for v in csp.vars if v not in assignment] 
         return argmin_random_tie(unassigned,
                      lambda var: -num_legal_values(csp, var, assignment))
-    else: # First unassigned variable
+    else:  # First unassigned variable
         for v in csp.vars:
             if v not in assignment:
                 return v
