@@ -22,16 +22,16 @@ class FormationProblem(Problem):
         # assign next element in state
         pos_map = BLACK_MAP if self.board.to_move == BLACK else WHITE_MAP
         next_var = self.formation[len(state)]
-        goal_row, goal_col = self.board.grid_map[next_var]
+        goal_row, goal_col = self.board.gridmap[next_var]
 
         def calc_dist(loc):
             if loc not in state:
-                row, col = self.board.grid_map[loc]
+                row, col = self.board.gridmap[loc]
                 return manhattan_distance(row, col, goal_row, goal_col)
             else:
                 return 9999  # location has already been used, so don't let the distance be selected
 
-        best = argmin_random_tie(pos_map[next_var], calc_dist)
+        best = argmin_random_tie(list(pos_map[next_var]), calc_dist)
         return state + [best] if best else None
 
     def goal_test(self, state):
@@ -46,9 +46,9 @@ def measure_formation_closeness(formation, board):
     if solution:
         diff = 0.0
         for p in formation:
-            goal_row, goal_col = board.grid_map[p]
+            goal_row, goal_col = board.gridmap[p]
             for s in solution:
-                soln_row, soln_col = board.grid_map[s]
+                soln_row, soln_col = board.gridmap[s]
                 diff += manhattan_distance(soln_row, soln_col, goal_row, goal_col)
         return diff
     else:
