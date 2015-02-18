@@ -105,7 +105,7 @@ class CSP(search.Problem):
 
     # These methods are for the tree and graph search interface:
 
-    def succ(self, assignment):
+    def successor(self, assignment):
         """Return a list of (action, state) pairs."""
         if len(assignment) == len(self.vars):
             return []
