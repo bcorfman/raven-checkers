@@ -58,9 +58,6 @@ PROGRAM_TITLE = 'Raven Checkers'
 CUR_DIR = sys.path[0]
 TRAINING_DIR = 'training'
 
-# search values for transposition table
-hashfALPHA, hashfBETA, hashfEXACT = range(3)
-
 # constants for evaluation function
 TURN = 2      # color to move gets + turn
 BRV = 3       # multiplier for back rank
