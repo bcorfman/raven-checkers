@@ -1,6 +1,7 @@
 __author__ = 'brandon_corfman'
-from globalconst import BLACK, MAN
-from csp import different_values_constraint, CSP, parse_neighbors
+from search import Problem, best_first_graph_search
+from globalconst import BLACK_IDX, WHITE_IDX, BLACK, MAN
+
 
 # other squares reachable from a particular square with a black man
 BLACK_MAP = {45: {45,39,40,34,35,28,29,30,23,24,25,17,18,19,20,12,13,14,15,6,7,8,9},
@@ -70,25 +71,51 @@ WHITE_MAP = {6: {6,12,17,18,23,24,28,29,30,34,35,36,39,40,41,42,45,46,47,48},
              47: {47},
              48: {48}}
 
-NEIGHBOR_SQUARES = "6: 12; 7: 12 13; 8: 13 14; 9: 14 15; " \
-                   "12: 6 7 17 18; 13: 7 8 18 19; 14: 8 9 19 20; 15: 9 20;" \
-                   "17: 12 23; 18: 12 13 23 24; 19: 13 14 24 25; 20: 14 15 25 26;" \
-                   "28: 23 34; 29: 23 24 34 35; 30: 24 25 35 36; 31: 25 26 36 37;" \
-                   "34: 28 29 39 40; 35: 29 30 40 41; 36: 30 31 41 42; 37: 31 42;" \
-                   "39: 34 45; 40: 34 35 45 46; 41: 35 36 46 47; 42: 36 37 47 48;" \
-                   "45: 39 40; 46: 40 41; 47: 41 42; 48: 42"
+
+class FormationProblem(Problem):
+    def __init__(self, goal, board):
+        self.board = board
+        self.initial = ()
+        self.goal = goal
+
+    def actions(self, state):
+        player = self.board.to_move
+        pos_map = BLACK_MAP if player == BLACK else WHITE_MAP
+        next_var = self.goal[len(state)]
+        actions = [pos for pos in pos_map[next_var] if self.board.squares[pos] == player + MAN]
+        for a in actions:
+            if a not in state:
+                yield a
+
+    def result(self, state, action):
+        return state + (action, )
+
+    def goal_test(self, state):
+        return len(state) == len(self.goal)
+
+    def path_cost(self, c, state1, action, state2):
+        if not state2:
+            return 0
+        player = self.board.to_move
+        index_list = BLACK_IDX if player == BLACK else WHITE_IDX
+        start_sq = state2[-1]
+        goal_sq = self.goal[len(state2) - 1]
+        frontier = [(start_sq, c)]
+        while frontier:
+            curr_sq, cost = frontier.pop()
+            if curr_sq == goal_sq:
+                return cost
+            for i in index_list:
+                if curr_sq + i <= goal_sq:
+                    frontier.append((curr_sq + i, cost + 1))
+        return 99999
 
 
-def formation_csp(formation, board):
-    """Return an instance of the CSP to see if the formation can be obtained."""
-    domains = {}
-    player = board.to_move
-    pos_map = BLACK_MAP if player == BLACK else WHITE_MAP
-    neighbors = {}
-    for f in formation:
-        domains[f] = [pos for pos in pos_map[f] if board.squares[pos] == player + MAN]
-        neighbors[f] = set(formation) - {f}
-    return CSP(formation, domains, neighbors, different_values_constraint)
+def measure_formation_closeness(formation, board):
+    problem = FormationProblem(formation, board)
 
+    def f(current_node):
+        return sum(abs(s - formation[i]) for i, s in enumerate(current_node.state))
 
-
+    node = best_first_graph_search(problem, f)
+    return node.path_cost if node.solution() else 0.0
