@@ -2,10 +2,10 @@ import games
 import copy
 import multiprocessing
 import time
-import random
 from controller import Controller
-from transpositiontable import TranspositionTable
+from think import GoalThink
 from globalconst import *
+
 
 class AlphaBetaController(Controller):
     def __init__(self, **props):
@@ -20,7 +20,10 @@ class AlphaBetaController(Controller):
         self.process = multiprocessing.Process()
         self._start_time = None
         self._call_id = 0
-        self._trans_table = TranspositionTable(50000)
+        self._thinker = GoalThink(self)
+
+    def get_model(self):
+        return self._model
 
     def set_before_turn_event(self, evt):
         self._before_turn_event = evt
@@ -41,7 +44,7 @@ class AlphaBetaController(Controller):
         self._view.update_statusbar('Thinking ...')
         self.process = multiprocessing.Process(target=calc_move,
                                                args=(self._model,
-                                                     self._trans_table,
+                                                     self._thinker,
                                                      self._search_time,
                                                      self._term_event,
                                                      self._child_conn))
@@ -90,6 +93,7 @@ class AlphaBetaController(Controller):
         self._view.update_statusbar()
         self._model.curr_state.detach(self._view)
 
+
 def longest_of(moves):
     length = -1
     selected = None
@@ -100,7 +104,8 @@ def longest_of(moves):
             selected = move
     return selected
 
-def calc_move(model, table, search_time, term_event, child_conn):
+
+def calc_move(model, thinker, search_time, term_event, child_conn):
     move = None
     term_event.clear()
     captures = model.captures_available()
@@ -111,11 +116,9 @@ def calc_move(model, table, search_time, term_event, child_conn):
         depth = 0
         start_time = time.time()
         curr_time = start_time
-        checkpoint = start_time
         model_copy = copy.deepcopy(model)
         while 1:
             depth += 1
-            table.set_hash_move(depth, -1)
             move = games.alphabeta_search(model_copy.curr_state,
                                           model_copy,
                                           depth)
@@ -131,4 +134,4 @@ def calc_move(model, table, search_time, term_event, child_conn):
                depth > MAXDEPTH):
                 break
     child_conn.send(move)
-    #model.curr_state.ok_to_move = True
+    # model.curr_state.ok_to_move = True
