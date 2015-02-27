@@ -2,7 +2,7 @@ __author__ = 'brandon_corfman'
 from goal import Goal
 
 
-class GoalLongDyke(Goal):
+class GoalShortDyke(Goal):
     def __init__(self, owner):
         Goal.__init__(self, owner)
 
@@ -17,7 +17,7 @@ class GoalLongDyke(Goal):
         self.status = self.INACTIVE
 
 
-class GoalShortDyke(Goal):
+class GoalLongDyke(Goal):
     def __init__(self, owner):
         Goal.__init__(self, owner)
 

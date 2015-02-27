@@ -6,7 +6,7 @@ from globalconst import BLACK_KING, WHITE_KING, FREE, OCCUPIED_CHAR, FREE_CHAR
 from globalconst import COLORS, TYPES, TURN, CRAMP, BRV, KEV, KCV, MEV, MCV
 from globalconst import INTACTDOUBLECORNER, ENDGAME, OPENING, MIDGAME
 from globalconst import create_grid_map, KING_IDX, BLACK_IDX, WHITE_IDX
-import copy
+
 
 class Checkerboard(object):
     #   (white)
@@ -19,19 +19,19 @@ class Checkerboard(object):
     #            12  13  14  15
     #          6   7   8   9
     #   (black)
-    valid_squares = [6,7,8,9,12,13,14,15,17,18,19,20,23,24,25,26,
-                     28,29,30,31,34,35,36,37,39,40,41,42,45,46,
-                     47,48]
+    valid_squares = [6, 7, 8, 9, 12, 13, 14, 15, 17, 18, 19, 20, 23, 24, 25, 26,
+                     28, 29, 30, 31, 34, 35, 36, 37, 39, 40, 41, 42, 45, 46,
+                     47, 48]
     # values of pieces (KING, MAN, BLACK, WHITE, FREE)
-    value = [0,0,0,0,0,1,256,0,0,16,4096,0,0,0,0,0,0]
-    edge = [6,7,8,9,15,17,26,28,37,39,45,46,47,48]
-    center = [18,19,24,25,29,30,35,36]
+    value = [0, 0, 0, 0, 0, 1, 256, 0, 0, 16, 4096, 0, 0, 0, 0, 0, 0]
+    edge = [6, 7, 8, 9, 15, 17, 26, 28, 37, 39, 45, 46, 47, 48]
+    center = [18, 19, 24, 25, 29, 30, 35, 36]
     # values used to calculate tempo -- one for each square on board (0, 48)
-    row = [0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,2,2,2,2,0,0,3,3,3,3,0,
-           4,4,4,4,0,0,5,5,5,5,0,6,6,6,6,0,0,7,7,7,7]
-    safeedge = [9,15,39,45]
-    rank = {0:0, 1:-1, 2:1, 3:0, 4:1, 5:1, 6:2, 7:1, 8:1, 9:0,
-            10:7, 11:4, 12:2, 13:2, 14:9, 15:8}
+    row = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 2, 2, 2, 2, 0, 0, 3, 3, 3, 3, 0,
+           4, 4, 4, 4, 0, 0, 5, 5, 5, 5, 0, 6, 6, 6, 6, 0, 0, 7, 7, 7, 7]
+    safeedge = [9, 15, 39, 45]
+    rank = {0: 0, 1: -1, 2: 1, 3: 0, 4: 1, 5: 1, 6: 2, 7: 1, 8: 1, 9: 0,
+            10: 7, 11: 4, 12: 2, 13: 2, 14: 9, 15: 8}
 
     def __init__(self):
         self.squares = [OCCUPIED for i in range(56)]
@@ -59,25 +59,15 @@ class Checkerboard(object):
         wc = self.count(WHITE)
         sq = self.squares
         lookup = self.lookup
-        s = "[%s=%2d %s=%2d (%+d)]\n" % (BLACK_CHAR, bc,
-                                         WHITE_CHAR, wc,
-                                         bc - wc)
-        s += "8   %s   %s   %s   %s\n" % (lookup(sq[45]), lookup(sq[46]),
-                                   lookup(sq[47]), lookup(sq[48]))
-        s += "7 %s   %s   %s   %s\n" % (lookup(sq[39]), lookup(sq[40]),
-                                  lookup(sq[41]), lookup(sq[42]))
-        s += "6   %s   %s   %s   %s\n" % (lookup(sq[34]), lookup(sq[35]),
-                                  lookup(sq[36]), lookup(sq[37]))
-        s += "5 %s   %s   %s   %s\n" % (lookup(sq[28]), lookup(sq[29]),
-                                  lookup(sq[30]), lookup(sq[31]))
-        s += "4   %s   %s   %s   %s\n" % (lookup(sq[23]), lookup(sq[24]),
-                                  lookup(sq[25]), lookup(sq[26]))
-        s += "3 %s   %s   %s   %s\n" % (lookup(sq[17]), lookup(sq[18]),
-                                  lookup(sq[19]), lookup(sq[20]))
-        s += "2   %s   %s   %s   %s\n" % (lookup(sq[12]), lookup(sq[13]),
-                                  lookup(sq[14]), lookup(sq[15]))
-        s += "1 %s   %s   %s   %s\n" % (lookup(sq[6]), lookup(sq[7]),
-                                  lookup(sq[8]), lookup(sq[9]))
+        s = "[%s=%2d %s=%2d (%+d)]\n" % (BLACK_CHAR, bc, WHITE_CHAR, wc, bc - wc)
+        s += "8   %s   %s   %s   %s\n" % (lookup(sq[45]), lookup(sq[46]), lookup(sq[47]), lookup(sq[48]))
+        s += "7 %s   %s   %s   %s\n" % (lookup(sq[39]), lookup(sq[40]), lookup(sq[41]), lookup(sq[42]))
+        s += "6   %s   %s   %s   %s\n" % (lookup(sq[34]), lookup(sq[35]), lookup(sq[36]), lookup(sq[37]))
+        s += "5 %s   %s   %s   %s\n" % (lookup(sq[28]), lookup(sq[29]), lookup(sq[30]), lookup(sq[31]))
+        s += "4   %s   %s   %s   %s\n" % (lookup(sq[23]), lookup(sq[24]), lookup(sq[25]), lookup(sq[26]))
+        s += "3 %s   %s   %s   %s\n" % (lookup(sq[17]), lookup(sq[18]), lookup(sq[19]), lookup(sq[20]))
+        s += "2   %s   %s   %s   %s\n" % (lookup(sq[12]), lookup(sq[13]), lookup(sq[14]), lookup(sq[15]))
+        s += "1 %s   %s   %s   %s\n" % (lookup(sq[6]), lookup(sq[7]), lookup(sq[8]), lookup(sq[9]))
         s += "  a b c d e f g h"
         return s
 
@@ -114,7 +104,7 @@ class Checkerboard(object):
 
     def has_opposition(self, color):
         sq = self.squares
-        cols = range(6,10) if self.to_move == BLACK else range(12,16)
+        cols = range(6, 10) if self.to_move == BLACK else range(12, 16)
         pieces_in_system = 0
         for i in cols:
             for j in range(4):
@@ -141,6 +131,12 @@ class Checkerboard(object):
 
     def delete_redo_list(self):
         del self.redo_list[:]
+
+    def remove_all_subgoals(self, color):
+        if color == BLACK:
+            self.black_subgoals = []
+        elif color == WHITE:
+            self.white_subgoals = []
 
     def make_move(self, move, notify=True, undo=True, annotation=''):
         sq = self.squares
@@ -227,12 +223,10 @@ class Checkerboard(object):
             eval -= TURN
             mult = 1
 
-        return mult * \
-                (eval + self._eval_cramp(sq) + self._eval_backrankguard(sq) +
-                self._eval_doublecorner(sq) + self._eval_center(sq) +
-                self._eval_edge(sq) +
-                self._eval_tempo(sq, nm, nbk, nbm, nwk, nwm) +
-                self._eval_playeropposition(sq, nwm, nwk, nbk, nbm, nm, nk))
+        return mult * (eval + self._eval_cramp(sq) + self._eval_backrankguard(sq) +
+                       self._eval_doublecorner(sq) + self._eval_center(sq) +
+                       self._eval_edge(sq) + self._eval_tempo(sq, nm, nbk, nbm, nwk, nwm) +
+                       self._eval_playeropposition(sq, nwm, nwk, nbk, nbm, nm, nk))
 
     def _extend_capture(self, valid_moves, captures, add_sq_func, visited):
         player = self.to_move
@@ -264,8 +258,7 @@ class Checkerboard(object):
 
     def _capture_man(self, player, squares, mid, dest, last_pos):
         sq2 = [mid, squares[mid], FREE]
-        if ((player == BLACK and last_pos>=34) or
-            (player == WHITE and last_pos<=20)):
+        if (player == BLACK and last_pos >= 34) or (player == WHITE and last_pos <= 20):
             sq3 = [dest, FREE, player | KING]
         else:
             sq3 = [dest, FREE, player | MAN]
@@ -290,8 +283,7 @@ class Checkerboard(object):
                     if squares[mid] & enemy and squares[dest] & FREE:
                         sq1 = [i, player | MAN, FREE]
                         sq2 = [mid, squares[mid], FREE]
-                        if ((player == BLACK and i>=34) or
-                            (player == WHITE and i<=20)):
+                        if (player == BLACK and i >= 34) or (player == WHITE and i <= 20):
                             sq3 = [dest, FREE, player | KING]
                         else:
                             sq3 = [dest, FREE, player | MAN]
