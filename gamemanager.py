@@ -23,47 +23,48 @@ class GameManager(object):
         self.player_color = BLACK
         self.num_players = 1
         self.set_controllers()
-        self._controller1.start_turn()
+        self.controller1.start_turn()
         self.filename = None
+        self.think_time = self.parent.thinkTime.get()
 
     def set_controllers(self):
         think_time = self.parent.thinkTime.get()
         if self.num_players == 0:
-            self._controller1 = AlphaBetaController(model=self.model,
-                                                    view=self.view,
-                                                    searchtime=think_time,
-                                                    end_turn_event=self.turn_finished)
-            self._controller2 = AlphaBetaController(model=self.model,
-                                                    view=self.view,
-                                                    searchtime=think_time,
-                                                    end_turn_event=self.turn_finished)
+            self.controller1 = AlphaBetaController(model=self.model,
+                                                   view=self.view,
+                                                   searchtime=think_time,
+                                                   end_turn_event=self.turn_finished)
+            self.controller2 = AlphaBetaController(model=self.model,
+                                                   view=self.view,
+                                                   searchtime=think_time,
+                                                   end_turn_event=self.turn_finished)
         elif self.num_players == 1:
             # assumption here is that Black is the player
-            self._controller1 = PlayerController(model=self.model,
-                                                 view=self.view,
-                                                 end_turn_event=self.turn_finished)
-            self._controller2 = AlphaBetaController(model=self.model,
-                                                    view=self.view,
-                                                    searchtime=think_time,
-                                                    end_turn_event=self.turn_finished)
+            self.controller1 = PlayerController(model=self.model,
+                                                view=self.view,
+                                                end_turn_event=self.turn_finished)
+            self.controller2 = AlphaBetaController(model=self.model,
+                                                   view=self.view,
+                                                   searchtime=think_time,
+                                                   end_turn_event=self.turn_finished)
             # swap controllers if White is selected as the player
             if self.player_color == WHITE:
-                self._controller1, self._controller2 = self._controller2, self._controller1
+                self.controller1, self.controller2 = self.controller2, self.controller1
         elif self.num_players == 2:
-            self._controller1 = PlayerController(model=self.model,
-                                                 view=self.view,
-                                                 end_turn_event=self.turn_finished)
-            self._controller2 = PlayerController(model=self.model,
-                                                 view=self.view,
-                                                 end_turn_event=self.turn_finished)
-        self._controller1.set_before_turn_event(self._controller2.remove_highlights)
-        self._controller2.set_before_turn_event(self._controller1.remove_highlights)
+            self.controller1 = PlayerController(model=self.model,
+                                                view=self.view,
+                                                end_turn_event=self.turn_finished)
+            self.controller2 = PlayerController(model=self.model,
+                                                view=self.view,
+                                                end_turn_event=self.turn_finished)
+        self.controller1.set_before_turn_event(self.controller2.remove_highlights)
+        self.controller2.set_before_turn_event(self.controller1.remove_highlights)
 
     def _stop_updates(self):
         # stop alphabeta threads from making any moves
         self.model.curr_state.ok_to_move = False
-        self._controller1.stop_process()
-        self._controller2.stop_process()
+        self.controller1.stop_process()
+        self.controller2.stop_process()
 
     def _save_curr_game_if_needed(self):
         if self.view.is_dirty():
@@ -92,7 +93,7 @@ class GameManager(object):
         self.view.update_statusbar()
         self.view.reset_toolbar_buttons()
         self.view.curr_annotation = ''
-        self._controller1.start_turn()
+        self.controller1.start_turn()
 
     def load_game(self, filename):
         self._stop_updates()
@@ -197,12 +198,12 @@ class GameManager(object):
 
     def turn_finished(self):
         if self.model.curr_state.to_move == BLACK:
-            self._controller2.end_turn() # end White's turn
+            self.controller2.end_turn()  # end White's turn
             self._root.update()
             self.view.update_statusbar()
-            self._controller1.start_turn() # begin Black's turn
+            self.controller1.start_turn()  # begin Black's turn
         else:
-            self._controller1.end_turn() # end Black's turn
+            self.controller1.end_turn()  # end Black's turn
             self._root.update()
             self.view.update_statusbar()
-            self._controller2.start_turn() # begin White's turn
+            self.controller2.start_turn()  # begin White's turn
