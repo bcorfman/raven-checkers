@@ -179,6 +179,6 @@ def start():
     mainframe.root.update()
     mainframe.root.mainloop()
 
-if __name__=='__main__':
+if __name__ == '__main__':
     freeze_support()
     start()
