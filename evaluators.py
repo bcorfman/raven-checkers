@@ -105,3 +105,18 @@ class EchelonEvaluator(GoalEvaluator):
     def set_goal(self):
         self.thinker.remove_all_subgoals()
         self.thinker.add_subgoal(GoalEchelon(self.thinker))
+
+
+class CrossboardEvaluator(GoalEvaluator):
+    def __init__(self, thinker):
+        GoalEvaluator.__init__(self)
+        self.thinker = thinker
+
+    def calculate_desirability(self):
+        """ Make crossboard play slightly less desirable than other strategies.
+        That way, it will only get used if nothing else is applicable. """
+        return 0.9
+
+    def set_goal(self):
+        self.thinker.remove_all_subgoals()
+        self.thinker.add_subgoal(GoalCrossboard(self.thinker))
