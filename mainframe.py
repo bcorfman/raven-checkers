@@ -1,6 +1,4 @@
-import os
 from Tkinter import *
-from Tkconstants import W, E
 import Tkinter as tk
 from tkMessageBox import askyesnocancel
 from multiprocessing import freeze_support
@@ -10,6 +8,7 @@ from setupboard import SetupBoard
 from gamemanager import GameManager
 from centeredwindow import CenteredWindow
 from prefdlg import PreferencesDialog
+
 
 class MainFrame(object, CenteredWindow):
     def __init__(self, master):
@@ -32,9 +31,9 @@ class MainFrame(object, CenteredWindow):
         if self.manager.view.is_dirty():
             msg = 'Do you want to save your changes before exiting?'
             result = askyesnocancel(TITLE, msg)
-            if result == True:
+            if result:
                 self.manager.save_game()
-            elif result == None:
+            elif result is None:
                 return
         self.root.destroy()
 
@@ -48,32 +47,30 @@ class MainFrame(object, CenteredWindow):
         self.stop_processes()
         self.manager.model.undo_all_moves(None,
                                           self.manager.view.get_annotation())
-        self.manager._controller1.remove_highlights()
-        self.manager._controller2.remove_highlights()
+        self.manager.controller1.remove_highlights()
+        self.manager.controller2.remove_highlights()
         self.manager.view.update_statusbar()
 
     def redo_all_moves(self, *args):
         self.stop_processes()
-        self.manager.model.redo_all_moves(None,
-                                          self.manager.view.get_annotation())
-        self.manager._controller1.remove_highlights()
-        self.manager._controller2.remove_highlights()
+        self.manager.model.redo_all_moves(None, self.manager.view.get_annotation())
+        self.manager.controller1.remove_highlights()
+        self.manager.controller2.remove_highlights()
         self.manager.view.update_statusbar()
 
     def undo_single_move(self, *args):
         self.stop_processes()
-        self.manager.model.undo_move(None, None, True, True,
-                                     self.manager.view.get_annotation())
-        self.manager._controller1.remove_highlights()
-        self.manager._controller2.remove_highlights()
+        self.manager.model.undo_move(None, None, True, True, self.manager.view.get_annotation())
+        self.manager.controller1.remove_highlights()
+        self.manager.controller2.remove_highlights()
         self.manager.view.update_statusbar()
 
     def redo_single_move(self, *args):
         self.stop_processes()
         annotation = self.manager.view.get_annotation()
         self.manager.model.redo_move(None, None, annotation)
-        self.manager._controller1.remove_highlights()
-        self.manager._controller2.remove_highlights()
+        self.manager.controller1.remove_highlights()
+        self.manager.controller2.remove_highlights()
         self.manager.view.update_statusbar()
 
     def create_game_menu(self):
@@ -140,8 +137,8 @@ class MainFrame(object, CenteredWindow):
     def stop_processes(self):
         # stop any controller processes from making moves
         self.manager.model.curr_state.ok_to_move = False
-        self.manager._controller1.stop_process()
-        self.manager._controller2.stop_process()
+        self.manager.controller1.stop_process()
+        self.manager.controller2.stop_process()
 
     def show_about_box(self):
         AboutBox(self.root, 'About Raven')
@@ -162,19 +159,19 @@ class MainFrame(object, CenteredWindow):
             write_preferences_to_file(dlg.font, dlg.size)
 
     def set_think_time(self):
-        self.manager._controller1.set_search_time(self.thinkTime.get())
-        self.manager._controller2.set_search_time(self.thinkTime.get())
+        self.manager.controller1.set_search_time(self.thinkTime.get())
+        self.manager.controller2.set_search_time(self.thinkTime.get())
 
     def flip_board(self):
         if self.manager.model.to_move == BLACK:
-            self.manager._controller1.remove_highlights()
+            self.manager.controller1.remove_highlights()
         else:
-            self.manager._controller2.remove_highlights()
+            self.manager.controller2.remove_highlights()
         self.manager.view.flip_board(not self.manager.view.flip_view)
         if self.manager.model.to_move == BLACK:
-            self.manager._controller1.add_highlights()
+            self.manager.controller1.add_highlights()
         else:
-            self.manager._controller2.add_highlights()
+            self.manager.controller2.add_highlights()
 
 def start():
     root = Tk()
