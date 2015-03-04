@@ -78,6 +78,30 @@ class Checkerboard(object):
     enemy = property(_get_enemy,
                      doc="The color for the player that doesn't have the current turn")
 
+    def _get_short_dyke(self):
+        return [8, 9, 14, 17, 23, 29] if self.to_move == BLACK else [14, 17, 21, 27, 31, 32]
+    short_dyke = property(_get_short_dyke, doc="Squares used in the short dyke formation")
+
+    def _get_long_dyke(self):
+        return [8, 9, 14, 19, 24, 29] if self.to_move == BLACK else [14, 18, 23, 27, 31, 32]
+    long_dyke = property(_get_long_dyke, doc="Squares used in the long dyke formation")
+
+    def _get_pyramid(self):
+        return [1, 2, 3, 6, 7, 10] if self.to_move == BLACK else [23, 26, 27, 30, 31, 32]
+    pyramid = property(_get_pyramid, doc="Squares used in the pyramid formation")
+
+    def _get_phalanx(self):
+        return [5, 6, 7, 8, 9, 10, 11, 14, 15] if self.to_move == BLACK else [18, 19, 22, 23, 24, 25, 26, 27, 28]
+    phalanx = property(_get_phalanx, doc="Squares used in the phalanx formation")
+
+    def _get_mill(self):
+        return [1, 3, 5, 8, 9, 11, 14, 15, 18] if self.to_move == BLACK else [15, 18, 19, 22, 24, 25, 28, 30, 32]
+    mill = property(_get_mill, doc="Squares used in the mill formation")
+
+    def _get_echelon(self):
+        return [2, 3, 5, 6, 7, 9, 10, 14] if self.to_move == BLACK else [19, 23, 24, 26, 27, 28, 30, 31]
+    echelon = property(_get_echelon, doc="Squares used in the echelon formation")
+
     def attach(self, observer):
         if observer not in self.observers:
             self.observers.append(observer)
@@ -131,12 +155,6 @@ class Checkerboard(object):
 
     def delete_redo_list(self):
         del self.redo_list[:]
-
-    def remove_all_subgoals(self, color):
-        if color == BLACK:
-            self.black_subgoals = []
-        elif color == WHITE:
-            self.white_subgoals = []
 
     def make_move(self, move, notify=True, undo=True, annotation=''):
         sq = self.squares

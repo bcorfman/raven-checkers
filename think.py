@@ -1,15 +1,16 @@
 from composite import CompositeGoal
 from evaluators import ShortDykeEvaluator, LongDykeEvaluator, PhalanxEvaluator
-from evaluators import PyramidEvaluator, EchelonEvaluator, MillEvaluator
+from evaluators import PyramidEvaluator, EchelonEvaluator, MillEvaluator, CrossboardEvaluator
 from utils import argmax_random_tie
 
 
 class GoalThink(CompositeGoal):
-    def __init__(self, owner):
-        CompositeGoal.__init__(self, owner)
-        self.evaluators = [ShortDykeEvaluator(self), LongDykeEvaluator(self),
-                           PhalanxEvaluator(self), PyramidEvaluator(self),
-                           EchelonEvaluator(self), MillEvaluator(self)]
+    def __init__(self, controller):
+        CompositeGoal.__init__(self, controller)
+        self.controller = controller
+        self.evaluators = [ShortDykeEvaluator(self), LongDykeEvaluator(self), PhalanxEvaluator(self),
+                           PyramidEvaluator(self), EchelonEvaluator(self), MillEvaluator(self),
+                           CrossboardEvaluator(self)]
 
     def activate(self):
         self.arbitrate()
@@ -25,9 +26,14 @@ class GoalThink(CompositeGoal):
     def terminate(self):
         pass
 
+    def is_active(self):
+        return self.status == self.ACTIVE
+
     def arbitrate(self):
         most_desirable = argmax_random_tie(self.evaluators, lambda e: e.calculate_desirability())
         most_desirable.set_goal()
 
-    def get_model(self):
-        return self.owner.get_model()
+    def _get_model(self):
+        return self.controller.get_model()
+
+    model = property(_get_model)

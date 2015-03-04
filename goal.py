@@ -28,9 +28,6 @@ class Goal:
     def handle_message(self, msg):
         return False
 
-    def add_subgoal(self, goal):
-        raise NotImplementedError('Cannot add goals to atomic goals')
-
     def reactivate_if_failed(self):
         if self.status == self.FAILED:
             self.status = self.INACTIVE
