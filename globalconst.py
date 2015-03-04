@@ -185,6 +185,7 @@ def similarity(pattern, pieces):
     p2 = [grid[j] for j in pieces]
     return sum(min(math.hypot(x1-x2, y1-y2) for x1, y1 in p1) for x2, y2 in p2)
 
+
 def get_preferences_from_file():
     config = RawConfigParser()
     if not os.access('raven.ini',os.F_OK):
@@ -200,6 +201,7 @@ def get_preferences_from_file():
     size = config.get('AnnotationWindow', 'size')
     return font, size
 
+
 def write_preferences_to_file(font, size):
     config = RawConfigParser()
     config.add_section('AnnotationWindow')
@@ -209,9 +211,11 @@ def write_preferences_to_file(font, size):
     with open('raven.ini', 'wb') as configfile:
         config.write(configfile)
 
+
 def parse_index(idx):
     line, _, char = idx.partition('.')
     return int(line), int(char)
+
 
 def to_string(line, char):
     return "%d.%d" % (line, char)

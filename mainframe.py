@@ -159,8 +159,8 @@ class MainFrame(object, CenteredWindow):
             write_preferences_to_file(dlg.font, dlg.size)
 
     def set_think_time(self):
-        self.manager.controller1.set_search_time(self.thinkTime.get())
-        self.manager.controller2.set_search_time(self.thinkTime.get())
+        self.manager.controller1.search_time = self.thinkTime.get()
+        self.manager.controller2.search_time = self.thinkTime.get()
 
     def flip_board(self):
         if self.manager.model.to_move == BLACK:
