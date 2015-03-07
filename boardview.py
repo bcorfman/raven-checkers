@@ -26,8 +26,8 @@ class BoardView(Observer):
         self._square_size = self._board_side / 8
         self._piece_offset = self._square_size / 5
         self._crownpic = PhotoImage(file=CROWN_IMAGE)
-        self._boardpos = create_position_map()
-        self._gridpos = create_grid_map()
+        self._boardpos = POS_MAP
+        self._gridpos = GRID_MAP
         self.canvas = Canvas(root, width=self._board_side,
                              height=self._board_side, borderwidth=0,
                              highlightthickness=0)
@@ -364,8 +364,8 @@ class BoardView(Observer):
         self.serializer.restore(move.annotation)
         self.curr_annotation = move.annotation
         if self.txt.get('1.0','end').strip() == '':
-            start = keymap[move.affected_squares[FIRST][0]]
-            dest = keymap[move.affected_squares[LAST][0]]
+            start = KEY_MAP[move.affected_squares[FIRST][0]]
+            dest = KEY_MAP[move.affected_squares[LAST][0]]
             movestr = '%d-%d' % (start, dest)
             self.txt.insert('1.0', movestr)
 
@@ -411,7 +411,7 @@ class BoardView(Observer):
             self._statusbar['text'] = "Black to move"
 
     def get_positions(self, type):
-        return map(str, sorted((keymap[i]
+        return map(str, sorted((KEY_MAP[i]
                 for i in self._model.curr_state.valid_squares
                 if self._model.curr_state.squares[i] == type)))
 
@@ -456,7 +456,7 @@ class BoardView(Observer):
             xpos, ypos = col * self._square_size, row * self._square_size
             self.canvas.create_text(xpos+self._square_size-7,
                                     ypos+self._square_size-7,
-                                    text=str(keymap[key]),
+                                    text=str(KEY_MAP[key]),
                                     fill=LIGHT_SQUARES, tag='label')
 
     def _delete_labels(self):

@@ -27,6 +27,9 @@ class GoalShortDyke(Goal):
         Goal.__init__(self, thinker)
         self._thinker = thinker
 
+    def __repr__(self):
+        return "GoalShortDyke"
+
     def activate(self):
         self.status = self.ACTIVE
 
@@ -44,6 +47,9 @@ class GoalLongDyke(Goal):
     def __init__(self, thinker):
         Goal.__init__(self, thinker)
         self._thinker = thinker
+
+    def __repr__(self):
+        return "GoalLongDyke"
 
     def activate(self):
         self.status = self.ACTIVE
@@ -63,6 +69,9 @@ class GoalPyramid(Goal):
         Goal.__init__(self, thinker)
         self._thinker = thinker
 
+    def __repr__(self):
+        return "GoalPyramid"
+
     def activate(self):
         self.status = self.ACTIVE
 
@@ -80,6 +89,9 @@ class GoalPhalanx(Goal):
     def __init__(self, thinker):
         Goal.__init__(self, thinker)
         self._thinker = thinker
+
+    def __repr__(self):
+        return "GoalPhalanx"
 
     def activate(self):
         self.status = self.ACTIVE
@@ -99,6 +111,9 @@ class GoalMill(Goal):
         Goal.__init__(self, thinker)
         self._thinker = thinker
 
+    def __repr__(self):
+        return "GoalMill"
+
     def activate(self):
         self.status = self.ACTIVE
 
@@ -116,6 +131,9 @@ class GoalEchelon(Goal):
     def __init__(self, thinker):
         Goal.__init__(self, thinker)
         self._thinker = thinker
+
+    def __repr__(self):
+        return "GoalEchelon"
 
     def activate(self):
         self.status = self.ACTIVE
