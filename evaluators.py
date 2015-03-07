@@ -26,6 +26,7 @@ class ShortDykeEvaluator(GoalEvaluator):
 
     def calculate_desirability(self):
         short_dyke_csp = formation_csp(self.thinker.board.short_dyke, self.thinker.board)
+        # all formations are desirable if they can be achieved, and undesirable if they can't.
         return 1.0 if backtracking_search(short_dyke_csp, mcv=True, lcv=True) else 0.0
 
     def set_goal(self):
@@ -40,6 +41,7 @@ class LongDykeEvaluator(GoalEvaluator):
 
     def calculate_desirability(self):
         long_dyke_csp = formation_csp(self.thinker.board.short_dyke, self.thinker.board)
+        # all formations are desirable if they can be achieved, and undesirable if they can't.
         return 1.0 if backtracking_search(long_dyke_csp, mcv=True, lcv=True) else 0.0
 
     def set_goal(self):
@@ -54,6 +56,7 @@ class PyramidEvaluator(GoalEvaluator):
 
     def calculate_desirability(self):
         pyramid_csp = formation_csp(self.thinker.board.pyramid, self.thinker.board)
+        # all formations are desirable if they can be achieved, and undesirable if they can't.
         return 1.0 if backtracking_search(pyramid_csp, mcv=True, lcv=True) else 0.0
 
     def set_goal(self):
@@ -68,11 +71,16 @@ class PhalanxEvaluator(GoalEvaluator):
 
     def calculate_desirability(self):
         phalanx_csp = formation_csp(self.thinker.board.phalanx, self.thinker.board)
+        # all formations are desirable if they can be achieved, and undesirable if they can't.
         return 1.0 if backtracking_search(phalanx_csp, mcv=True, lcv=True) else 0.0
 
     def set_goal(self):
         self.thinker.remove_all_subgoals()
         self.thinker.add_subgoal(GoalPhalanx(self.thinker))
+
+
+# TODO: Consider partial mill formations. Pask says: "TIP: Don't dismiss the opportunity to develop just one of these
+# TODO: segments, as it still may be effective.", Starting Out in Checkers, page 104.
 
 
 class MillEvaluator(GoalEvaluator):
@@ -82,6 +90,7 @@ class MillEvaluator(GoalEvaluator):
 
     def calculate_desirability(self):
         mill_csp = formation_csp(self.thinker.board.mill, self.thinker.board)
+        # all formations are desirable if they can be achieved, and undesirable if they can't.
         return 1.0 if backtracking_search(mill_csp, mcv=True, lcv=True) else 0.0
 
     def set_goal(self):
@@ -96,6 +105,7 @@ class EchelonEvaluator(GoalEvaluator):
 
     def calculate_desirability(self):
         echelon_csp = formation_csp(self.thinker.board.echelon, self.thinker.board)
+        # all formations are desirable if they can be achieved, and undesirable if they can't.
         return 1.0 if backtracking_search(echelon_csp, mcv=True, lcv=True) else 0.0
 
     def set_goal(self):
