@@ -1,8 +1,10 @@
 __author__ = 'brandon_corfman'
-from globalconst import BLACK, WHITE, KING
+from globalconst import BLACK
+from Tkinter import Tk
+from mainframe import MainFrame
 import think
 import unittest
-import checkers
+from goalformation import GoalShortDyke, GoalLongDyke, GoalPhalanx, GoalPyramid, GoalMill, GoalEchelon
 
 #   (white)
 #            45  46  47  48
@@ -16,17 +18,19 @@ import checkers
 #   (black)
 
 
-class TestThink(unittest.TestCase):
+class TestThinkFromInitialBoard(unittest.TestCase):
     def setUp(self):
-        self.game = checkers.Checkers()
-        self.board = self.game.curr_state
-        self.board.clear()
-        squares = self.board.squares
-        squares[6] = BLACK | KING
-        squares[48] = WHITE | KING
-        self.board.to_move = BLACK
-        self.board.update_piece_count()
-        self.think = think.GoalThink(self.board)
+        root = Tk()
+        mainframe = MainFrame(root)
+        mainframe.root.update()
+        mainframe.root.withdraw()
 
-    def testInitialBlackMoves(self):
-        self.think.arbitrate()
+        self.manager = mainframe.manager
+        self.board = self.manager.model.curr_state
+        self.board.to_move = BLACK
+
+    def testCorrectGoalSelected(self):
+        self.manager.controller2.start_turn()
+        self.assertIn(repr(self.manager.controller2._thinker.subgoals[0]), ['GoalShortDyke', 'GoalLongDyke',
+                                                                            'GoalEchelon', 'GoalPhalanx',
+                                                                            'GoalPyramid', 'GoalMill'])

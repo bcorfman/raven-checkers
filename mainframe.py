@@ -173,6 +173,7 @@ class MainFrame(object, CenteredWindow):
         else:
             self.manager.controller2.add_highlights()
 
+
 def start():
     root = Tk()
     mainframe = MainFrame(root)

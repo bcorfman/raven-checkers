@@ -33,7 +33,7 @@ class GoalThink(CompositeGoal):
         most_desirable = argmax_random_tie(self.evaluators, lambda e: e.calculate_desirability())
         most_desirable.set_goal()
 
-    def _get_model(self):
-        return self.controller.get_model()
+    def _get_board(self):
+        return self.controller.model.curr_state
 
-    model = property(_get_model)
+    board = property(_get_board)

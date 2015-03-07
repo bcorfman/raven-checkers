@@ -110,7 +110,6 @@ class FormationProblem(Problem):
                     frontier.append((curr_sq + i, cost + 1))
         return 99999
 
-
 def measure_formation_closeness(formation, board):
     problem = FormationProblem(formation, board)
 

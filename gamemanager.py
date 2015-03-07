@@ -10,6 +10,7 @@ from alphabetacontroller import AlphaBetaController
 from gamepersist import SavedGame
 from textserialize import Serializer
 
+
 class GameManager(object):
     def __init__(self, **props):
         self.model = Checkers()

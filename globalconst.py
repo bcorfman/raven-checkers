@@ -73,9 +73,9 @@ MIDGAME = -1
 ENDGAME = 2
 INTACTDOUBLECORNER = 3
 
-BLACK_IDX = [5,6]
-WHITE_IDX = [-5,-6]
-KING_IDX = [-6,-5,5,6]
+BLACK_IDX = [5, 6]
+WHITE_IDX = [-5, -6]
+KING_IDX = [-6, -5, 5, 6]
 
 FIRST = 0
 MID = 1
@@ -94,14 +94,14 @@ LAST = -1
 
 
 # translate from black indices to white indices and vice versa
-INDEX_MAP = {6:48, 7:47, 8:46, 9:45,
-             12:42, 13:41, 14:40, 15:39,
-             17:37, 18:36, 19:35, 20:34,
-             23:31, 24:30, 25:29, 26:28,
-             28:26, 29:25, 30:24, 31:23,
-             34:20, 35:19, 36:18, 37:17,
-             39:15, 40:14, 41:13, 42:12,
-             45:9, 46:8, 47:7, 48:6}
+INDEX_MAP = {6: 48, 7: 47, 8: 46, 9: 45,
+             12: 42, 13: 41, 14: 40, 15: 39,
+             17: 37, 18: 36, 19: 35, 20: 34,
+             23: 31, 24: 30, 25: 29, 26: 28,
+             28: 26, 29: 25, 30: 24, 31: 23,
+             34: 20, 35: 19, 36: 18, 37: 17,
+             39: 15, 40: 14, 41: 13, 42: 12,
+             45: 9, 46: 8, 47: 7, 48: 6}
 
 # translate from simple input notation to real checkerboard notation
 IMAP = {'a1': 5,  'c1': 6,  'e1': 7,  'g1': 8,
@@ -113,54 +113,45 @@ IMAP = {'a1': 5,  'c1': 6,  'e1': 7,  'g1': 8,
         'a7': 32, 'c7': 33, 'e7': 34, 'g7': 35,
         'b8': 37, 'd8': 38, 'f8': 39, 'h8': 40}
 
-CBMAP = {5:4, 6:3, 7:2, 8:1,
-         10:8, 11:7, 12:6, 13:5,
-         14:12, 15:11, 16:10, 17:9,
-         19:16, 20:15, 21:14, 22:13,
-         23:20, 24:19, 25:18, 26:17,
-         28:24, 29:23, 30:22, 31:21,
-         32:28, 33:27, 34:26, 35:25,
-         37:32, 38:31, 39:30, 40:29}
+CBMAP = {5: 4, 6: 3, 7: 2, 8: 1,
+         10: 8, 11: 7, 12: 6, 13: 5,
+         14: 12, 15: 11, 16: 10, 17: 9,
+         19: 16, 20: 15, 21: 14, 22: 13,
+         23: 20, 24: 19, 25: 18, 26: 17,
+         28: 24, 29: 23, 30: 22, 31: 21,
+         32: 28, 33: 27, 34: 26, 35: 25,
+         37: 32, 38: 31, 39: 30, 40: 29}
 
-def create_position_map():
-    """ Maps compressed grid indices xi + yi * 8 to internal
-        board indices """
-    pos = {}
-    pos[1] = 45;   pos[3]  = 46; pos[5] =  47; pos[7]  = 48
-    pos[8] = 39;   pos[10] = 40; pos[12] = 41; pos[14] = 42
-    pos[17] = 34;  pos[19] = 35; pos[21] = 36; pos[23] = 37
-    pos[24] = 28;  pos[26] = 29; pos[28] = 30; pos[30] = 31
-    pos[33] = 23;  pos[35] = 24; pos[37] = 25; pos[39] = 26
-    pos[40] = 17;  pos[42] = 18; pos[44] = 19; pos[46] = 20
-    pos[49] = 12;  pos[51] = 13; pos[53] = 14; pos[55] = 15
-    pos[56] = 6;   pos[58] = 7;  pos[60] =  8; pos[62] = 9
-    return pos
+# Maps compressed grid indices xi + yi * 8 to internal board indices
+POS_MAP = {1: 45,  3: 46,  5: 47,  7: 48,
+           8: 39, 10: 40, 12: 41, 14: 42,
+           17: 34, 19: 35, 21: 36, 23: 37,
+           24: 28, 26: 29, 28: 30, 30: 31,
+           33: 23, 35: 24, 37: 25, 39: 26,
+           40: 17, 42: 18, 44: 19, 46: 20,
+           49: 12, 51: 13, 53: 14, 55: 15,
+           56: 6,  58:  7, 60:  8, 62:  9}
 
-def create_key_map():
-    """ Maps internal board indices to checkerboard label numbers """
-    key = {}
-    key[6]  = 4;  key[7]  = 3;  key[8]  = 2;  key[9]  = 1
-    key[12] = 8;  key[13] = 7;  key[14] = 6;  key[15] = 5
-    key[17] = 12; key[18] = 11; key[19] = 10; key[20] = 9
-    key[23] = 16; key[24] = 15; key[25] = 14; key[26] = 13
-    key[28] = 20; key[29] = 19; key[30] = 18; key[31] = 17
-    key[34] = 24; key[35] = 23; key[36] = 22; key[37] = 21
-    key[39] = 28; key[40] = 27; key[41] = 26; key[42] = 25
-    key[45] = 32; key[46] = 31; key[47] = 30; key[48] = 29
-    return key
+# Maps internal board indices to checkerboard label numbers
+KEY_MAP = {6: 4, 7: 3, 8: 2, 9: 1,
+           12: 8, 13: 7, 14: 6, 15: 5,
+           17: 12, 18: 11, 19: 10, 20: 9,
+           23: 16, 24: 15, 25: 14, 26: 13,
+           28: 20, 29: 19, 30: 18, 31: 17,
+           34: 24, 35: 23, 36: 22, 37: 21,
+           39: 28, 40: 27, 41: 26, 42: 25,
+           45: 32, 46: 31, 47: 30, 48: 29}
 
-def create_grid_map():
-    """ Maps internal board indices to grid (row, col) coordinates """
-    grd = {}
-    grd[6]  = (7,0); grd[7]  = (7,2); grd[8]  = (7,4); grd[9]  = (7,6)
-    grd[12] = (6,1); grd[13] = (6,3); grd[14] = (6,5); grd[15] = (6,7)
-    grd[17] = (5,0); grd[18] = (5,2); grd[19] = (5,4); grd[20] = (5,6)
-    grd[23] = (4,1); grd[24] = (4,3); grd[25] = (4,5); grd[26] = (4,7)
-    grd[28] = (3,0); grd[29] = (3,2); grd[30] = (3,4); grd[31] = (3,6)
-    grd[34] = (2,1); grd[35] = (2,3); grd[36] = (2,5); grd[37] = (2,7)
-    grd[39] = (1,0); grd[40] = (1,2); grd[41] = (1,4); grd[42] = (1,6)
-    grd[45] = (0,1); grd[46] = (0,3); grd[47] = (0,5); grd[48] = (0,7)
-    return grd
+# Maps internal board indices to grid (row, col) coordinates
+GRID_MAP = {6:  (7, 0), 7:  (7, 2), 8:  (7, 4), 9:  (7, 6),
+            12: (6, 1), 13: (6, 3), 14: (6, 5), 15: (6, 7),
+            17: (5, 0), 18: (5, 2), 19: (5, 4), 20: (5, 6),
+            23: (4, 1), 24: (4, 3), 25: (4, 5), 26: (4, 7),
+            28: (3, 0), 29: (3, 2), 30: (3, 4), 31: (3, 6),
+            34: (2, 1), 35: (2, 3), 36: (2, 5), 37: (2, 7),
+            39: (1, 0), 40: (1, 2), 41: (1, 4), 42: (1, 6),
+            45: (0, 1), 46: (0, 3), 47: (0, 5), 48: (0, 7)}
+
 
 def flip_dict(m):
     d = {}
@@ -170,6 +161,7 @@ def flip_dict(m):
         d[k] = v
     return d
 
+
 def reverse_dict(m):
     d = {}
     keys = [k for k, _ in m.iteritems()]
@@ -177,13 +169,6 @@ def reverse_dict(m):
     for k, v in zip(keys, reversed(vals)):
         d[k] = v
     return d
-
-
-def similarity(pattern, pieces):
-    global grid
-    p1 = [grid[i] for i in pattern]
-    p2 = [grid[j] for j in pieces]
-    return sum(min(math.hypot(x1-x2, y1-y2) for x1, y1 in p1) for x2, y2 in p2)
 
 
 def get_preferences_from_file():
@@ -220,6 +205,4 @@ def parse_index(idx):
 def to_string(line, char):
     return "%d.%d" % (line, char)
 
-grid = create_grid_map()
-keymap = create_key_map()
-squaremap = flip_dict(keymap)
+squaremap = flip_dict(KEY_MAP)
