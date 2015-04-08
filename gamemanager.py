@@ -176,13 +176,13 @@ class GameManager(object):
             saved_game.white_kings = []
             for i, sq in enumerate(self.model.curr_state.squares):
                 if sq == BLACK | MAN:
-                    saved_game.black_men.append(keymap[i])
+                    saved_game.black_men.append(KEY_MAP[i])
                 elif sq == BLACK | KING:
-                    saved_game.black_kings.append(keymap[i])
+                    saved_game.black_kings.append(KEY_MAP[i])
                 elif sq == WHITE | MAN:
-                    saved_game.white_men.append(keymap[i])
+                    saved_game.white_men.append(KEY_MAP[i])
                 elif sq == WHITE | KING:
-                    saved_game.white_kings.append(keymap[i])
+                    saved_game.white_kings.append(KEY_MAP[i])
             saved_game.description = self.view.serializer.dump()
             saved_game.moves = self.model.curr_state.redo_list
             saved_game.flip_board = self.view.flip_view
