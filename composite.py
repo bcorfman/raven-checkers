@@ -30,8 +30,7 @@ class CompositeGoal(Goal):
     def process_subgoals(self):
         # remove all completed and failed goals from the front of the
         # subgoal list
-        while (self.subgoals and (self.subgoals[0].isComplete or
-                                  self.subgoals[0].hasFailed)):
+        while self.subgoals and (self.subgoals[0].is_complete() or self.subgoals[0].has_failed()):
             subgoal = self.subgoals.popleft()
             subgoal.terminate()
 
