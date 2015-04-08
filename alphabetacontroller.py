@@ -36,6 +36,7 @@ class AlphaBetaController(Controller):
         self.view.update_statusbar('Thinking ...')
         if not self._thinker.is_active():
             self._thinker.activate()
+        self._thinker.process()
 
     def get_move(self):
         self._highlights = []
