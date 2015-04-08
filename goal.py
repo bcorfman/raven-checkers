@@ -35,3 +35,13 @@ class Goal:
     def activate_if_inactive(self):
         if self.status == self.INACTIVE:
             self.status = self.ACTIVE
+
+    def is_complete(self):
+        return self.status == self.COMPLETED
+
+    def has_failed(self):
+        return self.status == self.FAILED
+
+    def is_active(self):
+        return self.status == self.ACTIVE
+
