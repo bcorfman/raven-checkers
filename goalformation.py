@@ -1,6 +1,49 @@
 __author__ = 'brandon_corfman'
+import multiprocessing
+import time
+import copy
 from goal import Goal
 from formation import measure_formation_closeness
+
+
+class GoalCrossboard(Goal):
+    def __init__(self, owner):
+        Goal.__init__(self, owner)
+        self.process = multiprocessing.Process()
+        self._child_conn = multiprocessing.Pipe()
+        self._term_event = multiprocessing.Event()
+        self._start_time = None
+
+    def activate(self):
+        self.status = self.ACTIVE
+
+    def process(self):
+        self.activate_if_inactive()
+
+    def terminate(self):
+        self.status = self.INACTIVE
+
+
+def calc_move(model, search_time, term_event, child_conn):
+    move = None
+    term_event.clear()
+    captures = model.captures_available()
+    if captures:
+        time.sleep(0.7)
+        move = None  # longest_of(captures)
+    else:
+        depth = 0
+        model_copy = copy.deepcopy(model)
+        while 1:
+            depth += 1
+            move = None  # games.alphabeta_search(model_copy.curr_state,
+                   #                              model_copy,
+                   #                              depth)
+            if term_event.is_set():  # a signal means terminate
+                term_event.clear()
+                move = None
+                break
+    child_conn.send(move)
 
 
 def select_best_move_to_achieve_formation(formation, board):
@@ -26,6 +69,13 @@ class GoalShortDyke(Goal):
     def __init__(self, thinker):
         Goal.__init__(self, thinker)
         self._thinker = thinker
+        #self.process = multiprocessing.Process(target=calc_move,
+        #                                       args=(self._thinker.model, self.owner.search_time, self._term_event,
+        #                                             self._child_conn))
+        #self._start_time = time.time()
+        #self.process.daemon = True
+        #self.process.start()
+        #self.owner.view.canvas.after(100, self.owner.get_move)
 
     def __repr__(self):
         return "GoalShortDyke"
@@ -35,7 +85,7 @@ class GoalShortDyke(Goal):
 
     def process(self):
         self.activate_if_inactive()
-        board = self._thinker.model
+        board = self._thinker.board
         if not select_best_move_to_achieve_formation(board.short_dyke, board):
             self.status = self.FAILED
 
@@ -56,7 +106,7 @@ class GoalLongDyke(Goal):
 
     def process(self):
         self.activate_if_inactive()
-        board = self._thinker.model
+        board = self._thinker.board
         if not select_best_move_to_achieve_formation(board.long_dyke, board):
             self.status = self.FAILED
 
@@ -77,7 +127,7 @@ class GoalPyramid(Goal):
 
     def process(self):
         self.activate_if_inactive()
-        board = self._thinker.model
+        board = self._thinker.board
         if not select_best_move_to_achieve_formation(board.pyramid, board):
             self.status = self.FAILED
 
@@ -98,7 +148,7 @@ class GoalPhalanx(Goal):
 
     def process(self):
         self.activate_if_inactive()
-        board = self._thinker.model
+        board = self._thinker.board
         if not select_best_move_to_achieve_formation(board.phalanx, board):
             self.status = self.FAILED
 
@@ -119,7 +169,7 @@ class GoalMill(Goal):
 
     def process(self):
         self.activate_if_inactive()
-        board = self._thinker.model
+        board = self._thinker.board
         if not select_best_move_to_achieve_formation(board.mill, board):
             self.status = self.FAILED
 
@@ -140,7 +190,7 @@ class GoalEchelon(Goal):
 
     def process(self):
         self.activate_if_inactive()
-        board = self._thinker.model
+        board = self._thinker.board
         if not select_best_move_to_achieve_formation(board.echelon, board):
             self.status = self.FAILED
 
