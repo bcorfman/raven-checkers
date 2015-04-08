@@ -26,9 +26,6 @@ class GoalThink(CompositeGoal):
     def terminate(self):
         pass
 
-    def is_active(self):
-        return self.status == self.ACTIVE
-
     def arbitrate(self):
         most_desirable = argmax_random_tie(self.evaluators, lambda e: e.calculate_desirability())
         most_desirable.set_goal()
@@ -37,3 +34,5 @@ class GoalThink(CompositeGoal):
         return self.controller.model.curr_state
 
     board = property(_get_board)
+
+
