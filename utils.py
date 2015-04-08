@@ -163,10 +163,33 @@ def product(seq, fn=None):
     return reduce(operator.mul, seq, 1)
 
 
+def argmin(seq, fn):
+    """Return an element with lowest fn(seq[i]) score; tie goes to first one.
+    >>> argmin(['one', 'to', 'three'], len)
+    'to'
+    """
+    best = seq[0]; best_score = fn(best)
+    for x in seq:
+        x_score = fn(x)
+        if x_score < best_score:
+            best, best_score = x, x_score
+    return best
+
+
+def argmin_score(seq, fn):
+    """Return an element and its lowest fn(seq[i]) score; tie goes to first one."""
+    best = seq[0]; best_score = fn(best)
+    for x in seq:
+        x_score = fn(x)
+        if x_score < best_score:
+            best, best_score = x, x_score
+    return best, best_score
+
+
 def argmin_list(seq, fn):
     """Return a list of elements of seq[i] with the lowest fn(seq[i]) scores.
     Ex: argmin_list(['one', 'to', 'three', 'or'], len) ==>  ['to', 'or']"""
-    best_score, best = fn(seq[0]), []
+    best_score, best = 9999999, []
     for x in seq:
         x_score = fn(x)
         if x_score < best_score:
@@ -221,15 +244,30 @@ def argmin_random_tie(seq, fn):
                 best = x
     return best
 
-def argmax(gen, fn):
+
+def argmax(seq, fn):
+    """Return an element with highest fn(x) score; tie goes to first one.
+    Ex: argmax(['one', 'to', 'three'], len) ==> 'three'"""
+    return argmin(seq, lambda x: -fn(x))
+
+
+def argmax_score(seq, fn):
+    """Return an element with highest fn(x) score; tie goes to first one.
+    Ex: argmax(['one', 'to', 'three'], len) ==> 'three'"""
+    return argmin_score(seq, lambda x: -fn(x))
+
+
+def argmax_gen(gen, fn):
     """Return an element with highest fn(x) score; tie goes to first one.
     Ex: argmax(['one', 'to', 'three'], len) ==> 'three'"""
     return argmin_gen(gen, lambda x: -fn(x))
+
 
 def argmax_list(seq, fn):
     """Return a list of elements of gen with the highest fn(x) scores.
     Ex: argmax_list(['one', 'three', 'seven'], len) ==> ['three', 'seven']"""
     return argmin_list(seq, lambda x: -fn(x))
+
 
 def argmax_random_tie(seq, fn):
     "Return an element with highest fn(x) score; break ties at random."
