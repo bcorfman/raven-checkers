@@ -1,6 +1,5 @@
 __author__ = 'brandon_corfman'
-import collections
-from csp import CSP, different_values_constraint, backtracking_search
+from csp import CSP, different_values_constraint, backtracking_search, forward_checking, mrv
 from globalconst import BLACK, MAN
 from goalevaluator import GoalEvaluator
 from formation import BLACK_MAP, WHITE_MAP
@@ -37,7 +36,10 @@ class ShortDykeEvaluator(GoalEvaluator):
     def calculate_desirability(self):
         short_dyke_csp = formation_csp(self.thinker.board.short_dyke, self.thinker.board)
         # all formations are desirable if they can be achieved, and undesirable if they can't.
-        return 1.0 if backtracking_search(short_dyke_csp, mcv=True, fc=True) else 0.0
+        if backtracking_search(short_dyke_csp, select_unassigned_variable=mrv, inference=forward_checking):
+            return 1.0
+        else:
+            return 0.0
 
     def set_goal(self):
         self.thinker.remove_all_subgoals()
@@ -52,7 +54,10 @@ class LongDykeEvaluator(GoalEvaluator):
     def calculate_desirability(self):
         long_dyke_csp = formation_csp(self.thinker.board.short_dyke, self.thinker.board)
         # all formations are desirable if they can be achieved, and undesirable if they can't.
-        return 1.0 if backtracking_search(long_dyke_csp, mcv=True, fc=True) else 0.0
+        if backtracking_search(long_dyke_csp, select_unassigned_variable=mrv, inference=forward_checking):
+            return 1.0
+        else:
+            return 0.0
 
     def set_goal(self):
         self.thinker.remove_all_subgoals()
@@ -67,7 +72,10 @@ class PyramidEvaluator(GoalEvaluator):
     def calculate_desirability(self):
         pyramid_csp = formation_csp(self.thinker.board.pyramid, self.thinker.board)
         # all formations are desirable if they can be achieved, and undesirable if they can't.
-        return 1.0 if backtracking_search(pyramid_csp, mcv=True, fc=True) else 0.0
+        if backtracking_search(pyramid_csp, select_unassigned_variable=mrv, inference=forward_checking):
+            return 1.0
+        else:
+            return 0.0
 
     def set_goal(self):
         self.thinker.remove_all_subgoals()
@@ -82,7 +90,10 @@ class PhalanxEvaluator(GoalEvaluator):
     def calculate_desirability(self):
         phalanx_csp = formation_csp(self.thinker.board.phalanx, self.thinker.board)
         # all formations are desirable if they can be achieved, and undesirable if they can't.
-        return 1.0 if backtracking_search(phalanx_csp, mcv=True, fc=True) else 0.0
+        if backtracking_search(phalanx_csp, select_unassigned_variable=mrv, inference=forward_checking):
+            return 1.0
+        else:
+            return 0.0
 
     def set_goal(self):
         self.thinker.remove_all_subgoals()
@@ -101,7 +112,10 @@ class MillEvaluator(GoalEvaluator):
     def calculate_desirability(self):
         mill_csp = formation_csp(self.thinker.board.mill, self.thinker.board)
         # all formations are desirable if they can be achieved, and undesirable if they can't.
-        return 1.0 if backtracking_search(mill_csp, mcv=True, fc=True) else 0.0
+        if backtracking_search(mill_csp, select_unassigned_variable=mrv, inference=forward_checking):
+            return 1.0
+        else:
+            return 0.0
 
     def set_goal(self):
         self.thinker.remove_all_subgoals()
@@ -116,7 +130,10 @@ class EchelonEvaluator(GoalEvaluator):
     def calculate_desirability(self):
         echelon_csp = formation_csp(self.thinker.board.echelon, self.thinker.board)
         # all formations are desirable if they can be achieved, and undesirable if they can't.
-        return 1.0 if backtracking_search(echelon_csp, mcv=True, fc=True) else 0.0
+        if backtracking_search(echelon_csp, select_unassigned_variable=mrv, inference=forward_checking):
+            return 1.0
+        else:
+            return 0.0
 
     def set_goal(self):
         self.thinker.remove_all_subgoals()
