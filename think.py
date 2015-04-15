@@ -35,4 +35,7 @@ class GoalThink(CompositeGoal):
 
     board = property(_get_board)
 
+    def _get_game(self):
+        return self.controller.model
 
+    game = property(_get_game)

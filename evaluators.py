@@ -19,15 +19,6 @@ def formation_csp(variables, board):
     return CSP(variables, domains, neighbors, different_values_constraint)
 
 
-def generate_common_domain(formation):
-    domain = set()
-    for pos in formation:
-        domain.union()
-        for item in BLACK_MAP[pos]:
-            domain.add(item)
-    return domain
-
-
 class ShortDykeEvaluator(GoalEvaluator):
     def __init__(self, thinker):
         GoalEvaluator.__init__(self)
