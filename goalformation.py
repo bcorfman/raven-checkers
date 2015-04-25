@@ -1,166 +1,190 @@
 __author__ = 'brandon_corfman'
-import time
 import multiprocessing
-import copy
+from abc import ABCMeta, abstractmethod
 from goal import Goal
+from utils import argmax_score
+from formation import BLACK_MAP
+from globalconst import FIRST, LAST, ACTIVE, INACTIVE
 
 
-class GoalCrossboard(Goal):
-    def __init__(self, owner):
-        Goal.__init__(self, owner)
-        self.process = multiprocessing.Process()
-        self._child_conn = multiprocessing.Pipe()
-        self._term_event = multiprocessing.Event()
-        self._start_time = None
-
-    def activate(self):
-        self.status = self.ACTIVE
-
-    def process(self):
-        self.activate_if_inactive()
-
-    def terminate(self):
-        self.status = self.INACTIVE
+def get_score_move(board):
+    def score_move(move):
+        player = board.to_move
+        board.make_move(move, False, False)
+        score = board.utility(player)
+        board.undo_move(move, False, False)
+        return score
+    return score_move
 
 
-def calc_move(model, search_time, term_event, child_conn):
-    move = None
+def partition_moves(move_list, domain):
+    primary_moves = []
+    secondary_moves = []
+    for move in move_list:
+        start = move.affected_squares[FIRST][0]
+        dest = move.affected_squares[LAST][0]
+        if start in domain and dest in domain:
+            primary_moves.append(move)
+        else:
+            secondary_moves.append(move)
+    return primary_moves, secondary_moves
+
+
+def generate_common_domain(formation):
+    domain = set()
+    for pos in formation:
+        domain = domain.union(BLACK_MAP[pos])
+    return domain
+
+
+def calc_best_move(formation, owner, term_event, child_conn):
     term_event.clear()
-    captures = model.captures_available()
-    if captures:
-        time.sleep(0.7)
-        move = None  # longest_of(captures)
-    else:
-        depth = 0
-        model_copy = copy.deepcopy(model)
-        while 1:
-            depth += 1
-            move = None  # games.alphabeta_search(model_copy.curr_state,
-                   #                              model_copy,
-                   #                              depth)
-            if term_event.is_set():  # a signal means terminate
-                term_event.clear()
-                move = None
-                break
+    board = owner.board
+    game = owner.game
+    primary, secondary = partition_moves(game.legal_moves(), generate_common_domain(formation))
+    if not primary and not secondary:
+        child_conn.send(None)
+        return
+
+    score_func = get_score_move(board)
+    primary_move, primary_score = None, 0
+    if primary:
+        primary_move, primary_score = argmax_score(primary, score_func)
+        primary_score += 3  # bonus for primary moves since they are within the formation
+    secondary_move, secondary_score = None, 0
+    if secondary:
+        secondary_move, secondary_score = argmax_score(secondary, score_func)
+    if term_event.is_set():  # a signal means terminate
+        term_event.clear()
+        child_conn.send(None)
+        return
+    move = primary_move if primary_score >= secondary_score else secondary_move
     child_conn.send(move)
 
 
-class GoalShortDyke(Goal):
-    def __init__(self, thinker):
-        Goal.__init__(self, thinker)
-        self._thinker = thinker
-        #self.process = multiprocessing.Process(target=calc_move,
-        #                                       args=(self._thinker.model, self.owner.search_time, self._term_event,
-        #                                             self._child_conn))
-        #self._start_time = time.time()
-        #self.process.daemon = True
-        #self.process.start()
-        #self.owner.view.canvas.after(100, self.owner.get_move)
+class GoalFormation(Goal):
+    __metaclass__ = ABCMeta
+
+    def __init__(self, owner):
+        Goal.__init__(self, owner)
+        self.child_conn = owner.controller.child_conn
+        self._term_event = multiprocessing.Event()
+        self._process = None
+
+    def activate(self):
+        self.status = ACTIVE
+
+    @abstractmethod
+    def process(self):
+        pass
+
+    def terminate(self):
+        self.status = INACTIVE
+
+
+class GoalShortDyke(GoalFormation):
+    def __init__(self, owner):
+        GoalFormation.__init__(self, owner)
 
     def __repr__(self):
         return "GoalShortDyke"
 
-    def activate(self):
-        self.status = self.ACTIVE
-
     def process(self):
         self.activate_if_inactive()
-        self.make_best_move(self._thinker.board.short_dyke)
+        self._process = multiprocessing.Process(target=calc_best_move,
+                                                args=(self.owner.board.short_dyke,
+                                                      self.owner,
+                                                      self._term_event,
+                                                      self.child_conn))
+        self._process.daemon = True
+        self._process.start()
 
-    def terminate(self):
-        self.status = self.INACTIVE
 
-
-class GoalLongDyke(Goal):
-    def __init__(self, thinker):
-        Goal.__init__(self, thinker)
-        self._thinker = thinker
+class GoalLongDyke(GoalFormation):
+    def __init__(self, owner):
+        GoalFormation.__init__(self, owner)
 
     def __repr__(self):
         return "GoalLongDyke"
 
-    def activate(self):
-        self.status = self.ACTIVE
-
     def process(self):
         self.activate_if_inactive()
-        self.make_best_move(self._thinker.board.long_dyke)
+        self._process = multiprocessing.Process(target=calc_best_move,
+                                                args=(self.owner.board.long_dyke,
+                                                      self.owner,
+                                                      self._term_event,
+                                                      self.child_conn))
+        self._process.daemon = True
+        self._process.start()
 
-    def terminate(self):
-        self.status = self.INACTIVE
 
-
-class GoalPyramid(Goal):
-    def __init__(self, thinker):
-        Goal.__init__(self, thinker)
-        self._thinker = thinker
+class GoalPyramid(GoalFormation):
+    def __init__(self, owner):
+        GoalFormation.__init__(self, owner)
 
     def __repr__(self):
         return "GoalPyramid"
 
-    def activate(self):
-        self.status = self.ACTIVE
-
     def process(self):
         self.activate_if_inactive()
-        self.make_best_move(self._thinker.board.pyramid)
+        self._process = multiprocessing.Process(target=calc_best_move,
+                                                args=(self.owner.board.pyramid,
+                                                      self.owner,
+                                                      self._term_event,
+                                                      self.child_conn))
+        self._process.daemon = True
+        self._process.start()
 
-    def terminate(self):
-        self.status = self.INACTIVE
 
-
-class GoalPhalanx(Goal):
-    def __init__(self, thinker):
-        Goal.__init__(self, thinker)
-        self._thinker = thinker
+class GoalPhalanx(GoalFormation):
+    def __init__(self, owner):
+        GoalFormation.__init__(self, owner)
 
     def __repr__(self):
         return "GoalPhalanx"
 
-    def activate(self):
-        self.status = self.ACTIVE
-
     def process(self):
         self.activate_if_inactive()
-        self.make_best_move(self._thinker.board.phalanx)
+        self._process = multiprocessing.Process(target=calc_best_move,
+                                                args=(self.owner.board.phalanx,
+                                                      self.owner,
+                                                      self._term_event,
+                                                      self.child_conn))
+        self._process.daemon = True
+        self._process.start()
 
-    def terminate(self):
-        self.status = self.INACTIVE
 
-
-class GoalMill(Goal):
-    def __init__(self, thinker):
-        Goal.__init__(self, thinker)
-        self._thinker = thinker
+class GoalMill(GoalFormation):
+    def __init__(self, owner):
+        GoalFormation.__init__(self, owner)
 
     def __repr__(self):
         return "GoalMill"
 
-    def activate(self):
-        self.status = self.ACTIVE
-
     def process(self):
         self.activate_if_inactive()
-        self.make_best_move(self._thinker.board.mill)
+        self._process = multiprocessing.Process(target=calc_best_move,
+                                                args=(self.owner.board.mill,
+                                                      self.owner,
+                                                      self._term_event,
+                                                      self.child_conn))
+        self._process.daemon = True
+        self._process.start()
 
-    def terminate(self):
-        self.status = self.INACTIVE
 
-
-class GoalEchelon(Goal):
-    def __init__(self, thinker):
-        Goal.__init__(self, thinker)
-        self._thinker = thinker
+class GoalEchelon(GoalFormation):
+    def __init__(self, owner):
+        GoalFormation.__init__(self, owner)
 
     def __repr__(self):
         return "GoalEchelon"
 
-    def activate(self):
-        self.status = self.ACTIVE
-
     def process(self):
         self.activate_if_inactive()
-        self.make_best_move(self._thinker.board.echelon)
-
-    def terminate(self):
-        self.status = self.INACTIVE
+        self._process = multiprocessing.Process(target=calc_best_move,
+                                                args=(self.owner.board.echelon,
+                                                      self.owner,
+                                                      self._term_event,
+                                                      self.child_conn))
+        self._process.daemon = True
+        self._process.start()

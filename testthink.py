@@ -2,7 +2,7 @@ __author__ = 'brandon_corfman'
 from globalconst import BLACK, MAN, FREE
 from Tkinter import Tk
 from mainframe import MainFrame
-import think
+import goalthink
 import unittest
 from goalformation import GoalShortDyke, GoalLongDyke, GoalPhalanx, GoalPyramid, GoalMill, GoalEchelon
 

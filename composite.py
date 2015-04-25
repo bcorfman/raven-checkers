@@ -1,3 +1,4 @@
+from globalconst import COMPLETED, ACTIVE
 from goal import Goal
 from collections import deque
 from abc import ABCMeta, abstractmethod
@@ -37,11 +38,11 @@ class CompositeGoal(Goal):
         if self.subgoals:
             subgoal = self.subgoals.pop()
             status = subgoal.process()
-            if status == self.COMPLETED and len(self.subgoals) > 1:
-                return self.ACTIVE
+            if status == COMPLETED and len(self.subgoals) > 1:
+                return ACTIVE
             return status
         else:
-            return self.COMPLETED
+            return COMPLETED
 
     def add_subgoal(self, goal):
         self.subgoals.appendleft(goal)

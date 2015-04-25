@@ -1,7 +1,7 @@
 import multiprocessing
 import time
 from controller import Controller
-from think import GoalThink
+from goalthink import GoalThink
 from globalconst import *
 
 
@@ -13,7 +13,7 @@ class AlphaBetaController(Controller):
         self._before_turn_event = None
         self._end_turn_event = props['end_turn_event']
         self._highlights = []
-        self._parent_conn = multiprocessing.Pipe()
+        self._parent_conn, self.child_conn = multiprocessing.Pipe()
         self._term_event = multiprocessing.Event()
         self.process = multiprocessing.Process()
         self._start_time = None
@@ -37,14 +37,16 @@ class AlphaBetaController(Controller):
         if not self._thinker.is_active():
             self._thinker.activate()
         self._thinker.process()
+        self.view.canvas.after(100, self.get_move)
 
     def get_move(self):
         self._highlights = []
         moved = self._parent_conn.poll()
-        while not moved and (time.time() - self._start_time) < self.search_time * 2:
+        if not moved and (time.time() - self._start_time) < self.search_time * 2:
+            # continue calling get_move until we have a move
             self._call_id = self.view.canvas.after(500, self.get_move)
             return
-        self.view.canvas.after_cancel(self._call_id)
+        self.view.canvas.after_cancel(self._call_id)  # cancel pending get_move call
         move = self._parent_conn.recv()
         self._before_turn_event()
 
