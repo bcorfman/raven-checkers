@@ -36,7 +36,7 @@ class CompositeGoal(Goal):
             subgoal.terminate()
 
         if self.subgoals:
-            subgoal = self.subgoals.pop()
+            subgoal = self.subgoals[0]
             status = subgoal.process()
             if status == COMPLETED and len(self.subgoals) > 1:
                 return ACTIVE
@@ -52,5 +52,5 @@ class CompositeGoal(Goal):
 
     def forward_message_to_frontmost_subgoal(self, msg):
         if self.subgoals:
-            return self.subgoals.popleft().handle_message(msg)
+            return self.subgoals[0].handle_message(msg)
         return False

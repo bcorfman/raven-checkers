@@ -2,7 +2,7 @@ __author__ = 'brandon_corfman'
 import multiprocessing
 from abc import ABCMeta, abstractmethod
 from goal import Goal
-from utils import argmax_score
+from utils import argmin_score
 from formation import BLACK_MAP
 from globalconst import FIRST, LAST, ACTIVE, INACTIVE
 
@@ -49,16 +49,16 @@ def calc_best_move(formation, owner, term_event, child_conn):
     score_func = get_score_move(board)
     primary_move, primary_score = None, 0
     if primary:
-        primary_move, primary_score = argmax_score(primary, score_func)
-        primary_score += 3  # bonus for primary moves since they are within the formation
+        primary_move, primary_score = argmin_score(primary, score_func)
+        primary_score -= 3  # bonus for primary moves since they are within the formation
     secondary_move, secondary_score = None, 0
     if secondary:
-        secondary_move, secondary_score = argmax_score(secondary, score_func)
+        secondary_move, secondary_score = argmin_score(secondary, score_func)
     if term_event.is_set():  # a signal means terminate
         term_event.clear()
         child_conn.send(None)
         return
-    move = primary_move if primary_score >= secondary_score else secondary_move
+    move = primary_move if primary_score <= secondary_score else secondary_move
     child_conn.send(move)
 
 

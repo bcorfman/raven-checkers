@@ -25,6 +25,7 @@ class ShortDykeEvaluator(GoalEvaluator):
         self.thinker = thinker
 
     def calculate_desirability(self):
+        print "ShortDykeEvaluator::calculate_desirability"
         short_dyke_csp = formation_csp(self.thinker.board.short_dyke, self.thinker.board)
         # all formations are desirable if they can be achieved, and undesirable if they can't.
         if backtracking_search(short_dyke_csp, select_unassigned_variable=mrv, inference=forward_checking):
@@ -33,6 +34,7 @@ class ShortDykeEvaluator(GoalEvaluator):
             return 0.0
 
     def set_goal(self):
+        print "ShortDykeEvaluator::set_goal"
         self.thinker.remove_all_subgoals()
         self.thinker.add_subgoal(GoalShortDyke(self.thinker))
 
@@ -43,6 +45,7 @@ class LongDykeEvaluator(GoalEvaluator):
         self.thinker = thinker
 
     def calculate_desirability(self):
+        print "LongDykeEvaluator::calculate_desirability"
         long_dyke_csp = formation_csp(self.thinker.board.short_dyke, self.thinker.board)
         # all formations are desirable if they can be achieved, and undesirable if they can't.
         if backtracking_search(long_dyke_csp, select_unassigned_variable=mrv, inference=forward_checking):
@@ -51,6 +54,7 @@ class LongDykeEvaluator(GoalEvaluator):
             return 0.0
 
     def set_goal(self):
+        print "LongDykeEvaluator::set_goal"
         self.thinker.remove_all_subgoals()
         self.thinker.add_subgoal(GoalLongDyke(self.thinker))
 
@@ -61,6 +65,7 @@ class PyramidEvaluator(GoalEvaluator):
         self.thinker = thinker
 
     def calculate_desirability(self):
+        print "PyramidEvaluator::calculate_desirability"
         pyramid_csp = formation_csp(self.thinker.board.pyramid, self.thinker.board)
         # all formations are desirable if they can be achieved, and undesirable if they can't.
         if backtracking_search(pyramid_csp, select_unassigned_variable=mrv, inference=forward_checking):
@@ -69,6 +74,7 @@ class PyramidEvaluator(GoalEvaluator):
             return 0.0
 
     def set_goal(self):
+        print "PyramidEvaluator::set_goal"
         self.thinker.remove_all_subgoals()
         self.thinker.add_subgoal(GoalPyramid(self.thinker))
 
@@ -79,6 +85,7 @@ class PhalanxEvaluator(GoalEvaluator):
         self.thinker = thinker
 
     def calculate_desirability(self):
+        print "PhalanxEvaluator::calculate_desirability"
         phalanx_csp = formation_csp(self.thinker.board.phalanx, self.thinker.board)
         # all formations are desirable if they can be achieved, and undesirable if they can't.
         if backtracking_search(phalanx_csp, select_unassigned_variable=mrv, inference=forward_checking):
@@ -87,6 +94,7 @@ class PhalanxEvaluator(GoalEvaluator):
             return 0.0
 
     def set_goal(self):
+        print "PhalanxEvaluator::set_goal"
         self.thinker.remove_all_subgoals()
         self.thinker.add_subgoal(GoalPhalanx(self.thinker))
 
@@ -101,6 +109,7 @@ class MillEvaluator(GoalEvaluator):
         self.thinker = thinker
 
     def calculate_desirability(self):
+        print "MillEvaluator::calculate_desirability"
         mill_csp = formation_csp(self.thinker.board.mill, self.thinker.board)
         # all formations are desirable if they can be achieved, and undesirable if they can't.
         if backtracking_search(mill_csp, select_unassigned_variable=mrv, inference=forward_checking):
@@ -109,6 +118,7 @@ class MillEvaluator(GoalEvaluator):
             return 0.0
 
     def set_goal(self):
+        print "MillEvaluator::set_goal"
         self.thinker.remove_all_subgoals()
         self.thinker.add_subgoal(GoalMill(self.thinker))
 
@@ -119,6 +129,7 @@ class EchelonEvaluator(GoalEvaluator):
         self.thinker = thinker
 
     def calculate_desirability(self):
+        print "EchelonEvaluator::calculate_desirability"
         echelon_csp = formation_csp(self.thinker.board.echelon, self.thinker.board)
         # all formations are desirable if they can be achieved, and undesirable if they can't.
         if backtracking_search(echelon_csp, select_unassigned_variable=mrv, inference=forward_checking):
@@ -127,6 +138,7 @@ class EchelonEvaluator(GoalEvaluator):
             return 0.0
 
     def set_goal(self):
+        print "EchelonEvaluator::set_goal"
         self.thinker.remove_all_subgoals()
         self.thinker.add_subgoal(GoalEchelon(self.thinker))
 
@@ -139,8 +151,10 @@ class CrossboardEvaluator(GoalEvaluator):
     def calculate_desirability(self):
         """ Make crossboard play slightly less desirable than other strategies.
         That way, it will only get used if nothing else is applicable. """
+        print "CrossboardEvaluator::calculate_desirability"
         return 0.9
 
     def set_goal(self):
+        print "CrossboardEvaluator::set_goal"
         self.thinker.remove_all_subgoals()
         self.thinker.add_subgoal(GoalCrossboard(self.thinker))

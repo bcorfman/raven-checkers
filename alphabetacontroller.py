@@ -34,6 +34,7 @@ class AlphaBetaController(Controller):
             self.model.curr_state.attach(self.view)
             return
         self.view.update_statusbar('Thinking ...')
+        self._start_time = time.time()
         if not self._thinker.is_active():
             self._thinker.activate()
         self._thinker.process()
