@@ -4,7 +4,7 @@ from abc import ABCMeta, abstractmethod
 from goal import Goal
 from utils import argmin_score
 from formation import BLACK_MAP
-from globalconst import FIRST, LAST, ACTIVE, INACTIVE
+from globalconst import FIRST, LAST, ACTIVE, INACTIVE, COMPLETED
 
 
 def get_score_move(board):
@@ -43,11 +43,14 @@ def calc_best_move(formation, owner, term_event, child_conn):
     game = owner.game
     primary, secondary = partition_moves(game.legal_moves(), generate_common_domain(formation))
     if not primary and not secondary:
+        print primary
+        print secondary
+        print "Error"
         child_conn.send(None)
         return
 
     score_func = get_score_move(board)
-    primary_move, primary_score = None, 0
+    primary_move, primary_score = None, 999
     if primary:
         primary_move, primary_score = argmin_score(primary, score_func)
         primary_score -= 3  # bonus for primary moves since they are within the formation
@@ -58,6 +61,7 @@ def calc_best_move(formation, owner, term_event, child_conn):
         term_event.clear()
         child_conn.send(None)
         return
+    print primary_move, secondary_move, primary_score, secondary_score
     move = primary_move if primary_score <= secondary_score else secondary_move
     child_conn.send(move)
 
@@ -98,6 +102,7 @@ class GoalShortDyke(GoalFormation):
                                                       self.child_conn))
         self._process.daemon = True
         self._process.start()
+        return COMPLETED
 
 
 class GoalLongDyke(GoalFormation):
@@ -116,6 +121,7 @@ class GoalLongDyke(GoalFormation):
                                                       self.child_conn))
         self._process.daemon = True
         self._process.start()
+        return ACTIVE
 
 
 class GoalPyramid(GoalFormation):
@@ -134,7 +140,7 @@ class GoalPyramid(GoalFormation):
                                                       self.child_conn))
         self._process.daemon = True
         self._process.start()
-
+        return ACTIVE
 
 class GoalPhalanx(GoalFormation):
     def __init__(self, owner):

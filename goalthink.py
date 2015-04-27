@@ -9,6 +9,7 @@ class GoalThink(CompositeGoal):
     def __init__(self, controller):
         CompositeGoal.__init__(self, controller)
         self.controller = controller
+        self.most_desirable = None
         self.evaluators = [ShortDykeEvaluator(self), LongDykeEvaluator(self), PhalanxEvaluator(self),
                            PyramidEvaluator(self), EchelonEvaluator(self), MillEvaluator(self),
                            CrossboardEvaluator(self)]
@@ -19,8 +20,17 @@ class GoalThink(CompositeGoal):
 
     def process(self):
         self.activate_if_inactive()
-        status = self.process_subgoals()
+        if self.most_desirable:
+            desirability = self.most_desirable.calculate_desirability()
+            print desirability
+            if desirability > 0.0:
+                status = self.process_subgoals()
+            else:
+                status = FAILED
+        else:
+            status = FAILED
         if status == COMPLETED or status == FAILED:
+            self.most_desirable = None
             self.status = INACTIVE
         return status
 
@@ -28,8 +38,8 @@ class GoalThink(CompositeGoal):
         pass
 
     def arbitrate(self):
-        most_desirable = argmax_random_tie(self.evaluators, lambda e: e.calculate_desirability())
-        most_desirable.set_goal()
+        self.most_desirable = argmax_random_tie(self.evaluators, lambda e: e.calculate_desirability())
+        self.most_desirable.set_goal()
 
     def _get_board(self):
         return self.controller.model.curr_state
