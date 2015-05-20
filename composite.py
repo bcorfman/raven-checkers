@@ -38,7 +38,7 @@ class CompositeGoal(Goal):
         if self.subgoals:
             subgoal = self.subgoals[0]
             status = subgoal.process()
-            if status == COMPLETED and len(self.subgoals) > 1:
+            if status == COMPLETED and len(self.subgoals) > 0:
                 return ACTIVE
             return status
         else:
