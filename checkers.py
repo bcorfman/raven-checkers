@@ -10,14 +10,14 @@ from globalconst import GRID_MAP, KING_IDX, BLACK_IDX, WHITE_IDX
 
 class Checkerboard(object):
     #   (white)
-    #            45  46  47  48
-    #          39  40  41  42
-    #            34  35  36  37
-    #          28  29  30  31
-    #            23  24  25  26
-    #          17  18  19  20
-    #            12  13  14  15
-    #          6   7   8   9
+    #            45  46  47  48        32  31  30  29
+    #          39  40  41  42        28  27  26  25
+    #            34  35  36  37        24  23  22  21
+    #          28  29  30  31        20  19  18  17
+    #            23  24  25  26        16  15  14  13
+    #          17  18  19  20        12  11  10   9
+    #            12  13  14  15         8   7   6   5
+    #          6   7   8   9          4   3   2   1
     #   (black)
     valid_squares = [6, 7, 8, 9, 12, 13, 14, 15, 17, 18, 19, 20, 23, 24, 25, 26,
                      28, 29, 30, 31, 34, 35, 36, 37, 39, 40, 41, 42, 45, 46,
@@ -25,7 +25,8 @@ class Checkerboard(object):
     # values of pieces (KING, MAN, BLACK, WHITE, FREE)
     value = [0, 0, 0, 0, 0, 1, 256, 0, 0, 16, 4096, 0, 0, 0, 0, 0, 0]
     edge = [6, 7, 8, 9, 15, 17, 26, 28, 37, 39, 45, 46, 47, 48]
-    center = [18, 19, 24, 25, 29, 30, 35, 36]
+    #center = [18, 19, 24, 25, 29, 30, 35, 36]
+    center = [24, 25, 29, 30]
     # values used to calculate tempo -- one for each square on board (0, 48)
     row = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 2, 2, 2, 2, 0, 0, 3, 3, 3, 3, 0,
            4, 4, 4, 4, 0, 0, 5, 5, 5, 5, 0, 6, 6, 6, 6, 0, 0, 7, 7, 7, 7]
@@ -243,6 +244,7 @@ class Checkerboard(object):
 
         return mult * (evl + self._eval_cramp(sq) + self._eval_backrankguard(sq) +
                        self._eval_doublecorner(sq) + self._eval_center(sq) +
+                       self._eval_center_support(sq) + self._eval_single_corner(sq) +
                        self._eval_edge(sq) + self._eval_tempo(sq, nm, nbk, nbm, nwk, nwm) +
                        self._eval_playeropposition(sq, nwm, nwk, nbk, nbm, nm, nk))
 
@@ -362,9 +364,9 @@ class Checkerboard(object):
 
     def _eval_cramp(self, sq):
         evl = 0
-        if sq[28] == BLACK | MAN and sq[34] == WHITE | MAN:
+        if sq[28] == BLACK | MAN and (sq[24] & BLACK) and sq[34] == WHITE | MAN:
             evl += CRAMP
-        if sq[26] == WHITE | MAN and sq[20] == BLACK | MAN:
+        if sq[26] == WHITE | MAN and (sq[30] & WHITE) and sq[20] == BLACK | MAN:
             evl -= CRAMP
         return evl
 
@@ -399,15 +401,27 @@ class Checkerboard(object):
         if sq[9] == BLACK | MAN:
             if sq[14] == BLACK | MAN or sq[15] == BLACK | MAN:
                 evl += INTACTDOUBLECORNER
+                # Added this 4th square as part of DC due to Pask's tip 4.
+                # Gives a slight bonus to the original Simple Checkers evaluation.
+                if sq[20] == BLACK | MAN:
+                    evl += 1
 
         if sq[45] == WHITE | MAN:
             if sq[39] == WHITE | MAN or sq[40] == WHITE | MAN:
                 evl -= INTACTDOUBLECORNER
+                # Added this 4th square as part of DC due to Pask's tip 4.
+                # Gives a slight bonus to the original Simple Checkers evaluation.
+                if sq[34] == WHITE | MAN:
+                    evl += 1
         return evl
 
     def _eval_center(self, sq):
         evl = 0
         nbmc = nbkc = nwmc = nwkc = 0
+        # I'm more defining only 4 center squares, according to Pask's SOIC tip 3.
+        # Fierz's Simple Checkers evaluation function defined 8 center squares, which along
+        # with the high evaluation of edge squares seems to lead to non-sensical behavior
+        # in the opening. I moved the 4 supporting squares to the _eval_center_support function.
         for c in self.center:
             if sq[c] != FREE:
                 if sq[c] == BLACK | MAN:
@@ -420,6 +434,60 @@ class Checkerboard(object):
                     nwkc += 1
         evl += (nbmc-nwmc) * MCV
         evl += (nbkc-nwkc) * KCV
+        # Pask's tip 3 also recommends not overcrowding the center squares. Remains to be seen
+        # whether 3 checkers in the center is too many, but 4 men is definitely overcrowding.
+        if nbmc > 3:  # center is overcrowded
+            evl -= 10  # penalty assessed
+        if nwmc > 3:  # center is overcrowded
+            evl += 10  # penalty assessed
+        return evl
+
+    def _eval_single_corner(self, sq):
+        """ I created this function to evaluate whether the single corner is developed rapidly.
+        This really should only be assessed at the beginning of the game."""
+        evl = 0
+        nbm = nwm = 0
+        if sq[6] == FREE:
+            evl += 2
+        elif sq[6] == BLACK | MAN:
+            nbm += 1
+        if sq[12] == BLACK | MAN:
+            nbm += 1
+        if sq[18] == BLACK | MAN:
+            nbm += 1
+        if sq[24] == BLACK | MAN:
+            nbm += 1
+            if nbm == 3:  # Gives an additional bonus if all 3 single corner checkers have been moved forward.
+                evl += 2
+
+        if sq[48] == FREE:
+            evl -= 2
+        elif sq[48] == WHITE | MAN:
+            nwm += 1
+        if sq[42] == WHITE | MAN:
+            nwm += 1
+        if sq[36] == WHITE | MAN:
+            nwm += 1
+        if sq[30] == WHITE | MAN:
+            nwm += 1
+            if nwm == 3:  # Gives an additional bonus if all 3 single corner checkers have been moved forward.
+                evl -= 2
+
+        return evl
+
+    def _eval_center_support(self, sq):
+        # Fierz's Simple Checkers evaluation function defined 8 center squares, which
+        # seems to lead to non-sensical behavior in the opening. I moved the 4 center supporting
+        # squares to this function instead.
+        evl = 0
+        if sq[18] == BLACK | MAN:
+            evl += 0.5
+        if sq[19] == BLACK | MAN:
+            evl += 0.5
+        if sq[35] == WHITE | MAN:
+            evl -= 0.5
+        if sq[36] == WHITE | MAN:
+            evl -= 0.5
         return evl
 
     def _eval_edge(self, sq):
@@ -435,6 +503,9 @@ class Checkerboard(object):
                     nwme += 1
                 if sq[e] == WHITE | KING:
                     nwke += 1
+        # I changed the Simple Checkers multipliers because the edge squares seemed
+        # to be evaluated too highly. The program seems to favor moving to the edge over
+        # the center too often.
         evl -= (nbme-nwme) * MEV
         evl -= (nbke-nwke) * KEV
         return evl
@@ -449,7 +520,7 @@ class Checkerboard(object):
 
         if nm >= 16:
             evl += OPENING * tempo
-        if nm <= 15 and nm >= 12:
+        if nm >= 12 and nm <= 15:
             evl += MIDGAME * tempo
         if nm < 9:
             evl += ENDGAME * tempo
