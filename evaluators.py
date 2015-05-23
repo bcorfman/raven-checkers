@@ -49,7 +49,7 @@ class LongDykeEvaluator(GoalEvaluator):
         long_dyke_csp = formation_csp(self.thinker.board.short_dyke, self.thinker.board)
         # all formations are desirable if they can be achieved, and undesirable if they can't.
         if backtracking_search(long_dyke_csp, select_unassigned_variable=mrv, inference=forward_checking):
-            return 1.0
+            return 0.9
         else:
             return 0.0
 
@@ -69,7 +69,7 @@ class PyramidEvaluator(GoalEvaluator):
         pyramid_csp = formation_csp(self.thinker.board.pyramid, self.thinker.board)
         # all formations are desirable if they can be achieved, and undesirable if they can't.
         if backtracking_search(pyramid_csp, select_unassigned_variable=mrv, inference=forward_checking):
-            return 1.0
+            return 0.9
         else:
             return 0.0
 
@@ -89,7 +89,7 @@ class PhalanxEvaluator(GoalEvaluator):
         phalanx_csp = formation_csp(self.thinker.board.phalanx, self.thinker.board)
         # all formations are desirable if they can be achieved, and undesirable if they can't.
         if backtracking_search(phalanx_csp, select_unassigned_variable=mrv, inference=forward_checking):
-            return 1.0
+            return 0.9
         else:
             return 0.0
 
@@ -113,7 +113,7 @@ class MillEvaluator(GoalEvaluator):
         mill_csp = formation_csp(self.thinker.board.mill, self.thinker.board)
         # all formations are desirable if they can be achieved, and undesirable if they can't.
         if backtracking_search(mill_csp, select_unassigned_variable=mrv, inference=forward_checking):
-            return 1.0
+            return 0.9
         else:
             return 0.0
 
@@ -133,7 +133,7 @@ class EchelonEvaluator(GoalEvaluator):
         echelon_csp = formation_csp(self.thinker.board.echelon, self.thinker.board)
         # all formations are desirable if they can be achieved, and undesirable if they can't.
         if backtracking_search(echelon_csp, select_unassigned_variable=mrv, inference=forward_checking):
-            return 1.0
+            return 0.9
         else:
             return 0.0
 
