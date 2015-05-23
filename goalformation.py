@@ -53,7 +53,7 @@ def calc_best_move(formation, owner, term_event, child_conn):
     primary_move, primary_score = None, 999
     if primary:
         primary_move, primary_score = argmin_score(primary, score_func)
-        primary_score -= 3  # bonus for primary moves since they are within the formation
+        primary_score -= 1  # bonus for primary moves since they are within the formation
     secondary_move, secondary_score = None, 0
     if secondary:
         secondary_move, secondary_score = argmin_score(secondary, score_func)
@@ -61,7 +61,6 @@ def calc_best_move(formation, owner, term_event, child_conn):
         term_event.clear()
         child_conn.send(None)
         return
-    print primary_move, secondary_move, primary_score, secondary_score
     move = primary_move if primary_score <= secondary_score else secondary_move
     child_conn.send(move)
 
