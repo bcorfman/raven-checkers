@@ -68,10 +68,10 @@ TRAINING_DIR = 'training'
 TURN = 2      # color to move gets + turn
 BRV = 3       # multiplier for back rank
 KCV = 5       # multiplier for kings in center
-MCV = 1       # multiplier for men in center
+MCV = 2       # multiplier for men in center
 
-MEV = 1       # multiplier for men on edge
-KEV = 5       # multiplier for kings on edge
+MEV = .025       # multiplier for men on edge
+KEV = 1.25     # multiplier for kings on edge
 CRAMP = 5     # multiplier for cramp
 
 OPENING = 2   # multipliers for tempo
