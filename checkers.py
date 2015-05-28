@@ -227,7 +227,7 @@ class Checkerboard(object):
         v1 = 100 * nbm + 130 * nbk
         v2 = 100 * nwm + 130 * nwk
 
-        evl = v1 - v2 # material values
+        evl = v1 - v2  # material values
         # favor exchanges if in material plus
         evl += (250 * (v1 - v2))/(v1 + v2)
 
@@ -418,7 +418,7 @@ class Checkerboard(object):
     def _eval_center(self, sq):
         evl = 0
         nbmc = nbkc = nwmc = nwkc = 0
-        # I'm more defining only 4 center squares, according to Pask's SOIC tip 3.
+        # I'm more defining only 4 center squares, according to Pask's SOIC tip 1.
         # Fierz's Simple Checkers evaluation function defined 8 center squares, which along
         # with the high evaluation of edge squares seems to lead to non-sensical behavior
         # in the opening. I moved the 4 supporting squares to the _eval_center_support function.
@@ -434,7 +434,7 @@ class Checkerboard(object):
                     nwkc += 1
         evl += (nbmc-nwmc) * MCV
         evl += (nbkc-nwkc) * KCV
-        # Pask's tip 3 also recommends not overcrowding the center squares. Remains to be seen
+        # Pask's tip 1 also recommends not overcrowding the center squares. Remains to be seen
         # whether 3 checkers in the center is too many, but 4 men is definitely overcrowding.
         if nbmc > 3:  # center is overcrowded
             evl -= 10  # penalty assessed
