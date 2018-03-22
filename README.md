@@ -6,7 +6,7 @@ Raven is a checkers game program, for one or two players. While there are exampl
 * **Cross-platform**. Raven is written using Python 2.7 using its standard libraries. It has been tested on Windows, OS X Yosemite, and Linux Mint (Cassandra).
 * **Great for checkers study**. Raven allows you to quickly set up board configurations using standard checkerboard notation. You can also describe your moves in the annotation window, and you can save and load games for later study. This is great for working through checkers books and learning techniques and tactics.
 
-<img src="https://i.stack.imgur.com/XcPri.jpg"> 
+<img src="XcPri.jpg"> 
 
 # Future plans
 Most checkers or chess programs go the route of deep search combined with perfect opening and endgame databases. These techniques are well-explored and not really all that interesting to me. I plan on making a big change in future versions of Raven by relying more on planning than brute-force search.
