@@ -1,5 +1,5 @@
 from globalconst import BLACK, WHITE, KING
-import onek_eval
+import onek_onek
 import unittest
 import checkers
 
@@ -14,7 +14,6 @@ import checkers
 #          6   7   8   9
 #   (black)
 
-
 class TestOneKingAttackOneKingEvaluator(unittest.TestCase):
     def setUp(self):
         self.game = checkers.Checkers()
@@ -27,5 +26,5 @@ class TestOneKingAttackOneKingEvaluator(unittest.TestCase):
         self.board.update_piece_count()
 
     def testInitialBlackMoves(self):
-        ev = onek_eval.OneKingAttackOneKingEvaluator(1.0)
-        self.assertEqual(ev.calculate_desirability(self.board), 1.0)
+        ev = onek_onek.OneKingAttackOneKingEvaluator(1.0)
+        self.assertEqual(ev.calculateDesirability(self.board), 1.0)

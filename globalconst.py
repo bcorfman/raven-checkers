@@ -6,12 +6,6 @@ BOARD_SIZE = 8
 CHECKER_SIZE = 30
 MAX_VALID_SQ = 32
 
-# goal status
-INACTIVE = 0
-ACTIVE = 1
-COMPLETED = 2
-FAILED = 3
-
 MOVE = 0
 JUMP = 1
 
@@ -58,20 +52,23 @@ OCCUPIED_CHAR = '-'
 
 INFINITY = 9999999
 MAXDEPTH = 10
-VERSION = '0.5'
+VERSION = '0.4'
 TITLE = 'Raven ' + VERSION
 PROGRAM_TITLE = 'Raven Checkers'
 CUR_DIR = sys.path[0]
 TRAINING_DIR = 'training'
 
+# search values for transposition table
+hashfALPHA, hashfBETA, hashfEXACT = range(3)
+
 # constants for evaluation function
 TURN = 2      # color to move gets + turn
 BRV = 3       # multiplier for back rank
 KCV = 5       # multiplier for kings in center
-MCV = 2       # multiplier for men in center
+MCV = 1       # multiplier for men in center
 
-MEV = .025       # multiplier for men on edge
-KEV = 1.25     # multiplier for kings on edge
+MEV = 1       # multiplier for men on edge
+KEV = 5       # multiplier for kings on edge
 CRAMP = 5     # multiplier for cramp
 
 OPENING = 2   # multipliers for tempo
@@ -79,9 +76,9 @@ MIDGAME = -1
 ENDGAME = 2
 INTACTDOUBLECORNER = 3
 
-BLACK_IDX = [5, 6]
-WHITE_IDX = [-5, -6]
-KING_IDX = [-6, -5, 5, 6]
+BLACK_IDX = [5,6]
+WHITE_IDX = [-5,-6]
+KING_IDX = [-6,-5,5,6]
 
 FIRST = 0
 MID = 1
@@ -98,16 +95,83 @@ LAST = -1
 #          6   7   8   9
 #   (black)
 
+# other squares reachable from a particular square with a white man
+WHITEMAP = {45: set([39,40,34,35,28,29,30,23,24,25,17,18,19,20,12,13,14,15,6,7,8,9]),
+            46: set([40,41,34,35,36,28,29,30,31,23,24,25,26,17,18,19,20,12,13,14,15,6,7,8,9]),
+            47: set([41,42,35,36,37,29,30,31,23,24,25,26,17,18,19,20,12,13,14,15,6,7,8,9]),
+            48: set([42,36,37,30,31,24,25,26,18,19,20,12,13,14,15,6,7,8,9]),
+            39: set([34,28,29,23,24,17,18,19,12,13,14,6,7,8,9]),
+            40: set([34,35,28,29,30,23,24,25,17,18,19,20,12,13,14,15,6,7,8,9]),
+            41: set([35,36,29,30,31,23,24,25,26,17,18,19,20,12,13,14,15,6,7,8,9]),
+            42: set([36,37,30,31,24,25,26,18,19,20,12,13,14,15,6,7,8,9]),
+            34: set([28,29,23,24,17,18,19,12,13,14,6,7,8,9]),
+            35: set([29,30,23,24,25,17,18,19,20,12,13,14,15,6,7,8,9]),
+            36: set([30,31,24,25,26,18,19,20,12,13,14,15,6,7,8,9]),
+            37: set([31,25,26,19,20,13,14,15,7,8,9]),
+            28: set([23,17,18,12,13,6,7,8]),
+            29: set([23,24,17,18,19,12,13,14,6,7,8,9]),
+            30: set([24,25,18,19,20,12,13,14,15,6,7,8,9]),
+            31: set([25,26,19,20,13,14,15,7,8,9]),
+            23: set([17,18,12,13,6,7,8]),
+            24: set([18,19,12,13,14,6,7,8,9]),
+            25: set([19,20,13,14,15,7,8,9]),
+            26: set([20,14,15,8,9]),
+            17: set([12,6,7]),
+            18: set([12,13,6,7,8]),
+            19: set([13,14,7,8,9]),
+            20: set([14,15,8,9]),
+            12: set([6,7]),
+            13: set([7,8]),
+            14: set([8,9]),
+            15: set([9]),
+            6: set(),
+            7: set(),
+            8: set(),
+            9: set()}
 
-# translate from black indices to white indices and vice versa
-INDEX_MAP = {6: 48, 7: 47, 8: 46, 9: 45,
-             12: 42, 13: 41, 14: 40, 15: 39,
-             17: 37, 18: 36, 19: 35, 20: 34,
-             23: 31, 24: 30, 25: 29, 26: 28,
-             28: 26, 29: 25, 30: 24, 31: 23,
-             34: 20, 35: 19, 36: 18, 37: 17,
-             39: 15, 40: 14, 41: 13, 42: 12,
-             45: 9, 46: 8, 47: 7, 48: 6}
+#   (white)
+#            45  46  47  48
+#          39  40  41  42
+#            34  35  36  37
+#          28  29  30  31
+#            23  24  25  26
+#          17  18  19  20
+#            12  13  14  15
+#          6   7   8   9
+#   (black)
+# other squares reachable from a particular square with a black man
+BLACKMAP = {6: set([12,17,18,23,24,28,29,30,34,35,36,39,40,41,42,45,46,47,48]),
+            7: set([12,13,17,18,19,23,24,25,28,29,30,31,34,35,36,37,39,40,41,42,45,46,47,48]),
+            8: set([13,14,18,19,20,23,24,25,26,28,29,30,31,34,35,36,37,39,40,41,42,45,46,47,48]),
+            9: set([14,15,19,20,24,25,26,29,30,31,34,35,36,37,39,40,41,42,45,46,47,48]),
+            12: set([17,18,23,24,28,29,30,34,35,36,39,40,41,42,45,46,47,48]),
+            13: set([18,19,23,24,25,28,29,30,31,34,35,36,37,39,40,41,42,45,46,47,48]),
+            14: set([19,20,24,25,26,29,30,31,34,35,36,37,39,40,41,42,45,46,47,48]),
+            15: set([20,25,26,30,31,35,36,37,40,41,42,45,46,47,48]),
+            17: set([23,28,29,34,35,39,40,41,45,46,47]),
+            18: set([23,24,28,29,30,34,35,36,39,40,41,42,45,46,47,48]),
+            19: set([24,25,29,30,31,34,35,36,37,39,40,41,42,45,46,47,48]),
+            20: set([25,26,30,31,35,36,37,40,41,42,45,46,47,48]),
+            23: set([28,29,34,35,39,40,41,45,46,47]),
+            24: set([29,30,34,35,36,39,40,41,42,45,46,47,48]),
+            25: set([30,31,35,36,37,40,41,42,45,46,47,48]),
+            26: set([31,36,37,41,42,46,47,48]),
+            28: set([34,39,40,45,46]),
+            29: set([34,35,39,40,41,45,46,47]),
+            30: set([35,36,40,41,42,45,46,47,48]),
+            31: set([36,37,41,42,46,47,48]),
+            34: set([39,40,45,46]),
+            35: set([40,41,45,46,47]),
+            36: set([41,42,46,47,48]),
+            37: set([42,47,48]),
+            39: set([45]),
+            40: set([45,46]),
+            41: set([46,47]),
+            42: set([47,48]),
+            45: set(),
+            46: set(),
+            47: set(),
+            48: set()}
 
 # translate from simple input notation to real checkerboard notation
 IMAP = {'a1': 5,  'c1': 6,  'e1': 7,  'g1': 8,
@@ -119,45 +183,54 @@ IMAP = {'a1': 5,  'c1': 6,  'e1': 7,  'g1': 8,
         'a7': 32, 'c7': 33, 'e7': 34, 'g7': 35,
         'b8': 37, 'd8': 38, 'f8': 39, 'h8': 40}
 
-CBMAP = {5: 4, 6: 3, 7: 2, 8: 1,
-         10: 8, 11: 7, 12: 6, 13: 5,
-         14: 12, 15: 11, 16: 10, 17: 9,
-         19: 16, 20: 15, 21: 14, 22: 13,
-         23: 20, 24: 19, 25: 18, 26: 17,
-         28: 24, 29: 23, 30: 22, 31: 21,
-         32: 28, 33: 27, 34: 26, 35: 25,
-         37: 32, 38: 31, 39: 30, 40: 29}
+CBMAP = {5:4, 6:3, 7:2, 8:1,
+         10:8, 11:7, 12:6, 13:5,
+         14:12, 15:11, 16:10, 17:9,
+         19:16, 20:15, 21:14, 22:13,
+         23:20, 24:19, 25:18, 26:17,
+         28:24, 29:23, 30:22, 31:21,
+         32:28, 33:27, 34:26, 35:25,
+         37:32, 38:31, 39:30, 40:29}
 
-# Maps compressed grid indices xi + yi * 8 to internal board indices
-POS_MAP = {1: 45,  3: 46,  5: 47,  7: 48,
-           8: 39, 10: 40, 12: 41, 14: 42,
-           17: 34, 19: 35, 21: 36, 23: 37,
-           24: 28, 26: 29, 28: 30, 30: 31,
-           33: 23, 35: 24, 37: 25, 39: 26,
-           40: 17, 42: 18, 44: 19, 46: 20,
-           49: 12, 51: 13, 53: 14, 55: 15,
-           56: 6,  58:  7, 60:  8, 62:  9}
+def create_position_map():
+    """ Maps compressed grid indices xi + yi * 8 to internal
+        board indices """
+    pos = {}
+    pos[1] = 45;   pos[3]  = 46; pos[5] =  47; pos[7]  = 48
+    pos[8] = 39;   pos[10] = 40; pos[12] = 41; pos[14] = 42
+    pos[17] = 34;  pos[19] = 35; pos[21] = 36; pos[23] = 37
+    pos[24] = 28;  pos[26] = 29; pos[28] = 30; pos[30] = 31
+    pos[33] = 23;  pos[35] = 24; pos[37] = 25; pos[39] = 26
+    pos[40] = 17;  pos[42] = 18; pos[44] = 19; pos[46] = 20
+    pos[49] = 12;  pos[51] = 13; pos[53] = 14; pos[55] = 15
+    pos[56] = 6;   pos[58] = 7;  pos[60] =  8; pos[62] = 9
+    return pos
 
-# Maps internal board indices to checkerboard label numbers
-KEY_MAP = {6: 4, 7: 3, 8: 2, 9: 1,
-           12: 8, 13: 7, 14: 6, 15: 5,
-           17: 12, 18: 11, 19: 10, 20: 9,
-           23: 16, 24: 15, 25: 14, 26: 13,
-           28: 20, 29: 19, 30: 18, 31: 17,
-           34: 24, 35: 23, 36: 22, 37: 21,
-           39: 28, 40: 27, 41: 26, 42: 25,
-           45: 32, 46: 31, 47: 30, 48: 29}
+def create_key_map():
+    """ Maps internal board indices to checkerboard label numbers """
+    key = {}
+    key[6]  = 4;  key[7]  = 3;  key[8]  = 2;  key[9]  = 1
+    key[12] = 8;  key[13] = 7;  key[14] = 6;  key[15] = 5
+    key[17] = 12; key[18] = 11; key[19] = 10; key[20] = 9
+    key[23] = 16; key[24] = 15; key[25] = 14; key[26] = 13
+    key[28] = 20; key[29] = 19; key[30] = 18; key[31] = 17
+    key[34] = 24; key[35] = 23; key[36] = 22; key[37] = 21
+    key[39] = 28; key[40] = 27; key[41] = 26; key[42] = 25
+    key[45] = 32; key[46] = 31; key[47] = 30; key[48] = 29
+    return key
 
-# Maps internal board indices to grid (row, col) coordinates
-GRID_MAP = {6:  (7, 0), 7:  (7, 2), 8:  (7, 4), 9:  (7, 6),
-            12: (6, 1), 13: (6, 3), 14: (6, 5), 15: (6, 7),
-            17: (5, 0), 18: (5, 2), 19: (5, 4), 20: (5, 6),
-            23: (4, 1), 24: (4, 3), 25: (4, 5), 26: (4, 7),
-            28: (3, 0), 29: (3, 2), 30: (3, 4), 31: (3, 6),
-            34: (2, 1), 35: (2, 3), 36: (2, 5), 37: (2, 7),
-            39: (1, 0), 40: (1, 2), 41: (1, 4), 42: (1, 6),
-            45: (0, 1), 46: (0, 3), 47: (0, 5), 48: (0, 7)}
-
+def create_grid_map():
+    """ Maps internal board indices to grid (row, col) coordinates """
+    grd = {}
+    grd[6]  = (7,0); grd[7]  = (7,2); grd[8]  = (7,4); grd[9]  = (7,6)
+    grd[12] = (6,1); grd[13] = (6,3); grd[14] = (6,5); grd[15] = (6,7)
+    grd[17] = (5,0); grd[18] = (5,2); grd[19] = (5,4); grd[20] = (5,6)
+    grd[23] = (4,1); grd[24] = (4,3); grd[25] = (4,5); grd[26] = (4,7)
+    grd[28] = (3,0); grd[29] = (3,2); grd[30] = (3,4); grd[31] = (3,6)
+    grd[34] = (2,1); grd[35] = (2,3); grd[36] = (2,5); grd[37] = (2,7)
+    grd[39] = (1,0); grd[40] = (1,2); grd[41] = (1,4); grd[42] = (1,6)
+    grd[45] = (0,1); grd[46] = (0,3); grd[47] = (0,5); grd[48] = (0,7)
+    return grd
 
 def flip_dict(m):
     d = {}
@@ -167,7 +240,6 @@ def flip_dict(m):
         d[k] = v
     return d
 
-
 def reverse_dict(m):
     d = {}
     keys = [k for k, _ in m.iteritems()]
@@ -176,6 +248,12 @@ def reverse_dict(m):
         d[k] = v
     return d
 
+
+def similarity(pattern, pieces):
+    global grid
+    p1 = [grid[i] for i in pattern]
+    p2 = [grid[j] for j in pieces]
+    return sum(min(math.hypot(x1-x2, y1-y2) for x1, y1 in p1) for x2, y2 in p2)
 
 def get_preferences_from_file():
     config = RawConfigParser()
@@ -192,7 +270,6 @@ def get_preferences_from_file():
     size = config.get('AnnotationWindow', 'size')
     return font, size
 
-
 def write_preferences_to_file(font, size):
     config = RawConfigParser()
     config.add_section('AnnotationWindow')
@@ -202,13 +279,13 @@ def write_preferences_to_file(font, size):
     with open('raven.ini', 'wb') as configfile:
         config.write(configfile)
 
-
 def parse_index(idx):
     line, _, char = idx.partition('.')
     return int(line), int(char)
 
-
 def to_string(line, char):
     return "%d.%d" % (line, char)
 
-squaremap = flip_dict(KEY_MAP)
+grid = create_grid_map()
+keymap = create_key_map()
+squaremap = flip_dict(keymap)

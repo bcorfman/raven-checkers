@@ -4,12 +4,15 @@ from abc import ABCMeta, abstractmethod
 class GoalEvaluator(object):
     __metaclass__ = ABCMeta
 
+    def __init__(self, bias):
+        self.bias = bias
+
     @abstractmethod
-    def calculate_desirability(self):
+    def calculateDesirability(self, board):
         pass
 
     @abstractmethod
-    def set_goal(self):
+    def setGoal(self, board):
         pass
     
 

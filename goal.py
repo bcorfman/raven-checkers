@@ -1,13 +1,16 @@
 from abc import ABCMeta, abstractmethod
-from globalconst import FAILED, INACTIVE, ACTIVE, COMPLETED
-
 
 class Goal:
     __metaclass__ = ABCMeta
 
+    INACTIVE = 0
+    ACTIVE = 1
+    COMPLETED = 2
+    FAILED = 3
+
     def __init__(self, owner):
         self.owner = owner
-        self.status = INACTIVE
+        self.status = self.INACTIVE
 
     @abstractmethod
     def activate(self):
@@ -21,24 +24,16 @@ class Goal:
     def terminate(self):
         pass
 
-    def handle_message(self, msg):
+    def handleMessage(self, msg):
         return False
 
-    def reactivate_if_failed(self):
-        if self.status == FAILED:
-            self.status = INACTIVE
+    def addSubgoal(self, goal):
+        raise NotImplementedError('Cannot add goals to atomic goals')
 
-    def activate_if_inactive(self):
-        if self.status == INACTIVE:
-            self.status = ACTIVE
+    def reactivateIfFailed(self):
+        if self.status == self.FAILED:
+            self.status = self.INACTIVE
 
-    def is_complete(self):
-        return self.status == COMPLETED
-
-    def has_failed(self):
-        return self.status == FAILED
-
-    def is_active(self):
-        return self.status == ACTIVE
-
-
+    def activateIfInactive(self):
+        if self.status == self.INACTIVE:
+            self.status = self.ACTIVE

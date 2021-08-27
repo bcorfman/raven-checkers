@@ -143,7 +143,7 @@ def flatten(x):
 # Functions on sequences of numbers
 # NOTE: these take the sequence argument first, like min and max,
 # and like standard math notation: \sigma (i = 1..n) fn(i)
-# A lot of programming is finding the best value that satisfies some condition;
+# A lot of programing is finding the best value that satisfies some condition;
 # so there are three versions of argmin/argmax, depending on what you want to
 # do with ties: return the first one, return them all, or pick at random.
 
@@ -154,52 +154,24 @@ def sum(seq, fn=None):
     if fn: seq = map(fn, seq)
     return reduce(operator.add, seq, 0)
 
-
 def product(seq, fn=None):
     """Multiply the elements seq[i], or fn(seq[i]) if fn is given.
     product([1, 2, 3]) ==> 6; product([1, 2, 3], lambda x: x*x) ==> 1*4*9"""
-    if fn:
-        seq = map(fn, seq)
+    if fn: seq = map(fn, seq)
     return reduce(operator.mul, seq, 1)
 
-
-def argmin(seq, fn):
-    """Return an element with lowest fn(seq[i]) score; tie goes to first one.
-    >>> argmin(['one', 'to', 'three'], len)
-    'to'
-    """
-    best = seq[0]; best_score = fn(best)
-    for x in seq:
+def argmin(gen, fn):
+    """Return an element with lowest fn(x) score; tie goes to first one.
+    Gen must be a generator.
+    Ex: argmin(['one', 'to', 'three'], len) ==>  'to'"""
+    best = gen.next(); best_score = fn(best)
+    for x in gen:
         x_score = fn(x)
         if x_score < best_score:
             best, best_score = x, x_score
     return best
 
-
-def argmin_score(seq, fn):
-    """Return an element and its lowest fn(seq[i]) score; tie goes to first one."""
-    best = seq[0]; best_score = fn(best)
-    for x in seq:
-        x_score = fn(x)
-        if x_score < best_score:
-            best, best_score = x, x_score
-    return best, best_score
-
-
-def argmin_list(seq, fn):
-    """Return a list of elements of seq[i] with the lowest fn(seq[i]) scores.
-    Ex: argmin_list(['one', 'to', 'three', 'or'], len) ==>  ['to', 'or']"""
-    best_score, best = 9999999, []
-    for x in seq:
-        x_score = fn(x)
-        if x_score < best_score:
-            best, best_score = [x], x_score
-        elif x_score == best_score:
-            best.append(x)
-    return best
-
-
-def argmin_gen(gen, fn):
+def argmin_list(gen, fn):
     """Return a list of elements of gen with the lowest fn(x) scores.
     Ex: argmin_list(['one', 'to', 'three', 'or'], len) ==>  ['to', 'or']"""
     best_score, best = fn(gen.next()), []
@@ -211,8 +183,19 @@ def argmin_gen(gen, fn):
             best.append(x)
     return best
 
+#def argmin_list(seq, fn):
+#    """Return a list of elements of seq[i] with the lowest fn(seq[i]) scores.
+#    Ex: argmin_list(['one', 'to', 'three', 'or'], len) ==>  ['to', 'or']"""
+#    best_score, best = fn(seq[0]), []
+#    for x in seq:
+#        x_score = fn(x)
+#        if x_score < best_score:
+#            best, best_score = [x], x_score
+#        elif x_score == best_score:
+#            best.append(x)
+#    return best
 
-def argmin_random_tie_gen(gen, fn):
+def argmin_random_tie(gen, fn):
     """Return an element with lowest fn(x) score; break ties at random.
     Thus, for all s,f: argmin_random_tie(s, f) in argmin_list(s, f)"""
     try:
@@ -230,52 +213,33 @@ def argmin_random_tie_gen(gen, fn):
                 best = x
     return best
 
-def argmin_random_tie(seq, fn):
-    """Return an element with lowest fn(seq[i]) score; break ties at random.
-    Thus, for all s,f: argmin_random_tie(s, f) in argmin_list(s, f)"""
-    best_score = fn(seq[0]); n = 0
-    for x in seq:
-        x_score = fn(x)
-        if x_score < best_score:
-            best, best_score = x, x_score; n = 1
-        elif x_score == best_score:
-            n += 1
-            if random.randrange(n) == 0:
-                best = x
-    return best
+#def argmin_random_tie(seq, fn):
+#    """Return an element with lowest fn(seq[i]) score; break ties at random.
+#    Thus, for all s,f: argmin_random_tie(s, f) in argmin_list(s, f)"""
+#    best_score = fn(seq[0]); n = 0
+#    for x in seq:
+#        x_score = fn(x)
+#        if x_score < best_score:
+#            best, best_score = x, x_score; n = 1
+#        elif x_score == best_score:
+#            n += 1
+#            if random.randrange(n) == 0:
+#                    best = x
+#    return best
 
-
-def argmax(seq, fn):
+def argmax(gen, fn):
     """Return an element with highest fn(x) score; tie goes to first one.
     Ex: argmax(['one', 'to', 'three'], len) ==> 'three'"""
-    return argmin(seq, lambda x: -fn(x))
-
-
-def argmax_score(seq, fn):
-    """Return an element with highest fn(x) score; tie goes to first one.
-    Ex: argmax(['one', 'to', 'three'], len) ==> 'three'"""
-    return argmin_score(seq, lambda x: -fn(x))
-
-
-def argmax_gen(gen, fn):
-    """Return an element with highest fn(x) score; tie goes to first one.
-    Ex: argmax(['one', 'to', 'three'], len) ==> 'three'"""
-    return argmin_gen(gen, lambda x: -fn(x))
-
+    return argmin(gen, lambda x: -fn(x))
 
 def argmax_list(seq, fn):
     """Return a list of elements of gen with the highest fn(x) scores.
     Ex: argmax_list(['one', 'three', 'seven'], len) ==> ['three', 'seven']"""
     return argmin_list(seq, lambda x: -fn(x))
 
-
 def argmax_random_tie(seq, fn):
     "Return an element with highest fn(x) score; break ties at random."
     return argmin_random_tie(seq, lambda x: -fn(x))
-
-def argmax_random_tie_gen(gen, fn):
-    "Return an element with highest fn(x) score; break ties at random."
-    return argmin_random_tie_gen(gen, lambda x: -fn(x))
 #______________________________________________________________________________
 # Statistical and mathematical functions
 
@@ -497,35 +461,32 @@ def DataFile(name, mode='r'):
 #______________________________________________________________________________
 # Queues: Stack, FIFOQueue, PriorityQueue
 
-#______________________________________________________________________________
-# Queues: Stack, FIFOQueue, PriorityQueue
-
 class Queue:
     """Queue is an abstract class/interface. There are three types:
         Stack(): A Last In First Out Queue.
         FIFOQueue(): A First In First Out Queue.
-        PriorityQueue(order, f): Queue in sorted order (default min-first).
+        PriorityQueue(lt): Queue where items are sorted by lt, (default <).
     Each type supports the following methods and functions:
         q.append(item)  -- add an item to the queue
         q.extend(items) -- equivalent to: for item in items: q.append(item)
         q.pop()         -- return the top item from the queue
         len(q)          -- number of items in q (also q.__len())
-        item in q       -- does q contain item?
     Note that isinstance(Stack(), Queue) is false, because we implement stacks
     as lists.  If Python ever gets interfaces, Queue will be an interface."""
 
-    def __init__(self):
-        abstract
+    def __init__(self): abstract()
 
     def extend(self, items):
         for item in items: self.append(item)
 
 def Stack():
-    """Return an empty list, suitable as a Last-In-First-Out Queue."""
+    """Return an empty list, suitable as a Last-In-First-Out Queue.
+    Ex: q = Stack(); q.append(1); q.append(2); q.pop(), q.pop() ==> (2, 1)"""
     return []
 
 class FIFOQueue(Queue):
-    """A First-In-First-Out Queue."""
+    """A First-In-First-Out Queue.
+    Ex: q = FIFOQueue();q.append(1);q.append(2); q.pop(), q.pop() ==> (1, 2)"""
     def __init__(self):
         self.A = []; self.start = 0
     def append(self, item):
@@ -541,15 +502,11 @@ class FIFOQueue(Queue):
             self.A = self.A[self.start:]
             self.start = 0
         return e
-    def __contains__(self, item):
-        return item in self.A[self.start:]
-
 
 class PriorityQueue(Queue):
     """A queue in which the minimum (or maximum) element (as determined by f and
     order) is returned first. If order is min, the item with minimum f(x) is
-    returned first; if order is max, then it is the item with maximum f(x).
-    Also supports dict-like lookup."""
+    returned first; if order is max, then it is the item with maximum f(x)."""
     def __init__(self, order=min, f=lambda x: x):
         update(self, A=[], order=order, f=f)
     def append(self, item):
@@ -561,21 +518,74 @@ class PriorityQueue(Queue):
             return self.A.pop(0)[1]
         else:
             return self.A.pop()[1]
-    def __contains__(self, item):
-        return some(lambda (_, x): x == item, self.A)
-    def __getitem__(self, key):
-        for _, item in self.A:
-            if item == key:
-                return item
-    def __delitem__(self, key):
-        for i, (value, item) in enumerate(self.A):
-            if item == key:
-                self.A.pop(i)
-                return
+
+#______________________________________________________________________________
 
 
-def manhattan_distance(start_row, start_col, end_row, end_col):
-    return abs(start_row - end_row) + abs(start_col - end_col)
+## NOTE: Once we upgrade to Python 2.3, the following class can be replaced by
+## from sets import set
+
+class set:
+    """This implements the set class from PEP 218, except it does not
+    overload the infix operators.
+    Ex: s = set([1,2,3]); 1 in s ==> True; 4 in s ==> False
+    s.add(4); 4 in s ==> True; len(s) ==> 4
+    s.discard(999); s.remove(4); 4 in s ==> False
+    s2 = set([3,4,5]); s.union(s2) ==> set([1,2,3,4,5])
+    s.intersection(s2) ==> set([3])
+    set([1,2,3]) == set([3,2,1]); repr(s) == '{1, 2, 3}'
+    for e in s: pass"""
+
+    def __init__(self, elements):
+        self.dict = {}
+        for e in elements:
+            self.dict[e] = 1
+
+    def __contains__(self, element):
+        return element in self.dict
+
+    def add(self, element):
+        self.dict[element] = 1
+
+    def remove(self, element):
+        del self.dict[element]
+
+    def discard(self, element):
+        if element in self.dict:
+            del self.dict[element]
+
+    def clear(self):
+        self.dict.clear()
+
+    def union(self, other):
+        return set(self).union_update(other)
+
+    def intersection(self, other):
+        return set(self).intersection_update(other)
+
+    def union_update(self, other):
+        for e in other:
+            self.add(e)
+
+    def intersection_update(self, other):
+        for e in self.dict.keys():
+            if e not in other:
+                self.remove(e)
+
+    def __iter__(self):
+        for e in self.dict:
+            yield e
+
+    def __len__(self):
+        return len(self.dict)
+
+    def __cmp__(self, other):
+        return (self is other or
+                (isinstance(other, set) and self.dict == other.dict))
+
+    def __repr__(self):
+        return "{%s}" % ", ".join([str(e) for e in self.dict.keys()])
+
 
 #______________________________________________________________________________
 # Additional tests

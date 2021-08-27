@@ -1,28 +1,26 @@
 from goal import Goal
 from composite import CompositeGoal
 
-
-class GoalOneKingAttack(CompositeGoal):
+class Goal_OneKingAttack(CompositeGoal):
     def __init__(self, owner):
         CompositeGoal.__init__(self, owner)
 
     def activate(self):
         self.status = self.ACTIVE
-        self.remove_all_subgoals()
+        self.removeAllSubgoals()
         # because goals are *pushed* onto the front of the subgoal list they must
         # be added in reverse order.
-        self.add_subgoal(GoalPinEnemy(self.owner))
-        self.add_subgoal(GoalMoveTowardEnemy(self.owner))
+        self.addSubgoal(Goal_MoveTowardEnemy(self.owner))
+        self.addSubgoal(Goal_PinEnemy(self.owner))
 
     def process(self):
-        self.activate_if_inactive()
-        return self.process_subgoals()
+        self.activateIfInactive()
+        return self.processSubgoals()
 
     def terminate(self):
         self.status = self.INACTIVE
 
-
-class GoalMoveTowardEnemy(Goal):
+class Goal_MoveTowardEnemy(Goal):
     def __init__(self, owner):
         Goal.__init__(self, owner)
 
@@ -31,7 +29,7 @@ class GoalMoveTowardEnemy(Goal):
 
     def process(self):
         # if status is inactive, activate
-        self.activate_if_inactive()
+        self.activateIfInactive()
         
         # only moves (not captures) are a valid goal
         if self.owner.captures:
@@ -49,9 +47,8 @@ class GoalMoveTowardEnemy(Goal):
         e_row, e_col = self.owner.row_col_for_index(e_idx)
         
         # if distance between player and enemy is already down
-        # to 2 rows or 2 cols, then goal is complete.
-        if ((abs(p_row - e_row) == 2 and abs(p_col - e_col) == 0) or
-            (abs(p_row - e_row) == 0 and abs(p_col - e_col) == 2)):
+        # to 2 rows or cols, then goal is complete.
+        if abs(p_row - e_row) == 2 or abs(p_col - e_col) == 2:
             self.status = self.COMPLETED
             
         # select the available move that decreases the distance
@@ -78,8 +75,7 @@ class GoalMoveTowardEnemy(Goal):
     def terminate(self):
         self.status = self.INACTIVE
 
-
-class GoalPinEnemy(Goal):
+class Goal_PinEnemy(Goal):
     def __init__(self, owner):
         Goal.__init__(self, owner)
 

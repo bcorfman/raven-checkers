@@ -2,11 +2,10 @@
 
 """
 
-from utils import infinity, argmax, argmax_random_tie_gen, num_or_str, Dict, update
+from utils import infinity, argmax, argmax_random_tie, num_or_str, Dict, update
 from utils import if_, Struct
-from abc import ABCMeta, abstractmethod
 import random
-
+import time
 
 #______________________________________________________________________________
 # Minimax Search
@@ -34,7 +33,8 @@ def minimax_decision(state, game):
         return v
 
     # Body of minimax_decision starts here:
-    action, state = argmax(game.successors(state), lambda ((a, s)): min_value(s))
+    action, state = argmax(game.successors(state),
+                           lambda ((a, s)): min_value(s))
     return action
 
 
@@ -109,8 +109,9 @@ def alphabeta_search(state, game, d=4, cutoff_test=None, eval_fn=None):
     cutoff_test = (cutoff_test or
                    (lambda state,depth: depth>d or game.terminal_test(state)))
     eval_fn = eval_fn or (lambda state: game.utility(player, state))
-    action, state = argmax_random_tie_gen(game.successors(state),
-                                          lambda ((a, s)): min_value(s, -infinity, infinity, 0))
+    action, state = argmax_random_tie(game.successors(state),
+                                      lambda ((a, s)): min_value(s, -infinity,
+                                                       infinity, 0))
     return action
 
 #______________________________________________________________________________
@@ -151,22 +152,17 @@ class Game:
     methods. You will also need to set the .initial attribute to the
     initial state; this can be done in the constructor."""
 
-    __metaclass__ = ABCMeta
-
-    @abstractmethod
     def legal_moves(self, state):
         "Return a list of the allowable moves at this point."
-        pass
+        abstract
 
-    @abstractmethod
     def make_move(self, move, state):
         "Return the state that results from making a move from a state."
-        pass
+        abstract
 
-    @abstractmethod
     def utility(self, state, player):
         "Return the value of this final state to player."
-        pass
+        abstract
 
     def terminal_test(self, state):
         "Return True if this is a final state for the game."

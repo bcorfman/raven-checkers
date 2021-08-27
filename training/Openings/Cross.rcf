@@ -1,4 +1,4 @@
-[description]
+<description>
 **Cross opening**, part of the 11-15 group.
 
 11-15 is considered Black's best opening move. It is so popular that it has
@@ -8,7 +8,7 @@ other hand, 24-20 and 24-19 and 21-17 are all considered inferior in varying
 degrees.
 
 - from //How to Win At Checkers// by Fred Reinfeld
-[setup]
+<setup>
 black_first
 2_player_game
 flip_board 0
@@ -16,56 +16,20 @@ black_men 1 2 3 4 5 6 7 8 9 10 11 12
 black_kings 
 white_men 21 22 23 24 25 26 27 28 29 30 31 32 
 white_kings 
-[move]
-11-15
-[annotation]
-[move]
-23-18
-[annotation]
-. These moves form the opening. White gets excellent counter-attacking chances.
-[move]
-8-11
-[annotation]
-. Also playable is 9-14, which may lead to a trap.
-[move]
-27-23
-[annotation]
-. More enterprising than 26-23, which is often played here.
-[move]
-4-8
-[annotation]
-. The alternative 10-14 may lead to a trap. Here White can also [[training\Openings\support\Cross_WhiteWin.rcf|set%20a%20trap]].
-[move]
-23-19
-[annotation]
-[move]
-10-14
-[annotation]
-[move]
-19-10
-[annotation]
-[move]
-14-23
-[annotation]
-[move]
-26-19
-[annotation]
-[move]
-7-14
-[annotation]
-[move]
-24-20
-[annotation]
-[move]
-6-10
-[annotation]
-[move]
-22-17
-[annotation]
-[move]
-9-13
-[annotation]
-[move]
-30-26
-[annotation]
-. After simplifying exchanges (13-22, 25-9, 5-14, etc.) the game is even.
+<moves>
+11-15;
+23-18;. These moves form the opening. White gets excellent counter-attacking chances.
+8-11;. Also playable is 9-14, which may lead to a trap.
+27-23;. More enterprising than 26-23, which is often played here.
+4-8;. The alternative 10-14 may lead to a trap. Here White can also [[training\Openings\support\Cross_WhiteWin.rcf|set%20a%20trap]].
+23-19;
+10-14;
+19-10;
+14-23;
+26-19;
+7-14;
+24-20;
+6-10;
+22-17;
+9-13;
+30-26;. After simplifying exchanges (13-22, 25-9, 5-14, etc.) the game is even.

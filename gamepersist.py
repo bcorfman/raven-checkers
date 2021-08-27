@@ -205,15 +205,10 @@ class SavedGame(object):
                 idx += 1
                 continue # ignore blank lines
 
-            movestr = ''
-            annotation = ''
-            if ';' in line:
-                try:
-                    movestr, annotation = line.split(';', 1)
-                except ValueError:
-                    raise IOError, 'Unrecognized section in file, line %d' % (idx+1)
-            else:
-                movestr = line
+            try:
+                movestr, annotation = line.split(';', 1)
+            except ValueError:
+                raise IOError, 'Unrecognized section in file, line %d' % (idx+1)
 
             # move is always part of the annotation; I just don't want to
             # have to repeat it explicitly in the file.

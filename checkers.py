@@ -5,37 +5,36 @@ from globalconst import BLACK, WHITE, KING, MAN, OCCUPIED, BLACK_CHAR, WHITE_CHA
 from globalconst import BLACK_KING, WHITE_KING, FREE, OCCUPIED_CHAR, FREE_CHAR
 from globalconst import COLORS, TYPES, TURN, CRAMP, BRV, KEV, KCV, MEV, MCV
 from globalconst import INTACTDOUBLECORNER, ENDGAME, OPENING, MIDGAME
-from globalconst import GRID_MAP, KING_IDX, BLACK_IDX, WHITE_IDX
-
+from globalconst import create_grid_map, KING_IDX, BLACK_IDX, WHITE_IDX
+import copy
 
 class Checkerboard(object):
     #   (white)
-    #            45  46  47  48        32  31  30  29
-    #          39  40  41  42        28  27  26  25
-    #            34  35  36  37        24  23  22  21
-    #          28  29  30  31        20  19  18  17
-    #            23  24  25  26        16  15  14  13
-    #          17  18  19  20        12  11  10   9
-    #            12  13  14  15         8   7   6   5
-    #          6   7   8   9          4   3   2   1
+    #            45  46  47  48
+    #          39  40  41  42
+    #            34  35  36  37
+    #          28  29  30  31
+    #            23  24  25  26
+    #          17  18  19  20
+    #            12  13  14  15
+    #          6   7   8   9
     #   (black)
-    valid_squares = [6, 7, 8, 9, 12, 13, 14, 15, 17, 18, 19, 20, 23, 24, 25, 26,
-                     28, 29, 30, 31, 34, 35, 36, 37, 39, 40, 41, 42, 45, 46,
-                     47, 48]
+    valid_squares = [6,7,8,9,12,13,14,15,17,18,19,20,23,24,25,26,
+                     28,29,30,31,34,35,36,37,39,40,41,42,45,46,
+                     47,48]
     # values of pieces (KING, MAN, BLACK, WHITE, FREE)
-    value = [0, 0, 0, 0, 0, 1, 256, 0, 0, 16, 4096, 0, 0, 0, 0, 0, 0]
-    edge = [6, 7, 8, 9, 15, 17, 26, 28, 37, 39, 45, 46, 47, 48]
-    #center = [18, 19, 24, 25, 29, 30, 35, 36]
-    center = [24, 25, 29, 30]
+    value = [0,0,0,0,0,1,256,0,0,16,4096,0,0,0,0,0,0]
+    edge = [6,7,8,9,15,17,26,28,37,39,45,46,47,48]
+    center = [18,19,24,25,29,30,35,36]
     # values used to calculate tempo -- one for each square on board (0, 48)
-    row = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 2, 2, 2, 2, 0, 0, 3, 3, 3, 3, 0,
-           4, 4, 4, 4, 0, 0, 5, 5, 5, 5, 0, 6, 6, 6, 6, 0, 0, 7, 7, 7, 7]
-    safeedge = [9, 15, 39, 45]
-    rank = {0: 0, 1: -1, 2: 1, 3: 0, 4: 1, 5: 1, 6: 2, 7: 1, 8: 1, 9: 0,
-            10: 7, 11: 4, 12: 2, 13: 2, 14: 9, 15: 8}
+    row = [0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,2,2,2,2,0,0,3,3,3,3,0,
+           4,4,4,4,0,0,5,5,5,5,0,6,6,6,6,0,0,7,7,7,7]
+    safeedge = [9,15,39,45]
+    rank = {0:0, 1:-1, 2:1, 3:0, 4:1, 5:1, 6:2, 7:1, 8:1, 9:0,
+            10:7, 11:4, 12:2, 13:2, 14:9, 15:8}
 
     def __init__(self):
-        self.squares = [OCCUPIED for _ in range(56)]
+        self.squares = [OCCUPIED for i in range(56)]
         s = self.squares
         for i in range(0, 4):
             s[6+i] = s[12+i] = s[17+i] = BLACK | MAN
@@ -52,7 +51,7 @@ class Checkerboard(object):
         self.redo_list = []
         self.white_total = 12
         self.black_total = 12
-        self.gridmap = GRID_MAP
+        self.gridmap = create_grid_map()
         self.ok_to_move = True
 
     def __repr__(self):
@@ -60,15 +59,25 @@ class Checkerboard(object):
         wc = self.count(WHITE)
         sq = self.squares
         lookup = self.lookup
-        s = "[%s=%2d %s=%2d (%+d)]\n" % (BLACK_CHAR, bc, WHITE_CHAR, wc, bc - wc)
-        s += "8   %s   %s   %s   %s\n" % (lookup(sq[45]), lookup(sq[46]), lookup(sq[47]), lookup(sq[48]))
-        s += "7 %s   %s   %s   %s\n" % (lookup(sq[39]), lookup(sq[40]), lookup(sq[41]), lookup(sq[42]))
-        s += "6   %s   %s   %s   %s\n" % (lookup(sq[34]), lookup(sq[35]), lookup(sq[36]), lookup(sq[37]))
-        s += "5 %s   %s   %s   %s\n" % (lookup(sq[28]), lookup(sq[29]), lookup(sq[30]), lookup(sq[31]))
-        s += "4   %s   %s   %s   %s\n" % (lookup(sq[23]), lookup(sq[24]), lookup(sq[25]), lookup(sq[26]))
-        s += "3 %s   %s   %s   %s\n" % (lookup(sq[17]), lookup(sq[18]), lookup(sq[19]), lookup(sq[20]))
-        s += "2   %s   %s   %s   %s\n" % (lookup(sq[12]), lookup(sq[13]), lookup(sq[14]), lookup(sq[15]))
-        s += "1 %s   %s   %s   %s\n" % (lookup(sq[6]), lookup(sq[7]), lookup(sq[8]), lookup(sq[9]))
+        s = "[%s=%2d %s=%2d (%+d)]\n" % (BLACK_CHAR, bc,
+                                         WHITE_CHAR, wc,
+                                         bc - wc)
+        s += "8   %s   %s   %s   %s\n" % (lookup(sq[45]), lookup(sq[46]),
+                                   lookup(sq[47]), lookup(sq[48]))
+        s += "7 %s   %s   %s   %s\n" % (lookup(sq[39]), lookup(sq[40]),
+                                  lookup(sq[41]), lookup(sq[42]))
+        s += "6   %s   %s   %s   %s\n" % (lookup(sq[34]), lookup(sq[35]),
+                                  lookup(sq[36]), lookup(sq[37]))
+        s += "5 %s   %s   %s   %s\n" % (lookup(sq[28]), lookup(sq[29]),
+                                  lookup(sq[30]), lookup(sq[31]))
+        s += "4   %s   %s   %s   %s\n" % (lookup(sq[23]), lookup(sq[24]),
+                                  lookup(sq[25]), lookup(sq[26]))
+        s += "3 %s   %s   %s   %s\n" % (lookup(sq[17]), lookup(sq[18]),
+                                  lookup(sq[19]), lookup(sq[20]))
+        s += "2   %s   %s   %s   %s\n" % (lookup(sq[12]), lookup(sq[13]),
+                                  lookup(sq[14]), lookup(sq[15]))
+        s += "1 %s   %s   %s   %s\n" % (lookup(sq[6]), lookup(sq[7]),
+                                  lookup(sq[8]), lookup(sq[9]))
         s += "  a b c d e f g h"
         return s
 
@@ -78,30 +87,6 @@ class Checkerboard(object):
         return BLACK
     enemy = property(_get_enemy,
                      doc="The color for the player that doesn't have the current turn")
-
-    def _get_short_dyke(self):
-        return [8, 9, 14, 17, 23, 29] if self.to_move == BLACK else [14, 17, 21, 27, 31, 32]
-    short_dyke = property(_get_short_dyke, doc="Squares used in the short dyke formation")
-
-    def _get_long_dyke(self):
-        return [8, 9, 14, 19, 24, 29] if self.to_move == BLACK else [14, 18, 23, 27, 31, 32]
-    long_dyke = property(_get_long_dyke, doc="Squares used in the long dyke formation")
-
-    def _get_pyramid(self):
-        return [7, 8, 9, 13, 14, 19] if self.to_move == BLACK else [45, 46, 47, 40, 41, 35]
-    pyramid = property(_get_pyramid, doc="Squares used in the pyramid formation")
-
-    def _get_phalanx(self):
-        return [24, 25, 18, 19, 20, 12, 13, 14, 15] if self.to_move == BLACK else [35, 36, 40, 41, 42, 45, 46, 47, 48]
-    phalanx = property(_get_phalanx, doc="Squares used in the phalanx formation")
-
-    def _get_mill(self):
-        return [25, 30, 20, 24, 7, 9, 12, 15, 18] if self.to_move == BLACK else [24, 29, 30, 34, 36, 39, 42, 45, 47]
-    mill = property(_get_mill, doc="Squares used in the mill formation")
-
-    def _get_echelon(self):
-        return [7, 8, 13, 14, 15, 19, 20, 25] if self.to_move == BLACK else [29, 34, 35, 39, 40, 41, 46, 47]
-    echelon = property(_get_echelon, doc="Squares used in the echelon formation")
 
     def attach(self, observer):
         if observer not in self.observers:
@@ -129,7 +114,7 @@ class Checkerboard(object):
 
     def has_opposition(self, color):
         sq = self.squares
-        cols = range(6, 10) if self.to_move == BLACK else range(12, 16)
+        cols = range(6,10) if self.to_move == BLACK else range(12,16)
         pieces_in_system = 0
         for i in cols:
             for j in range(4):
@@ -227,26 +212,27 @@ class Checkerboard(object):
         v1 = 100 * nbm + 130 * nbk
         v2 = 100 * nwm + 130 * nwk
 
-        evl = v1 - v2  # material values
+        eval = v1 - v2 # material values
         # favor exchanges if in material plus
-        evl += (250 * (v1 - v2))/(v1 + v2)
+        eval += (250 * (v1 - v2))/(v1 + v2)
 
         nm = nbm + nwm
         nk = nbk + nwk
 
         # fine evaluation below
         if player == BLACK:
-            evl += TURN
+            eval += TURN
             mult = -1
         else:
-            evl -= TURN
+            eval -= TURN
             mult = 1
 
-        return mult * (evl + self._eval_cramp(sq) + self._eval_backrankguard(sq) +
-                       self._eval_doublecorner(sq) + self._eval_center(sq) +
-                       self._eval_center_support(sq) + self._eval_single_corner(sq) +
-                       self._eval_edge(sq) + self._eval_tempo(sq, nm, nbk, nbm, nwk, nwm) +
-                       self._eval_playeropposition(sq, nwm, nwk, nbk, nbm, nm, nk))
+        return mult * \
+                (eval + self._eval_cramp(sq) + self._eval_backrankguard(sq) +
+                self._eval_doublecorner(sq) + self._eval_center(sq) +
+                self._eval_edge(sq) +
+                self._eval_tempo(sq, nm, nbk, nbm, nwk, nwm) +
+                self._eval_playeropposition(sq, nwm, nwk, nbk, nbm, nm, nk))
 
     def _extend_capture(self, valid_moves, captures, add_sq_func, visited):
         player = self.to_move
@@ -261,8 +247,10 @@ class Checkerboard(object):
                 last_pos = capture[-1][0]
                 mid = last_pos+j
                 dest = last_pos+j*2
-                if ((last_pos, mid, dest) not in visited and (dest, mid, last_pos) not in visited and
-                            squares[mid] & enemy and squares[dest] & FREE):
+                if ((last_pos, mid, dest) not in visited and
+                    (dest, mid, last_pos) not in visited and
+                    squares[mid] & enemy and
+                    squares[dest] & FREE):
                     sq2, sq3 = add_sq_func(player, squares, mid, dest, last_pos)
                     capture[-1][2] = FREE
                     capture.extend([sq2, sq3])
@@ -276,7 +264,8 @@ class Checkerboard(object):
 
     def _capture_man(self, player, squares, mid, dest, last_pos):
         sq2 = [mid, squares[mid], FREE]
-        if (player == BLACK and last_pos >= 34) or (player == WHITE and last_pos <= 20):
+        if ((player == BLACK and last_pos>=34) or
+            (player == WHITE and last_pos<=20)):
             sq3 = [dest, FREE, player | KING]
         else:
             sq3 = [dest, FREE, player | MAN]
@@ -301,7 +290,8 @@ class Checkerboard(object):
                     if squares[mid] & enemy and squares[dest] & FREE:
                         sq1 = [i, player | MAN, FREE]
                         sq2 = [mid, squares[mid], FREE]
-                        if (player == BLACK and i >= 34) or (player == WHITE and i <= 20):
+                        if ((player == BLACK and i>=34) or
+                            (player == WHITE and i<=20)):
                             sq3 = [dest, FREE, player | KING]
                         else:
                             sq3 = [dest, FREE, player | MAN]
@@ -336,7 +326,8 @@ class Checkerboard(object):
                         squares[i] = temp
                         all_captures.extend(captures)
         return all_captures
-    captures = property(_get_captures, doc="Forced captures for the current player")
+    captures = property(_get_captures,
+                        doc="Forced captures for the current player")
 
     def _get_moves(self):
         player = self.to_move
@@ -346,82 +337,68 @@ class Checkerboard(object):
         for i in self.valid_squares:
             for j in valid_indices:
                 dest = i+j
-                if squares[i] & player and squares[i] & MAN and squares[dest] & FREE:
+                if (squares[i] & player and
+                    squares[i] & MAN and
+                    squares[dest] & FREE):
                     sq1 = [i, player | MAN, FREE]
-                    if (player == BLACK and i >= 39) or (player == WHITE and i <= 15):
+                    if ((player == BLACK and i>=39) or
+                        (player == WHITE and i<=15)):
                         sq2 = [dest, FREE, player | KING]
                     else:
                         sq2 = [dest, FREE, player | MAN]
                     moves.append(Move([sq1, sq2]))
             for j in KING_IDX:
                 dest = i+j
-                if squares[i] & player and squares[i] & KING and squares[dest] & FREE:
+                if (squares[i] & player and
+                    squares[i] & KING and
+                    squares[dest] & FREE):
                     sq1 = [i, player | KING, FREE]
                     sq2 = [dest, FREE, player | KING]
                     moves.append(Move([sq1, sq2]))
         return moves
-    moves = property(_get_moves, doc="Available moves for the current player")
+    moves = property(_get_moves,
+                        doc="Available moves for the current player")
 
     def _eval_cramp(self, sq):
-        evl = 0
-        if sq[28] == BLACK | MAN and (sq[24] & BLACK) and sq[34] == WHITE | MAN:
-            evl += CRAMP
-        if sq[26] == WHITE | MAN and (sq[30] & WHITE) and sq[20] == BLACK | MAN:
-            evl -= CRAMP
-        return evl
+        eval = 0
+        if sq[28] == BLACK | MAN and sq[34] == WHITE | MAN:
+            eval += CRAMP
+        if sq[26] == WHITE | MAN and sq[20] == BLACK | MAN:
+            eval -= CRAMP
+        return eval
 
     def _eval_backrankguard(self, sq):
-        evl = 0
+        eval = 0
         code = 0
-        if sq[6] & MAN:
-            code += 1
-        if sq[7] & MAN:
-            code += 2
-        if sq[8] & MAN:
-            code += 4
-        if sq[9] & MAN:
-            code += 8
+        if sq[6] & MAN: code += 1
+        if sq[7] & MAN: code += 2
+        if sq[8] & MAN: code += 4
+        if sq[9] & MAN: code += 8
         backrank = self.rank[code]
 
         code = 0
-        if sq[45] & MAN:
-            code += 8
-        if sq[46] & MAN:
-            code += 4
-        if sq[47] & MAN:
-            code += 2
-        if sq[48] & MAN:
-            code += 1
+        if sq[45] & MAN: code += 8
+        if sq[46] & MAN: code += 4
+        if sq[47] & MAN: code += 2
+        if sq[48] & MAN: code += 1
         backrank = backrank - self.rank[code]
-        evl *= BRV * backrank
-        return evl
+        eval *= BRV * backrank
+        return eval
 
     def _eval_doublecorner(self, sq):
-        evl = 0
+        eval = 0
         if sq[9] == BLACK | MAN:
             if sq[14] == BLACK | MAN or sq[15] == BLACK | MAN:
-                evl += INTACTDOUBLECORNER
-                # Added this 4th square as part of DC due to Pask's tip 4.
-                # Gives a slight bonus to the original Simple Checkers evaluation.
-                if sq[20] == BLACK | MAN:
-                    evl += 1
+                eval += INTACTDOUBLECORNER
 
         if sq[45] == WHITE | MAN:
             if sq[39] == WHITE | MAN or sq[40] == WHITE | MAN:
-                evl -= INTACTDOUBLECORNER
-                # Added this 4th square as part of DC due to Pask's tip 4.
-                # Gives a slight bonus to the original Simple Checkers evaluation.
-                if sq[34] == WHITE | MAN:
-                    evl += 1
-        return evl
+                eval -= INTACTDOUBLECORNER
+        return eval
 
     def _eval_center(self, sq):
-        evl = 0
+        eval = 0
         nbmc = nbkc = nwmc = nwkc = 0
-        # I'm more defining only 4 center squares, according to Pask's SOIC tip 1.
-        # Fierz's Simple Checkers evaluation function defined 8 center squares, which along
-        # with the high evaluation of edge squares seems to lead to non-sensical behavior
-        # in the opening. I moved the 4 supporting squares to the _eval_center_support function.
         for c in self.center:
             if sq[c] != FREE:
                 if sq[c] == BLACK | MAN:
@@ -432,66 +409,12 @@ class Checkerboard(object):
                     nwmc += 1
                 if sq[c] == WHITE | KING:
                     nwkc += 1
-        evl += (nbmc-nwmc) * MCV
-        evl += (nbkc-nwkc) * KCV
-        # Pask's tip 1 also recommends not overcrowding the center squares. Remains to be seen
-        # whether 3 checkers in the center is too many, but 4 men is definitely overcrowding.
-        if nbmc > 3:  # center is overcrowded
-            evl -= 10  # penalty assessed
-        if nwmc > 3:  # center is overcrowded
-            evl += 10  # penalty assessed
-        return evl
-
-    def _eval_single_corner(self, sq):
-        """ I created this function to evaluate whether the single corner is developed rapidly.
-        This really should only be assessed at the beginning of the game."""
-        evl = 0
-        nbm = nwm = 0
-        if sq[6] == FREE:
-            evl += 2
-        elif sq[6] == BLACK | MAN:
-            nbm += 1
-        if sq[12] == BLACK | MAN:
-            nbm += 1
-        if sq[18] == BLACK | MAN:
-            nbm += 1
-        if sq[24] == BLACK | MAN:
-            nbm += 1
-            if nbm == 3:  # Gives an additional bonus if all 3 single corner checkers have been moved forward.
-                evl += 2
-
-        if sq[48] == FREE:
-            evl -= 2
-        elif sq[48] == WHITE | MAN:
-            nwm += 1
-        if sq[42] == WHITE | MAN:
-            nwm += 1
-        if sq[36] == WHITE | MAN:
-            nwm += 1
-        if sq[30] == WHITE | MAN:
-            nwm += 1
-            if nwm == 3:  # Gives an additional bonus if all 3 single corner checkers have been moved forward.
-                evl -= 2
-
-        return evl
-
-    def _eval_center_support(self, sq):
-        # Fierz's Simple Checkers evaluation function defined 8 center squares, which
-        # seems to lead to non-sensical behavior in the opening. I moved the 4 center supporting
-        # squares to this function instead.
-        evl = 0
-        if sq[18] == BLACK | MAN:
-            evl += 0.5
-        if sq[19] == BLACK | MAN:
-            evl += 0.5
-        if sq[35] == WHITE | MAN:
-            evl -= 0.5
-        if sq[36] == WHITE | MAN:
-            evl -= 0.5
-        return evl
+        eval += (nbmc-nwmc) * MCV
+        eval += (nbkc-nwkc) * KCV
+        return eval
 
     def _eval_edge(self, sq):
-        evl = 0
+        eval = 0
         nbme = nbke = nwme = nwke = 0
         for e in self.edge:
             if sq[e] != FREE:
@@ -503,15 +426,12 @@ class Checkerboard(object):
                     nwme += 1
                 if sq[e] == WHITE | KING:
                     nwke += 1
-        # I changed the Simple Checkers multipliers because the edge squares seemed
-        # to be evaluated too highly. The program seems to favor moving to the edge over
-        # the center too often.
-        evl -= (nbme-nwme) * MEV
-        evl -= (nbke-nwke) * KEV
-        return evl
+        eval -= (nbme-nwme) * MEV
+        eval -= (nbke-nwke) * KEV
+        return eval
 
     def _eval_tempo(self, sq, nm, nbk, nbm, nwk, nwm):
-        evl = tempo = 0
+        eval = tempo = 0
         for i in range(6, 49):
             if sq[i] == BLACK | MAN:
                 tempo += self.row[i]
@@ -519,23 +439,23 @@ class Checkerboard(object):
                 tempo -= 7 - self.row[i]
 
         if nm >= 16:
-            evl += OPENING * tempo
-        if nm >= 12 and nm <= 15:
-            evl += MIDGAME * tempo
+            eval += OPENING * tempo
+        if nm <= 15 and nm >= 12:
+            eval += MIDGAME * tempo
         if nm < 9:
-            evl += ENDGAME * tempo
+            eval += ENDGAME * tempo
 
         for s in self.safeedge:
             if nbk + nbm > nwk + nwm and nwk < 3:
                 if sq[s] == WHITE | KING:
-                    evl -= 15
+                    eval -= 15
             if nwk + nwm > nbk + nbm and nbk < 3:
                 if sq[s] == BLACK | KING:
-                    evl += 15
-        return evl
+                    eval += 15
+        return eval
 
     def _eval_playeropposition(self, sq, nwm, nwk, nbk, nbm, nm, nk):
-        evl = 0
+        eval = 0
         pieces_in_system = 0
         tn = nm + nk
         if nwm + nwk - nbk - nbm == 0:
@@ -545,47 +465,31 @@ class Checkerboard(object):
                         if sq[i+11*j] != FREE:
                             pieces_in_system += 1
                 if pieces_in_system % 2:
-                    if tn <= 12:
-                        evl += 1
-                    if tn <= 10:
-                        evl += 1
-                    if tn <= 8:
-                        evl += 2
-                    if tn <= 6:
-                        evl += 2
+                    if tn <= 12: eval += 1
+                    if tn <= 10: eval += 1
+                    if tn <= 8: eval += 2
+                    if tn <= 6: eval += 2
                 else:
-                    if tn <= 12:
-                        evl -= 1
-                    if tn <= 10:
-                        evl -= 1
-                    if tn <= 8:
-                        evl -= 2
-                    if tn <= 6:
-                        evl -= 2
+                    if tn <= 12: eval -= 1
+                    if tn <= 10: eval -= 1
+                    if tn <= 8: eval -= 2
+                    if tn <= 6: eval -= 2
             else:
                 for i in range(12, 16):
                     for j in range(4):
                         if sq[i+11*j] != FREE:
                             pieces_in_system += 1
                 if pieces_in_system % 2 == 0:
-                    if tn <= 12:
-                        evl += 1
-                    if tn <= 10:
-                        evl += 1
-                    if tn <= 8:
-                        evl += 2
-                    if tn <= 6:
-                        evl += 2
+                    if tn <= 12: eval += 1
+                    if tn <= 10: eval += 1
+                    if tn <= 8: eval += 2
+                    if tn <= 6: eval += 2
                 else:
-                    if tn <= 12:
-                        evl -= 1
-                    if tn <= 10:
-                        evl -= 1
-                    if tn <= 8:
-                        evl -= 2
-                    if tn <= 6:
-                        evl -= 2
-        return evl
+                    if tn <= 12: eval -= 1
+                    if tn <= 10: eval -= 1
+                    if tn <= 8: eval -= 2
+                    if tn <= 6: eval -= 2
+        return eval
 
 
 class Checkers(games.Game):
