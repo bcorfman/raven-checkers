@@ -1,12 +1,6 @@
 name: Python build and test
 
-on:
-  push:
-    tags-ignore:
-      - '[0-9]+.*'
-  pull_request:
-    tags-ignore:
-      - '[0-9]+.*'
+on: [push, pull_request]
 
 jobs:
   build:
