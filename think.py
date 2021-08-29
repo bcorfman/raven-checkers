@@ -1,7 +1,8 @@
 from composite import CompositeGoal
 from onek_onek import OneKingAttackOneKingEvaluator, OneKingFleeOneKingEvaluator
 
-class Goal_Think(CompositeGoal):
+
+class GoalThink(CompositeGoal):
     def __init__(self, owner):
         CompositeGoal.__init__(self, owner)
         self.evaluators = [OneKingAttackOneKingEvaluator(1.0),
@@ -13,7 +14,7 @@ class Goal_Think(CompositeGoal):
 
     def process(self):
         self.activateIfInactive()
-        status = self.processSubgoals()
+        status = self.process_subgoals()
         if status == self.COMPLETED or status == self.FAILED:
             self.status = self.INACTIVE
         return status
@@ -25,14 +26,10 @@ class Goal_Think(CompositeGoal):
         most_desirable = None
         best_score = 0
         for e in self.evaluators:
-            d = e.calculateDesirability()
+            d = e.calculate_desirability()
             if d > best_score:
                 most_desirable = e
                 best_score = d
         if most_desirable:
-            most_desirable.setGoal(self.owner)
+            most_desirable.set_goal(self.owner)
         return best_score
-
-    
-
-    

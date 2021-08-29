@@ -1,4 +1,3 @@
-__author__ = 'brandon_corfman'
 from evaluators import formation_csp
 from csp import backtracking_search, forward_checking, mrv
 from formation import BLACK_MAP, BLACK_COST
@@ -76,9 +75,6 @@ class TestShortDykeReducedSetAllSolutions(unittest.TestCase):
 
     def testCSP(self):
         short_dyke_csp = formation_csp(self.board.short_dyke, self.board)
-        #for soln in backtracking_search(short_dyke_csp, select_unassigned_variable=mrv, inference=forward_checking,
-        #                                all_values=True):
-        #    print soln
         self.assertEqual(True, True)
 
 

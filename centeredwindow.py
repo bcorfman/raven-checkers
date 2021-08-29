@@ -1,5 +1,3 @@
-from Tkinter import *
-
 class CenteredWindow:
     def __init__(self, root):
         self.root = root

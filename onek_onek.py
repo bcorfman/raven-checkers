@@ -1,18 +1,20 @@
-from globalconst import BLACK, WHITE, MAN, KING
+from globalconst import BLACK, WHITE, KING
 from goalevaluator import GoalEvaluator
 from onekingattack import Goal_OneKingAttack
+from onekingflee import GoalOneKingFlee
+
 
 class OneKingAttackOneKingEvaluator(GoalEvaluator):
     def __init__(self, bias):
         GoalEvaluator.__init__(self, bias)
 
-    def calculateDesirability(self, board):
+    def calculate_desirability(self, board):
         plr_color = board.to_move
         enemy_color = board.enemy
         # if we don't have one man on each side or the player
         # doesn't have the opposition, then goal is undesirable.
         if (board.count(BLACK) != 1 or board.count(WHITE) != 1 or
-            not board.has_opposition(plr_color)):
+                not board.has_opposition(plr_color)):
             return 0.0
         player = board.get_pieces(plr_color)[0]
         p_idx, p_val = player
@@ -22,32 +24,32 @@ class OneKingAttackOneKingEvaluator(GoalEvaluator):
         e_row, e_col = board.row_col_for_index(e_idx)
         # must be two kings against each other and the distance
         # between them at least three rows away
-        if ((p_val & KING) and (e_val & KING) and
-            (abs(p_row - e_row) > 2 or abs(p_col - e_col) > 2)):
+        if (p_val & KING) and (e_val & KING) and (abs(p_row - e_row) > 2 or abs(p_col - e_col) > 2):
             return 1.0
         return 0.0
 
-    def setGoal(self, board):
+    def set_goal(self, board):
         player = board.to_move
-        board.removeAllSubgoals()
+        board.remove_all_subgoals()
         if player == WHITE:
-            goalset = board.addWhiteSubgoal
+            goal_set = board.addWhiteSubgoal
         else:
-            goalset = board.addBlackSubgoal
-        goalset(Goal_OneKingAttack(board))
+            goal_set = board.addBlackSubgoal
+        goal_set(Goal_OneKingAttack(board))
+
 
 class OneKingFleeOneKingEvaluator(GoalEvaluator):
     def __init__(self, bias):
         GoalEvaluator.__init__(self, bias)
 
-    def calculateDesirability(self, board):
+    def calculate_desirability(self, board):
         plr_color = board.to_move
         enemy_color = board.enemy
         # if we don't have one man on each side or the player
         # has the opposition (meaning we should attack instead),
         # then goal is not applicable.
         if (board.count(BLACK) != 1 or board.count(WHITE) != 1 or
-            board.has_opposition(plr_color)):
+                board.has_opposition(plr_color)):
             return 0.0
         player = board.get_pieces(plr_color)[0]
         p_idx, p_val = player
@@ -59,11 +61,11 @@ class OneKingFleeOneKingEvaluator(GoalEvaluator):
             return 0.0
         return 1.0
 
-    def setGoal(self, board):
+    def set_goal(self, board):
         player = board.to_move
-        board.removeAllSubgoals()
+        board.remove_all_subgoals()
         if player == WHITE:
-            goalset = board.addWhiteSubgoal
+            goal_set = board.addWhiteSubgoal
         else:
-            goalset = board.addBlackSubgoal
-        goalset(Goal_OneKingFlee(board))
+            goal_set = board.addBlackSubgoal
+        goal_set(GoalOneKingFlee(board))

@@ -154,7 +154,8 @@ WHITE_COST = {6: [0, 1, 2, 2, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7],
 
 
 class FormationProblem(Problem):
-    def __init__(self, goal, board):
+    def __init__(self, goal, board, initial):
+        super(FormationProblem, self).__init__(initial, goal)
         self.board = board
         self.initial = ()
         self.goal = goal
@@ -190,6 +191,7 @@ class FormationProblem(Problem):
                 if curr_sq + i <= goal_sq:
                     frontier.append((curr_sq + i, cost + 1))
         return 99999
+
 
 def measure_formation_closeness(formation, board):
     problem = FormationProblem(formation, board)

@@ -2,26 +2,28 @@ import sys
 from goal import Goal
 from composite import CompositeGoal
 
-class Goal_OneKingFlee(CompositeGoal):
+
+class GoalOneKingFlee(CompositeGoal):
     def __init__(self, owner):
         CompositeGoal.__init__(self, owner)
 
     def activate(self):
         self.status = self.ACTIVE
-        self.removeAllSubgoals()
+        self.remove_all_subgoals()
         # because goals are *pushed* onto the front of the subgoal list they must
         # be added in reverse order.
-        self.addSubgoal(Goal_MoveTowardNearestDoubleCorner(self.owner))
-        self.addSubgoal(Goal_SeeSaw(self.owner))
+        self.add_subgoal(GoalMoveTowardBestDoubleCorner(self.owner))
+        self.add_subgoal(GoalSeeSaw(self.owner))
 
     def process(self):
         self.activateIfInactive()
-        return self.processSubgoals()
+        return self.process_subgoals()
 
     def terminate(self):
         self.status = self.INACTIVE
 
-class Goal_MoveTowardBestDoubleCorner(Goal):
+
+class GoalMoveTowardBestDoubleCorner(Goal):
     def __init__(self, owner):
         Goal.__init__(self, owner)
         self.dc = [8, 13, 27, 32]
@@ -53,10 +55,10 @@ class Goal_MoveTowardBestDoubleCorner(Goal):
         dc = 0 
         for i in self.dc:
             dc_row, dc_col = self.owner.row_col_for_index(i)
-            pdist = abs(dc_row - p_row) + abs(dc_col - p_col)
-            edist = abs(dc_row - e_row) + abs(dc_col - e_col)
-            if pdist < lowest_dist and edist > pdist:
-                lowest_dist = pdist
+            p_dist = abs(dc_row - p_row) + abs(dc_col - p_col)
+            e_dist = abs(dc_row - e_row) + abs(dc_col - e_col)
+            if p_dist < lowest_dist and e_dist > p_dist:
+                lowest_dist = p_dist
                 dc = i
                 
         # if lowest distance is 0, then goal is complete.
@@ -87,8 +89,12 @@ class Goal_MoveTowardBestDoubleCorner(Goal):
         
     def terminate(self):
         self.status = self.INACTIVE
-    
-class Goal_SeeSaw(Goal):
+
+    def add_subgoal(self, goal):
+        pass
+
+
+class GoalSeeSaw(Goal):
     def __init__(self, owner):
         Goal.__init__(self, owner)
 
@@ -102,4 +108,6 @@ class Goal_SeeSaw(Goal):
 
     def terminate(self):
         self.status = self.INACTIVE
-    
+
+    def add_subgoal(self, goal):
+        pass

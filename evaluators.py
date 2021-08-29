@@ -1,4 +1,3 @@
-__author__ = 'brandon_corfman'
 from csp import CSP, different_values_constraint, backtracking_search, forward_checking, mrv
 from globalconst import BLACK, MAN
 from goalevaluator import GoalEvaluator

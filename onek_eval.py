@@ -1,6 +1,6 @@
 from globalconst import BLACK, WHITE, KING
 from goalevaluator import GoalEvaluator
-from onekingattack import GoalOneKingAttack
+from onekingattack import Goal_OneKingAttack
 from onekingflee import GoalOneKingFlee
 
 
@@ -31,7 +31,7 @@ class OneKingAttackOneKingEvaluator(GoalEvaluator):
         player = board.to_move
         board.remove_all_subgoals()
         goal_set = board.add_white_subgoal if player == WHITE else board.add_black_subgoal
-        goal_set(GoalOneKingAttack(board))
+        goal_set(Goal_OneKingAttack(board))
 
 
 class OneKingFleeOneKingEvaluator(GoalEvaluator):

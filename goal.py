@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 
+
 class Goal:
     __metaclass__ = ABCMeta
 
@@ -27,7 +28,7 @@ class Goal:
     def handleMessage(self, msg):
         return False
 
-    def addSubgoal(self, goal):
+    def add_subgoal(self, goal):
         raise NotImplementedError('Cannot add goals to atomic goals')
 
     def reactivateIfFailed(self):

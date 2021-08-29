@@ -1,6 +1,6 @@
-import sys
 import games
 from globalconst import *
+
 
 class Player(object):
     def __init__(self, color):
@@ -10,6 +10,7 @@ class Player(object):
         return self.col
     color = property(_get_color, doc="Player color")
 
+
 class AlphabetaPlayer(Player):
     def __init__(self, color, depth=4):
         Player.__init__(self, color)
@@ -17,16 +18,17 @@ class AlphabetaPlayer(Player):
 
     def select_move(self, game, state):
         sys.stdout.write('\nThinking ... ')
-        movelist = games.alphabeta_search(state, game, False,
-                                          self.searchDepth)
+        move_list = games.alphabeta_search(state, game, False,
+                                           self.searchDepth)
         positions = []
         step = 2 if game.captures_available(state) else 1
-        for i in range(0, len(movelist), step):
-            idx, old, new = movelist[i]
-            positions.append(str(CBMAP[idx]))
+        for i in range(0, len(move_list), step):
+            idx, old, new = move_list[i]
+            positions.append(str(CB_MAP[idx]))
         move = '-'.join(positions)
         print 'I move %s' % move
-        return movelist
+        return move_list
+
 
 class HumanPlayer(Player):
     def __init__(self, color):
@@ -38,9 +40,9 @@ class HumanPlayer(Player):
             positions = []
             idx = 0
             while 1:
-                reqstr = 'Move to? ' if positions else 'Move from? '
+                request = 'Move to? ' if positions else 'Move from? '
                 # do any positions match the input
-                pos = self._valid_pos(raw_input(reqstr), moves, idx)
+                pos = self._valid_pos(raw_input(request), moves, idx)
                 if pos:
                     positions.append(pos)
                     # reduce moves to number matching the positions entered

@@ -101,7 +101,7 @@ class SavedGame(object):
         squares = self._model.curr_state.squares
         try:
             for loc in locations:
-                idx = squaremap[loc]
+                idx = square_map[loc]
                 squares[idx] = val
         except ValueError:
             raise IOError, 'Checker location not valid, line %d' % (i+1)
@@ -157,7 +157,7 @@ class SavedGame(object):
         legal_moves = self._model.legal_moves(state_copy)
         # match move from file with available moves on checkerboard
         found = False
-        startsq, destsq = squaremap[start], squaremap[dest]
+        startsq, destsq = square_map[start], square_map[dest]
         for move in legal_moves:
             if (startsq == move.affected_squares[FIRST][0] and
                 destsq == move.affected_squares[LAST][0]):
@@ -174,7 +174,7 @@ class SavedGame(object):
             return False
         legal_moves = self._model.legal_moves(state_copy)
         # match jump from file with available jumps on checkerboard
-        startsq, destsq = squaremap[start], squaremap[dest]
+        startsq, destsq = square_map[start], square_map[dest]
         small, large = min(startsq, destsq), max(startsq, destsq)
         found = False
         for move in legal_moves:
@@ -193,7 +193,7 @@ class SavedGame(object):
 
     def _parse_moves(self, lines, idx, linelen):
         """ Each move in the file lists the beginning and ending square, along
-        with an optional annotation string (in Creole format) that describes it.
+        with an optional annotation string (in Creole fmt) that describes it.
         Since the move listing in the file contains less information than
         we need inside our Checkerboard model, I make sure that each move works
         on a copy of the model before I commit to using it inside the code. """
@@ -218,15 +218,15 @@ class SavedGame(object):
             try:
                 start, dest = [int(x) for x in movestr.split('-')]
             except ValueError:
-                raise IOError, 'Bad move format in file, line %d' % idx
-            delta = squaremap[start] - squaremap[dest]
+                raise IOError, 'Bad move fmt in file, line %d' % idx
+            delta = square_map[start] - square_map[dest]
             if self._is_move(delta):
                 self._try_move(idx, start, dest, state_copy, annotation)
             else:
                 jumped = self._try_jump(idx, start, dest, state_copy,
                                         annotation)
                 if not jumped:
-                    raise IOError, 'Bad move format in file, line %d' % idx
+                    raise IOError, 'Bad move fmt in file, line %d' % idx
             idx += 1
         self.moves.reverse()
         return idx

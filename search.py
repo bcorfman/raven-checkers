@@ -5,9 +5,7 @@ then create problem instances and solve them with calls to the various search
 functions."""
 
 from utils import *
-import math, random, sys, time, bisect, string
 
-#______________________________________________________________________________
 
 class Problem(object):
     """The abstract class for a formal problem.  You should subclass
@@ -26,13 +24,13 @@ class Problem(object):
         state. The result would typically be a list, but if there are
         many actions, consider yielding them one at a time in an
         iterator, rather than building them all at once."""
-        abstract
+        abstract()
 
     def result(self, state, action):
         """Return the state that results from executing the given
         action in the given state. The action must be one of
         self.actions(state)."""
-        abstract
+        abstract()
 
     def goal_test(self, state):
         """Return True if the state is a goal. The default method compares the
@@ -51,8 +49,8 @@ class Problem(object):
     def value(self, state):
         """For optimization problems, each state has a value.  Hill-climbing
         and related algorithms try to maximize this value."""
-        abstract
-#______________________________________________________________________________
+        abstract()
+
 
 class Node:
     """A node in a search tree. Contains a pointer to the parent (the node
@@ -65,7 +63,7 @@ class Node:
     subclass this class."""
 
     def __init__(self, state, parent=None, action=None, path_cost=0):
-        "Create a search tree Node, derived from a parent by an action."
+        """Create a search tree Node, derived from a parent by an action."""
         self.state = state
         self.parent = parent
         self.action = action
@@ -78,22 +76,22 @@ class Node:
         return "<Node %s>" % (self.state,)
 
     def expand(self, problem):
-        "List the nodes reachable in one step from this node."
+        """List the nodes reachable in one step from this node."""
         return [self.child_node(problem, action)
                 for action in problem.actions(self.state)]
 
     def child_node(self, problem, action):
-        "Fig. 3.10"
+        """Fig. 3.10"""
         next = problem.result(self.state, action)
         return Node(next, self, action,
                     problem.path_cost(self.path_cost, self.state, action, next))
 
     def solution(self):
-        "Return the sequence of actions to go from the root to this node."
+        """Return the sequence of actions to go from the root to this node."""
         return [node.action for node in self.path()[1:]]
 
     def path(self):
-        "Return a list of nodes forming the path from the root to this node."
+        """Return a list of nodes forming the path from the root to this node."""
         node, path_back = self, []
         while node:
             path_back.append(node)
@@ -111,7 +109,6 @@ class Node:
     def __hash__(self):
         return hash(self.state)
 
-#______________________________________________________________________________
 
 class SimpleProblemSolvingAgentProgram:
     """Abstract framework for a problem-solving agent. [Fig. 3.1]"""
@@ -410,8 +407,8 @@ class Graph:
     stays undirected; if you add more links with g.connect('B', 'C', 3), then
     inverse link is also added.  You can use g.nodes() to get a list of nodes,
     g.get('A') to get a dict of links out of A, and g.get('A', 'B') to get the
-    length of the link from A to B.  'Lengths' can actually be any object at
-    all, and nodes can be any hashable object."""
+    length of the link from A to B.  'Lengths' can actually be any obj at
+    all, and nodes can be any hashable obj."""
 
     def __init__(self, dict=None, directed=True):
         self.dict = dict or {}
@@ -731,7 +728,7 @@ class BoggleFinder:
 
     def score(self):
         "The total score for the words found, according to the rules."
-        return sum([self.scores[len(w)] for w in self.words()])
+        return sum_seq([self.scores[len(w)] for w in self.words()])
 
     def __len__(self):
         "The number of words found."

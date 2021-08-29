@@ -1,4 +1,4 @@
-from globalconst import ACTIVE, COMPLETED, FAILED, INACTIVE
+from goal import Goal
 from composite import CompositeGoal
 from evaluators import ShortDykeEvaluator, LongDykeEvaluator, PhalanxEvaluator
 from evaluators import PyramidEvaluator, EchelonEvaluator, MillEvaluator, CrossboardEvaluator
@@ -16,7 +16,7 @@ class GoalThink(CompositeGoal):
 
     def activate(self):
         self.arbitrate()
-        self.status = ACTIVE
+        self.status = Goal.ACTIVE
 
     def process(self):
         self.activate_if_inactive()
@@ -26,12 +26,12 @@ class GoalThink(CompositeGoal):
             if desirability > 0.0:
                 status = self.process_subgoals()
             else:
-                status = FAILED
+                status = Goal.FAILED
         else:
-            status = FAILED
-        if status == COMPLETED or status == FAILED:
+            status = Goal.FAILED
+        if status == Goal.COMPLETED or status == Goal.FAILED:
             self.most_desirable = None
-            self.status = INACTIVE
+            self.status = Goal.INACTIVE
         return status
 
     def terminate(self):

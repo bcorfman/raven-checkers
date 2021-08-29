@@ -4,6 +4,7 @@ from globalconst import BULLET_IMAGE
 from creoleparser import Parser
 from rules import LinkRules
 
+
 class TextTagEmitter(object):
     """
     Generate tagged output compatible with the Tkinter Text widget
@@ -32,8 +33,8 @@ class TextTagEmitter(object):
     def leave_document(self, node):
         # leave_paragraph always leaves two extra carriage returns at the
         # end of the text. This deletes them.
-        txtindex = '%d.%d' % (self.line-1, self.index)
-        self.txtWidget.delete(txtindex, END)
+        text_index = '%d.%d' % (self.line - 1, self.index)
+        self.txtWidget.delete(text_index, END)
 
     def visit_text(self, node):
         if self.begin_list_item:
@@ -41,8 +42,8 @@ class TextTagEmitter(object):
         elif self.begin_link:
             pass
         else:
-            txtindex = '%d.%d' % (self.line, self.index)
-            self.txtWidget.insert(txtindex, node.content)
+            text_index = '%d.%d' % (self.line, self.index)
+            self.txtWidget.insert(text_index, node.content)
 
     def leave_text(self, node):
         if not self.begin_list_item:
@@ -58,8 +59,8 @@ class TextTagEmitter(object):
         pass
 
     def leave_paragraph(self, node):
-        txtindex = '%d.%d' % (self.line, self.index)
-        self.txtWidget.insert(txtindex, '\n\n')
+        text_index = '%d.%d' % (self.line, self.index)
+        self.txtWidget.insert(text_index, '\n\n')
         self.line += 2
         self.index = 0
         self.number = 1
@@ -68,8 +69,8 @@ class TextTagEmitter(object):
         self.bullet = True
 
     def leave_bullet_list(self, node):
-        txtindex = '%d.%d' % (self.line, self.index)
-        self.txtWidget.insert(txtindex, '\n')
+        text_index = '%d.%d' % (self.line, self.index)
+        self.txtWidget.insert(text_index, '\n')
         self.line += 1
         self.index = 0
         self.bullet = False
@@ -78,8 +79,8 @@ class TextTagEmitter(object):
         self.number = 1
 
     def leave_number_list(self, node):
-        txtindex = '%d.%d' % (self.line, self.index)
-        self.txtWidget.insert(txtindex, '\n')
+        text_index = '%d.%d' % (self.line, self.index)
+        self.txtWidget.insert(text_index, '\n')
         self.line += 1
         self.index = 0
 
@@ -129,15 +130,15 @@ class TextTagEmitter(object):
         # TODO: Revisit unicode encode/decode issues later.
         # 1. Decode early.  2. Unicode everywhere  3. Encode late
         # However, decoding filename and link_text here works for now.
-        fname = str(node.content).replace('%20', ' ')
+        filename = str(node.content).replace('%20', ' ')
         link_text = str(node.children[0].content).replace('%20', ' ')
         self.txtWidget.insert(self.begin_link, link_text,
-                              self.hyperMgr.add(fname))
+                              self.hyperMgr.add(filename))
         self.begin_link = ''
 
     def visit_break(self, node):
-        txtindex = '%d.%d' % (self.line, self.index)
-        self.txtWidget.insert(txtindex, '\n')
+        text_index = '%d.%d' % (self.line, self.index)
+        self.txtWidget.insert(text_index, '\n')
 
     def leave_break(self, node):
         self.line += 1
@@ -168,6 +169,7 @@ class TextTagEmitter(object):
         """Emit the document represented by self.root DOM tree."""
         return self.emit_node(self.root)
 
+
 class Serializer(object):
     def __init__(self, txtWidget, hyperMgr):
         self.txt = txtWidget
@@ -184,7 +186,7 @@ class Serializer(object):
         self.list_end = False
 
     def dump(self, index1='1.0', index2=END):
-        # outputs contents from Text widget in Creole format.
+        # outputs contents from Text widget in Creole fmt.
         creole = ''
         self._reset()
         for key, value, index in self.txt.dump(index1, index2):
@@ -225,9 +227,9 @@ class Serializer(object):
                     # 1. Decode early.  2. Unicode everywhere  3. Encode late
                     # However, encoding filename and link_text here works for
                     # now.
-                    fname = self.filename.replace(' ', '%20').encode('utf-8')
+                    filename = self.filename.replace(' ', '%20').encode('utf-8')
                     link_text = value.replace(' ', '%20')
-                    value = '[[%s|%s' % (fname, link_text)
+                    value = '[[%s|%s' % (filename, link_text)
                     self.link_start = False
                 numstr = '%d.\t' % self.number
                 if self.list_end and value != '\n' and numstr not in value:

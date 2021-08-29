@@ -15,8 +15,11 @@ class GoalCrossboard(Goal):
         self._term_event = multiprocessing.Event()
         self._start_time = None
 
+    def add_subgoal(self, goal):
+        pass
+
     def activate(self):
-        self.status = self.ACTIVE
+        self.status = Goal.ACTIVE
         self.process = multiprocessing.Process(target=calc_move,
                                                args=(self.owner.model, self.owner.search_time, self._term_event,
                                                      self._child_conn))
@@ -56,18 +59,18 @@ def calc_move(model, search_time, term_event, child_conn):
                 term_event.clear()
                 move = None
                 break
-            if curr_time - start_time > search_time or (curr_time - checkpoint) * 2 > rem_time or depth > MAXDEPTH:
+            if curr_time - start_time > search_time or (curr_time - checkpoint) * 2 > rem_time or depth > MAX_DEPTH:
                 break
     child_conn.send(move)
 
 
 def longest_of(moves):
-    length = -1
+    move_length = -1
     selected = None
     for move in moves:
-        l = len(move.affected_squares)
-        if l > length:
-            length = l
+        length = len(move.affected_squares)
+        if length > move_length:
+            move_length = length
             selected = move
     return selected
 

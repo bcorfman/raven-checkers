@@ -4,7 +4,7 @@ from abc import ABCMeta, abstractmethod
 from goal import Goal
 from utils import argmin_score
 from formation import BLACK_MAP
-from globalconst import FIRST, LAST, ACTIVE, INACTIVE, COMPLETED
+from globalconst import FIRST, LAST
 
 
 def get_score_move(board):
@@ -75,14 +75,14 @@ class GoalFormation(Goal):
         self._process = None
 
     def activate(self):
-        self.status = ACTIVE
+        self.status = Goal.ACTIVE
 
     @abstractmethod
     def process(self):
         pass
 
     def terminate(self):
-        self.status = INACTIVE
+        self.status = Goal.INACTIVE
 
 
 class GoalShortDyke(GoalFormation):
@@ -101,7 +101,10 @@ class GoalShortDyke(GoalFormation):
                                                       self.child_conn))
         self._process.daemon = True
         self._process.start()
-        return COMPLETED
+        return Goal.COMPLETED
+
+    def add_subgoal(self, goal):
+        pass
 
 
 class GoalLongDyke(GoalFormation):

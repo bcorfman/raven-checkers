@@ -1,6 +1,5 @@
 import unittest
 import checkers
-import games
 from globalconst import *
 
 #   (white)
@@ -13,6 +12,8 @@ from globalconst import *
 #            12  13  14  15
 #          6   7   8   9
 #   (black)
+
+
 class TestBlackManSingleJump(unittest.TestCase):
     def setUp(self):
         self.game = checkers.Checkers()
@@ -29,6 +30,7 @@ class TestBlackManSingleJump(unittest.TestCase):
                           [12, WHITE | MAN, FREE],
                           [18, FREE, BLACK | MAN]])
 
+
 class TestBlackManDoubleJump(unittest.TestCase):
     def setUp(self):
         self.game = checkers.Checkers()
@@ -42,11 +44,12 @@ class TestBlackManDoubleJump(unittest.TestCase):
     def testJump(self):
         moves = self.game.legal_moves(self.board)
         self.assertEqual(moves[0].affected_squares,
-                        [[6, BLACK | MAN, FREE],
-                         [12, WHITE | MAN, FREE],
-                         [18, FREE, FREE],
-                         [23, WHITE | MAN, FREE],
-                         [28, FREE, BLACK | MAN]])
+                         [[6, BLACK | MAN, FREE],
+                          [12, WHITE | MAN, FREE],
+                          [18, FREE, FREE],
+                          [23, WHITE | MAN, FREE],
+                          [28, FREE, BLACK | MAN]])
+
 
 class TestBlackManCrownKingOnJump(unittest.TestCase):
     def setUp(self):
@@ -82,6 +85,7 @@ class TestBlackManCrownKingOnJump(unittest.TestCase):
                           [36, FREE, FREE],
                           [41, WHITE | MAN, FREE],
                           [46, FREE, BLACK | KING]])
+
 
 class TestBlackManCrownKingOnMove(unittest.TestCase):
     def setUp(self):
@@ -126,6 +130,7 @@ class TestBlackKingOptionalJumpDiamond(unittest.TestCase):
                           [23, FREE, FREE], [18, WHITE | MAN, FREE],
                           [13, FREE, BLACK | KING]])
 
+
 class TestWhiteManSingleJump(unittest.TestCase):
     def setUp(self):
         self.game = checkers.Checkers()
@@ -163,6 +168,7 @@ class TestWhiteManDoubleJump(unittest.TestCase):
                           [31, FREE, FREE],
                           [25, BLACK | MAN, FREE],
                           [19, FREE, WHITE | MAN]])
+
 
 class TestWhiteManCrownKingOnMove(unittest.TestCase):
     def setUp(self):
@@ -207,6 +213,7 @@ class TestWhiteManCrownKingOnJump(unittest.TestCase):
                           [13, BLACK | KING, FREE],
                           [7, FREE, WHITE | KING]])
 
+
 class TestWhiteKingOptionalJumpDiamond(unittest.TestCase):
     def setUp(self):
         self.game = checkers.Checkers()
@@ -235,6 +242,7 @@ class TestWhiteKingOptionalJumpDiamond(unittest.TestCase):
                           [23, FREE, FREE], [18, BLACK | MAN, FREE],
                           [13, FREE, WHITE | KING]])
 
+
 class TestUtilityFunc(unittest.TestCase):
     def setUp(self):
         self.game = checkers.Checkers()
@@ -252,16 +260,17 @@ class TestUtilityFunc(unittest.TestCase):
         nk = nbk + nwk
 
         self.assertEqual(self.board._eval_cramp(self.squares), 0)
-        self.assertEqual(self.board._eval_backrankguard(self.squares), 0)
-        self.assertEqual(self.board._eval_doublecorner(self.squares), 0)
+        self.assertEqual(self.board._eval_back_rank_guard(self.squares), 0)
+        self.assertEqual(self.board._eval_double_corner(self.squares), 0)
         self.assertEqual(self.board._eval_center(self.squares), 0)
         self.assertEqual(self.board._eval_edge(self.squares), 0)
         self.assertEqual(self.board._eval_tempo(self.squares, nm, nbk,
                                                 nbm, nwk, nwm), 0)
-        self.assertEqual(self.board._eval_playeropposition(self.squares, nwm,
-                                                           nwk, nbk, nbm, nm,
-                                                           nk), 0)
+        self.assertEqual(self.board._eval_player_opposition(self.squares, nwm,
+                                                            nwk, nbk, nbm, nm,
+                                                            nk), 0)
         self.assertEqual(self.board.utility(WHITE), -2)
+
 
 class TestSuccessorFuncForBlack(unittest.TestCase):
     def setUp(self):
@@ -293,6 +302,7 @@ class TestSuccessorFuncForBlack(unittest.TestCase):
         self.assertEqual(moves[6].affected_squares,
                          [[20, BLACK | MAN, FREE],
                           [26, FREE, BLACK | MAN]])
+
 
 class TestSuccessorFuncForWhite(unittest.TestCase):
     def setUp(self):
@@ -328,6 +338,7 @@ class TestSuccessorFuncForWhite(unittest.TestCase):
         self.assertEqual(moves[6].affected_squares,
                          [[37, WHITE | MAN, FREE],
                           [31, FREE, WHITE | MAN]])
+
 
 if __name__ == '__main__':
     unittest.main()

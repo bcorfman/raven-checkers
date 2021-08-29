@@ -2,6 +2,7 @@ from Tkinter import Widget
 from controller import Controller
 from globalconst import *
 
+
 class PlayerController(Controller):
     def __init__(self, **props):
         self._model = props['model']
@@ -10,6 +11,8 @@ class PlayerController(Controller):
         self._end_turn_event = props['end_turn_event']
         self._highlights = []
         self._move_in_progress = False
+        self.idx = None
+        self.moves = []
 
     def _register_event_handlers(self):
         Widget.bind(self._view.canvas, '<Button-1>', self.mouse_click)
@@ -69,7 +72,7 @@ class PlayerController(Controller):
         else:
             if sq & FREE:
                 self.moves = self._filter_moves(pos, self.moves, self.idx)
-                if len(self.moves) == 0: # illegal move
+                if len(self.moves) == 0:  # illegal move
                     # remove previous square highlights
                     for h in self._highlights:
                         self._view.highlight_square(h, DARK_SQUARES)
@@ -83,7 +86,6 @@ class PlayerController(Controller):
                         self._view.canvas.after(100, self._end_turn_event)
                         return
                     self.idx += 2 if self._model.captures_available() else 1
-
 
     def _filter_moves(self, pos, moves, idx):
         del_list = []

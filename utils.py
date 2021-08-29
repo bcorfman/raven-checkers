@@ -1,33 +1,42 @@
 """Provide some widely useful utilities. Safe for "from utils import *"."""
 
 from __future__ import generators
-import operator, math, random, copy, sys, os.path, bisect
+import operator
+import math
+import random
+import copy
+import sys
+import os.path
+import bisect
 
-#______________________________________________________________________________
 # Simple Data Structures: booleans, infinity, Dict, Struct
 
 infinity = 1.0e400
+
 
 def Dict(**entries):
     """Create a dict out of the argument=value arguments.
     Ex: Dict(a=1, b=2, c=3) ==> {'a':1, 'b':2, 'c':3}"""
     return entries
 
+
 class DefaultDict(dict):
     """Dictionary with a default value for unknown keys.
     Ex: d = DefaultDict(0); d['x'] += 1; d['x'] ==> 1
     d =  DefaultDict([]); d['x'] += [1]; d['y'] += [2]; d['x'] ==> [1]"""
     def __init__(self, default):
+        super(DefaultDict, self).__init__()
         self.default = default
 
     def __getitem__(self, key):
-        if key in self: return self.get(key)
+        if key in self:
+            return self.get(key)
         return self.setdefault(key, copy.deepcopy(self.default))
 
 
 class Struct:
     """Create an instance with argument=value slots.
-    This is for making a lightweight object whose class doesn't matter.
+    This is for making a lightweight obj whose class doesn't matter.
     Ex: s = Struct(a=1, b=2); s.a ==> 1; s.a = 3; s ==> Struct(a=3, b=2)"""
     def __init__(self, **entries):
         self.__dict__.update(entries)
@@ -42,8 +51,9 @@ class Struct:
         args = ['%s=%s' % (k, repr(v)) for (k, v) in vars(self).items()]
         return 'Struct(%s)' % ', '.join(args)
 
+
 def update(x, **entries):
-    """Update a dict, or an object with slots, according to entries.
+    """Update a dict, or an obj with slots, according to entries.
     Ex: update({'a': 1}, a=10, b=20) ==> {'a': 10, 'b': 20}
     update(Struct(a=1), a=10, b=20) ==> Struct(a=10, b=20)"""
     if isinstance(x, dict):
@@ -52,7 +62,7 @@ def update(x, **entries):
         x.__dict__.update(entries)
     return x
 
-#______________________________________________________________________________
+
 # Functions on Sequences (mostly inspired by Common Lisp)
 # NOTE: Sequence functions (count_if, find_if, every, some) take function
 # argument first (like reduce, filter, and map).
@@ -73,19 +83,21 @@ def sort(seq, compare=cmp):
 def comparer(key=None, cmp=cmp):
     """Build a compare function suitable for sort. The most common use is
     to specify key, meaning compare the values of key(x), key(y)."""
-    if key == None:
+    if key is None:
         return cmp
     else:
-        return lambda x,y: cmp(key(x), key(y))
+        return lambda x, y: cmp(key(x), key(y))
 
-def removeall(item, seq):
-    """Return a copy of seq (or string) with all occurences of item removed.
-    Ex: removeall(3, [1, 2, 3, 3, 2, 1, 3]) ==> [1, 2, 2, 1]
-    removeall(4, [1, 2, 3]) ==> [1, 2, 3]"""
+
+def remove_all(item, seq):
+    """Return a copy of seq (or string) with all occurrences of item removed.
+    Ex: remove_all(3, [1, 2, 3, 3, 2, 1, 3]) ==> [1, 2, 2, 1]
+    remove_all(4, [1, 2, 3]) ==> [1, 2, 3]"""
     if isinstance(seq, str):
         return seq.replace(item, '')
     else:
         return [x for x in seq if x != item]
+
 
 def reverse(seq):
     """Return the reverse of a string or list or tuple.  Mutates the seq.
@@ -95,8 +107,9 @@ def reverse(seq):
     elif isinstance(seq, tuple):
         return tuple(reverse(list(seq)))
     else:
-        seq.reverse();
+        seq.reverse()
         return seq
+
 
 def unique(seq):
     """Remove duplicate elements from seq. Assumes hashable elements.
@@ -110,66 +123,79 @@ def count_if(predicate, seq):
     f = lambda count, x: count + (not not predicate(x))
     return reduce(f, seq, 0)
 
+
 def find_if(predicate, seq):
     """If there is an element of seq that satisfies predicate, return it.
     Ex: find_if(callable, [3, min, max]) ==> min
     find_if(callable, [1, 2, 3]) ==> None"""
     for x in seq:
-        if predicate(x): return x
+        if predicate(x):
+            return x
     return None
+
 
 def every(predicate, seq):
     """True if every element of seq satisfies predicate.
     Ex: every(callable, [min, max]) ==> 1; every(callable, [min, 3]) ==> 0"""
     for x in seq:
-        if not predicate(x): return False
+        if not predicate(x):
+            return False
     return True
+
 
 def some(predicate, seq):
     """If some element x of seq satisfies predicate(x), return predicate(x).
     Ex: some(callable, [min, 3]) ==> 1; some(callable, [2, 3]) ==> 0"""
     for x in seq:
         px = predicate(x)
-        if  px: return px
+        if px:
+            return px
     return False
+
 
 # Added by Brandon
 def flatten(x):
-    if type(x) != type([]): return [x]
-    if x == []: return x
+    if not isinstance(x, list):
+        return [x]
+    if not x:
+        return x
     return flatten(x[0]) + flatten(x[1:])
 
-#______________________________________________________________________________
+
 # Functions on sequences of numbers
 # NOTE: these take the sequence argument first, like min and max,
 # and like standard math notation: \sigma (i = 1..n) fn(i)
 # A lot of programing is finding the best value that satisfies some condition;
 # so there are three versions of argmin/argmax, depending on what you want to
 # do with ties: return the first one, return them all, or pick at random.
-
-
-def sum(seq, fn=None):
+def sum_seq(seq, fn=None):
     """Sum the elements seq[i], or fn(seq[i]) if fn is given.
-    Ex: sum([1, 2, 3]) ==> 6; sum(range(8), lambda x: 2**x) ==> 255"""
-    if fn: seq = map(fn, seq)
+    Ex: sum_seq([1, 2, 3]) ==> 6; sum_seq(range(8), lambda x: 2**x) ==> 255"""
+    if fn:
+        seq = map(fn, seq)
     return reduce(operator.add, seq, 0)
+
 
 def product(seq, fn=None):
     """Multiply the elements seq[i], or fn(seq[i]) if fn is given.
     product([1, 2, 3]) ==> 6; product([1, 2, 3], lambda x: x*x) ==> 1*4*9"""
-    if fn: seq = map(fn, seq)
+    if fn:
+        seq = map(fn, seq)
     return reduce(operator.mul, seq, 1)
+
 
 def argmin(gen, fn):
     """Return an element with lowest fn(x) score; tie goes to first one.
     Gen must be a generator.
     Ex: argmin(['one', 'to', 'three'], len) ==>  'to'"""
-    best = gen.next(); best_score = fn(best)
+    best = gen.next()
+    best_score = fn(best)
     for x in gen:
         x_score = fn(x)
         if x_score < best_score:
             best, best_score = x, x_score
     return best
+
 
 def argmin_list(gen, fn):
     """Return a list of elements of gen with the lowest fn(x) scores.
@@ -183,92 +209,77 @@ def argmin_list(gen, fn):
             best.append(x)
     return best
 
-#def argmin_list(seq, fn):
-#    """Return a list of elements of seq[i] with the lowest fn(seq[i]) scores.
-#    Ex: argmin_list(['one', 'to', 'three', 'or'], len) ==>  ['to', 'or']"""
-#    best_score, best = fn(seq[0]), []
-#    for x in seq:
-#        x_score = fn(x)
-#        if x_score < best_score:
-#            best, best_score = [x], x_score
-#        elif x_score == best_score:
-#            best.append(x)
-#    return best
 
 def argmin_random_tie(gen, fn):
     """Return an element with lowest fn(x) score; break ties at random.
     Thus, for all s,f: argmin_random_tie(s, f) in argmin_list(s, f)"""
     try:
-        best = gen.next(); best_score = fn(best); n = 0
+        best = gen.next()
+        best_score = fn(best)
+        n = 0
     except StopIteration:
         return []
 
     for x in gen:
         x_score = fn(x)
         if x_score < best_score:
-            best, best_score = x, x_score; n = 1
+            best, best_score = x, x_score
+            n = 1
         elif x_score == best_score:
             n += 1
             if random.randrange(n) == 0:
                 best = x
     return best
 
-#def argmin_random_tie(seq, fn):
-#    """Return an element with lowest fn(seq[i]) score; break ties at random.
-#    Thus, for all s,f: argmin_random_tie(s, f) in argmin_list(s, f)"""
-#    best_score = fn(seq[0]); n = 0
-#    for x in seq:
-#        x_score = fn(x)
-#        if x_score < best_score:
-#            best, best_score = x, x_score; n = 1
-#        elif x_score == best_score:
-#            n += 1
-#            if random.randrange(n) == 0:
-#                    best = x
-#    return best
 
 def argmax(gen, fn):
     """Return an element with highest fn(x) score; tie goes to first one.
     Ex: argmax(['one', 'to', 'three'], len) ==> 'three'"""
     return argmin(gen, lambda x: -fn(x))
 
+
 def argmax_list(seq, fn):
     """Return a list of elements of gen with the highest fn(x) scores.
     Ex: argmax_list(['one', 'three', 'seven'], len) ==> ['three', 'seven']"""
     return argmin_list(seq, lambda x: -fn(x))
 
-def argmax_random_tie(seq, fn):
-    "Return an element with highest fn(x) score; break ties at random."
-    return argmin_random_tie(seq, lambda x: -fn(x))
-#______________________________________________________________________________
-# Statistical and mathematical functions
 
+def argmax_random_tie(seq, fn):
+    """Return an element with highest fn(x) score; break ties at random."""
+    return argmin_random_tie(seq, lambda x: -fn(x))
+
+
+# Statistical and mathematical functions
 def histogram(values, mode=0, bin_function=None):
     """Return a list of (value, count) pairs, summarizing the input values.
-    Sorted by increasing value, or if mode=1, by decreasing count.
+    Sorted by increasing value, or if file_mode=1, by decreasing count.
     If bin_function is given, map it over values first.
     Ex: vals = [100, 110, 160, 200, 160, 110, 200, 200, 220]
     histogram(vals) ==> [(100, 1), (110, 2), (160, 2), (200, 3), (220, 1)]
     histogram(vals, 1) ==> [(200, 3), (160, 2), (110, 2), (100, 1), (220, 1)]
     histogram(vals, 1, lambda v: round(v, -2)) ==> [(200.0, 6), (100.0, 3)]"""
-    if bin_function: values = map(bin_function, values)
+    if bin_function:
+        values = map(bin_function, values)
     bins = {}
     for val in values:
         bins[val] = bins.get(val, 0) + 1
     if mode:
-        return sort(bins.items(), lambda x,y: cmp(y[1],x[1]))
+        return sort(bins.items(), lambda x, y: cmp(y[1], x[1]))
     else:
         return sort(bins.items())
+
 
 def log2(x):
     """Base 2 logarithm.
     Ex: log2(1024) ==> 10.0; log2(1.0) ==> 0.0; log2(0) raises OverflowError"""
     return math.log10(x) / math.log10(2)
 
+
 def mode(values):
     """Return the most common value in the list of values.
-    Ex: mode([1, 2, 3, 2]) ==> 2"""
+    Ex: file_mode([1, 2, 3, 2]) ==> 2"""
     return histogram(values, mode=1)[0][0]
+
 
 def median(values):
     """Return the middle value, when the values are sorted.
@@ -286,29 +297,36 @@ def median(values):
         except TypeError:
             return random.choice(middle2)
 
+
 def mean(values):
     """Return the arithmetic average of the values."""
-    return sum(values) / float(len(values))
+    return sum_seq(values) / float(len(values))
 
-def stddev(values, meanval=None):
+
+def stddev(values, mean_val=None):
     """The standard deviation of a set of values.
     Pass in the mean if you already know it."""
-    if meanval == None: meanval = mean(values)
-    return math.sqrt(sum([(x - meanval)**2 for x in values]))
+    if mean_val is None:
+        mean_val = mean(values)
+    return math.sqrt(sum_seq([(x - mean_val) ** 2 for x in values]))
 
-def dotproduct(X, Y):
-    """Return the sum of the element-wise product of vectors x and y.
+
+def dot_product(xi, yi):
+    """Return the sum_seq of the element-wise product of vectors x and y.
     Ex: dotproduct([1, 2, 3], [1000, 100, 10]) ==> 1230"""
-    return sum([x * y for x, y in zip(X, Y)])
+    return sum_seq([x * y for x, y in zip(xi, yi)])
+
 
 def vector_add(a, b):
     """Component-wise addition of two vectors.
     Ex: vector_add((0, 1), (8, 9)) ==> (8, 10)"""
     return tuple(map(operator.add, a, b))
 
+
 def probability(p):
-    "Return true with probability p."
+    """Return true with probability p."""
     return p > random.uniform(0.0, 1.0)
+
 
 def num_or_str(x):
     """The argument is a string; convert to a number if possible, or strip it.
@@ -319,35 +337,41 @@ def num_or_str(x):
         try:
             return float(x)
         except ValueError:
-                return str(x).strip()
+            return str(x).strip()
+
 
 def distance((ax, ay), (bx, by)):
-    "The distance between two (x, y) points."
+    """The distance between two (x, y) points."""
     return math.hypot((ax - bx), (ay - by))
 
+
 def distance2((ax, ay), (bx, by)):
-    "The square of the distance between two (x, y) points."
+    """"The square of the distance between two (x, y) points."""
     return (ax - bx)**2 + (ay - by)**2
 
-def normalize(numbers, total=1.0):
-    """Multiply each number by a constant such that the sum is 1.0 (or total).
-    Ex: normalize([1,2,1]) ==> [0.25, 0.5, 0.25]"""
-    k = total / sum(numbers)
-    return [k * n for n in numbers]
-#______________________________________________________________________________
-# Misc Functions
 
-def printf(format, *args):
-    """Format args with the first argument as format string, and write.
-    Return the last arg, or format itself if there are no args."""
-    sys.stdout.write(str(format) % args)
-    return if_(args, args[-1], format)
+def normalize(numbers, total=1.0):
+    """Multiply each number by a constant such that the sum_seq is 1.0 (or total).
+    Ex: normalize([1,2,1]) ==> [0.25, 0.5, 0.25]"""
+    k = total / sum_seq(numbers)
+    return [k * n for n in numbers]
+
+
+# Misc Functions
+def printf(fmt, *args):
+    """Format args with the first argument as fmt string, and write.
+    Return the last arg, or fmt itself if there are no args."""
+    sys.stdout.write(str(fmt) % args)
+    return if_(args, args[-1], fmt)
+
 
 def print_(*args):
     """Print the args and return the last one."""
-    for arg in args: print arg,
+    for arg in args:
+        print arg,
     print
     return if_(args, args[-1], None)
+
 
 def memoize(fn, slot=None):
     """Memoize fn: make it remember the computed value for any argument list.
@@ -372,28 +396,33 @@ def memoize(fn, slot=None):
         memoized_fn.cache = {}
     return memoized_fn
 
-def method(name, *args):
-    """Return a function that invokes the named method with the optional args.
-    Ex: map(method('upper'), ['a', 'b', 'cee']) ==> ['A', 'B', 'CEE']
-    map(method('count', 't'), ['this', 'is', 'a', 'test']) ==> [1, 0, 0, 2]"""
-    return lambda x: getattr(x, name)(*args)
 
-def method2(name, *static_args):
+def method(nm, *args):
     """Return a function that invokes the named method with the optional args.
     Ex: map(method('upper'), ['a', 'b', 'cee']) ==> ['A', 'B', 'CEE']
     map(method('count', 't'), ['this', 'is', 'a', 'test']) ==> [1, 0, 0, 2]"""
-    return lambda x, *dyn_args: getattr(x, name)(*(dyn_args + static_args))
+    return lambda x: getattr(x, nm)(*args)
+
+
+def method2(nm, *static_args):
+    """Return a function that invokes the named method with the optional args.
+    Ex: map(method('upper'), ['a', 'b', 'cee']) ==> ['A', 'B', 'CEE']
+    map(method('count', 't'), ['this', 'is', 'a', 'test']) ==> [1, 0, 0, 2]"""
+    return lambda x, *dyn_args: getattr(x, nm)(*(dyn_args + static_args))
+
 
 def abstract():
     """Indicate abstract methods that should be implemented in a subclass.
     Ex: def m(): abstract() # Similar to Java's 'abstract void m()'"""
     raise NotImplementedError(caller() + ' must be implemented in subclass')
 
+
 def caller(n=1):
-    """Return the name of the calling function n levels up in the frame stack.
+    """Return the filename of the calling function n levels up in the frame stack.
     Ex: caller(0) ==> 'caller'; def f(): return caller(); f() ==> 'f'"""
     import inspect
-    return  inspect.getouterframes(inspect.currentframe())[n][3]
+    return inspect.getouterframes(inspect.currentframe())[n][3]
+
 
 def indexed(seq):
     """Like [(i, seq[i]) for i in range(len(seq))], but with yield.
@@ -403,62 +432,70 @@ def indexed(seq):
         yield i, x
         i += 1
 
+
 def if_(test, result, alternative):
     """Like C++ and Java's (test ? result : alternative), except
     both result and alternative are always evaluated. However, if
-    either evaluates to a function, it is applied to the empty arglist,
+    either evaluates to a function, it is applied to the empty arg list,
     so you can delay execution by putting it in a lambda.
     Ex: if_(2 + 2 == 4, 'ok', lambda: expensive_computation()) ==> 'ok' """
     if test:
-        if callable(result): return result()
+        if callable(result):
+            return result()
         return result
     else:
-        if callable(alternative): return alternative()
+        if callable(alternative):
+            return alternative()
         return alternative
 
-def name(object):
-    "Try to find some reasonable name for the object."
-    return (getattr(object, 'name', 0) or getattr(object, '__name__', 0)
-            or getattr(getattr(object, '__class__', 0), '__name__', 0)
-            or str(object))
 
-def isnumber(x):
-    "Is x a number? We say it is if it has a __int__ method."
+def name(obj):
+    """Try to find some reasonable filename for the obj."""
+    return (getattr(obj, 'filename', 0) or getattr(obj, '__name__', 0)
+            or getattr(getattr(obj, '__class__', 0), '__name__', 0)
+            or str(obj))
+
+
+def is_number(x):
+    """Is x a number? We say it is if it has a __int__ method."""
     return hasattr(x, '__int__')
 
-def issequence(x):
-    "Is x a sequence? We say it is if it has a __getitem__ method."
+
+def is_sequence(x):
+    """Is x a sequence? We say it is if it has a __getitem__ method."""
     return hasattr(x, '__getitem__')
+
 
 def print_table(table, header=None, sep=' ', numfmt='%g'):
     """Print a list of lists as a table, so that columns line up nicely.
     header, if specified, will be printed as the first row.
-    numfmt is the format for all numbers; you might want e.g. '%6.2f'.
-    (If you want different formats in differnt columns, don't use print_table.)
+    numfmt is the fmt for all numbers; you might want e.g. '%6.2f'.
+    (If you want different formats in different columns, don't use print_table.)
     sep is the separator between columns."""
-    justs = [if_(isnumber(x), 'rjust', 'ljust') for x in table[0]]
+    justs = [if_(is_number(x), 'rjust', 'ljust') for x in table[0]]
     if header:
         table = [header] + table
-    table = [[if_(isnumber(x), lambda: numfmt % x, x)  for x in row]
+    table = [[if_(is_number(x), lambda: numfmt % x, x) for x in row]
              for row in table]
-    maxlen = lambda seq: max(map(len, seq))
-    sizes = map(maxlen, zip(*[map(str, row) for row in table]))
+    max_len = lambda seq: max(map(len, seq))
+    sizes = map(max_len, zip(*[map(str, row) for row in table]))
     for row in table:
         for (j, size, x) in zip(justs, sizes, row):
             print getattr(str(x), j)(size), sep,
         print
 
-def AIMAFile(components, mode='r'):
-    "Open a file based at the AIMA root directory."
-    dir = os.path.dirname(__file__)
-    return open(apply(os.path.join, [dir] + components), mode)
 
-def DataFile(name, mode='r'):
-    "Return a file in the AIMA /data directory."
-    return AIMAFile(['data', name], mode)
+def AIMAFile(components, file_mode='r'):
+    """Open a file based at the AIMA root directory."""
+    directory = os.path.dirname(__file__)
+    return open(apply(os.path.join, [directory] + components), file_mode)
 
 
-#______________________________________________________________________________
+def DataFile(filename, file_mode='r'):
+    """Return a file in the AIMA /data directory."""
+    return AIMAFile(['data', filename], file_mode)
+
+
 # Queues: Stack, FIFOQueue, PriorityQueue
 
 class Queue:
@@ -466,7 +503,7 @@ class Queue:
         Stack(): A Last In First Out Queue.
         FIFOQueue(): A First In First Out Queue.
         PriorityQueue(lt): Queue where items are sorted by lt, (default <).
-    Each type supports the following methods and functions:
+    Each square_type supports the following methods and functions:
         q.append(item)  -- add an item to the queue
         q.extend(items) -- equivalent to: for item in items: q.append(item)
         q.pop()         -- return the top item from the queue
@@ -474,27 +511,37 @@ class Queue:
     Note that isinstance(Stack(), Queue) is false, because we implement stacks
     as lists.  If Python ever gets interfaces, Queue will be an interface."""
 
-    def __init__(self): abstract()
+    def __init__(self):
+        abstract()
 
     def extend(self, items):
-        for item in items: self.append(item)
+        for item in items:
+            self.append(item)
+
 
 def Stack():
     """Return an empty list, suitable as a Last-In-First-Out Queue.
     Ex: q = Stack(); q.append(1); q.append(2); q.pop(), q.pop() ==> (2, 1)"""
     return []
 
+
 class FIFOQueue(Queue):
     """A First-In-First-Out Queue.
     Ex: q = FIFOQueue();q.append(1);q.append(2); q.pop(), q.pop() ==> (1, 2)"""
     def __init__(self):
-        self.A = []; self.start = 0
+        Queue.__init__(self)
+        self.A = []
+        self.start = 0
+
     def append(self, item):
         self.A.append(item)
+
     def __len__(self):
         return len(self.A) - self.start
+
     def extend(self, items):
         self.A.extend(items)
+
     def pop(self):
         e = self.A[self.start]
         self.start += 1
@@ -503,91 +550,28 @@ class FIFOQueue(Queue):
             self.start = 0
         return e
 
+
 class PriorityQueue(Queue):
     """A queue in which the minimum (or maximum) element (as determined by f and
     order) is returned first. If order is min, the item with minimum f(x) is
     returned first; if order is max, then it is the item with maximum f(x)."""
     def __init__(self, order=min, f=lambda x: x):
+        Queue.__init__(self)
         update(self, A=[], order=order, f=f)
+
     def append(self, item):
         bisect.insort(self.A, (self.f(item), item))
+
     def __len__(self):
         return len(self.A)
+
     def pop(self):
         if self.order == min:
             return self.A.pop(0)[1]
         else:
             return self.A.pop()[1]
 
-#______________________________________________________________________________
 
-
-## NOTE: Once we upgrade to Python 2.3, the following class can be replaced by
-## from sets import set
-
-class set:
-    """This implements the set class from PEP 218, except it does not
-    overload the infix operators.
-    Ex: s = set([1,2,3]); 1 in s ==> True; 4 in s ==> False
-    s.add(4); 4 in s ==> True; len(s) ==> 4
-    s.discard(999); s.remove(4); 4 in s ==> False
-    s2 = set([3,4,5]); s.union(s2) ==> set([1,2,3,4,5])
-    s.intersection(s2) ==> set([3])
-    set([1,2,3]) == set([3,2,1]); repr(s) == '{1, 2, 3}'
-    for e in s: pass"""
-
-    def __init__(self, elements):
-        self.dict = {}
-        for e in elements:
-            self.dict[e] = 1
-
-    def __contains__(self, element):
-        return element in self.dict
-
-    def add(self, element):
-        self.dict[element] = 1
-
-    def remove(self, element):
-        del self.dict[element]
-
-    def discard(self, element):
-        if element in self.dict:
-            del self.dict[element]
-
-    def clear(self):
-        self.dict.clear()
-
-    def union(self, other):
-        return set(self).union_update(other)
-
-    def intersection(self, other):
-        return set(self).intersection_update(other)
-
-    def union_update(self, other):
-        for e in other:
-            self.add(e)
-
-    def intersection_update(self, other):
-        for e in self.dict.keys():
-            if e not in other:
-                self.remove(e)
-
-    def __iter__(self):
-        for e in self.dict:
-            yield e
-
-    def __len__(self):
-        return len(self.dict)
-
-    def __cmp__(self, other):
-        return (self is other or
-                (isinstance(other, set) and self.dict == other.dict))
-
-    def __repr__(self):
-        return "{%s}" % ", ".join([str(e) for e in self.dict.keys()])
-
-
-#______________________________________________________________________________
 # Additional tests
 
 _docex = """
@@ -596,10 +580,10 @@ sort([1, 2, -3]) ==> [-3, 1, 2]
 sort(range(10), comparer(key=is_even)) ==> [1, 3, 5, 7, 9, 0, 2, 4, 6, 8]
 sort(range(10), lambda x,y: y-x) ==> [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
 
-removeall(4, []) ==> []
-removeall('s', 'This is a test. Was a test.') ==> 'Thi i a tet. Wa a tet.'
-removeall('s', 'Something') ==> 'Something'
-removeall('s', '') ==> ''
+remove_all(4, []) ==> []
+remove_all('s', 'This is a test. Was a test.') ==> 'Thi i a tet. Wa a tet.'
+remove_all('s', 'Something') ==> 'Something'
+remove_all('s', '') ==> ''
 
 reverse([]) ==> []
 reverse('') ==> ''
@@ -607,7 +591,7 @@ reverse('') ==> ''
 count_if(is_even, [1, 2, 3, 4]) ==> 2
 count_if(is_even, []) ==> 0
 
-sum([]) ==> 0
+sum_seq([]) ==> 0
 
 product([]) ==> 1
 
@@ -618,9 +602,9 @@ argmin([]) raises TypeError
 
 
 # Test of memoize with slots in structures
-countries = [Struct(name='united states'), Struct(name='canada')]
+countries = [Struct(filename='united states'), Struct(filename='canada')]
 # Pretend that 'gnp' was some big hairy operation:
-def gnp(country): return len(country.name) * 1e10
+def gnp(country): return len(country.filename) * 1e10
 gnp = memoize(gnp, '_gnp')
 map(gnp, countries) ==> [13e10, 6e10]
 countries # note the _gnp slot.

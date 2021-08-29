@@ -3,6 +3,7 @@ from ttk import Combobox, Label
 from tkFont import families
 from tkSimpleDialog import Dialog
 
+
 class PreferencesDialog(Dialog):
     def __init__(self, parent, title, font, size):
         self._master = parent
@@ -39,5 +40,5 @@ class PreferencesDialog(Dialog):
 
     def cancel(self, event=None):
         if self.parent is not None:
-           self.parent.focus_set()
+            self.parent.focus_set()
         self.destroy()

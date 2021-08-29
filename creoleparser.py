@@ -4,14 +4,15 @@ import sys
 from rules import Rules
 from document import DocNode
 
+
 class Parser(object):
     """
-    Parse the raw text and create a document object
+    Parse the raw text and create a document obj
     that can be converted into output using Emitter.
 
     A separate instance should be created for parsing a new document.
     The first parameter is the raw text to be parsed. An optional second
-    argument is the Rules object to use. You can customize the parsing
+    argument is the Rules obj to use. You can customize the parsing
     rules to enable optional features or extend the parser.
     """
 

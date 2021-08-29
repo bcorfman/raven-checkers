@@ -1,14 +1,15 @@
 from Tkinter import *
 
+
 class HyperlinkManager(object):
-    def __init__(self, textWidget, linkFunc):
-        self.txt = textWidget
-        self.linkfunc = linkFunc
+    def __init__(self, text_widget, link_func):
+        self.txt = text_widget
+        self.link_func = link_func
         self.txt.tag_config('hyper', foreground='blue', underline=1)
         self.txt.tag_bind('hyper', '<Enter>', self._enter)
         self.txt.tag_bind('hyper', '<Leave>', self._leave)
         self.txt.tag_bind('hyper', '<Button-1>', self._click)
-        self.reset()
+        self.filenames = {}
 
     def reset(self):
         self.filenames = {}
@@ -29,5 +30,5 @@ class HyperlinkManager(object):
     def _click(self, event):
         for tag in self.txt.tag_names(CURRENT):
             if tag.startswith('hyper-'):
-                self.linkfunc(self.filenames[tag])
+                self.link_func(self.filenames[tag])
                 return

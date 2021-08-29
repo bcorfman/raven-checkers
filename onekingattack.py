@@ -7,15 +7,15 @@ class Goal_OneKingAttack(CompositeGoal):
 
     def activate(self):
         self.status = self.ACTIVE
-        self.removeAllSubgoals()
+        self.remove_all_subgoals()
         # because goals are *pushed* onto the front of the subgoal list they must
         # be added in reverse order.
-        self.addSubgoal(Goal_MoveTowardEnemy(self.owner))
-        self.addSubgoal(Goal_PinEnemy(self.owner))
+        self.add_subgoal(Goal_MoveTowardEnemy(self.owner))
+        self.add_subgoal(Goal_PinEnemy(self.owner))
 
     def process(self):
         self.activateIfInactive()
-        return self.processSubgoals()
+        return self.process_subgoals()
 
     def terminate(self):
         self.status = self.INACTIVE

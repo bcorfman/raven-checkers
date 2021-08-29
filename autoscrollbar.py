@@ -1,5 +1,6 @@
 from Tkinter import *
 
+
 class AutoScrollbar(Scrollbar):
     def __init__(self, master=None, cnf={}, **kw):
         self.container = kw.pop('container', None)
@@ -21,7 +22,9 @@ class AutoScrollbar(Scrollbar):
                 self.grid(in_=self.container, row=self.row,
                           column=self.column, sticky=self.sticky)
         Scrollbar.set(self, lo, hi)
+
     def pack(self, **kw):
         raise TclError, 'cannot use pack with this widget'
+
     def place(self, **kw):
         raise TclError, 'cannot use place with this widget'

@@ -32,6 +32,9 @@ class GoalCrossboard(Goal):
     def terminate(self):
         self.status = self.INACTIVE
 
+    def add_subgoal(self, goal):
+        pass
+
 
 def calc_move(model, search_time, term_event, child_conn):
     move = None
@@ -57,18 +60,17 @@ def calc_move(model, search_time, term_event, child_conn):
                 term_event.clear()
                 move = None
                 break
-            if curr_time - start_time > search_time or (curr_time - checkpoint) * 2 > rem_time or depth > MAXDEPTH:
+            if curr_time - start_time > search_time or (curr_time - checkpoint) * 2 > rem_time or depth > MAX_DEPTH:
                 break
     child_conn.send(move)
 
 
 def longest_of(moves):
-    length = -1
+    move_length = -1
     selected = None
     for move in moves:
-        l = len(move.affected_squares)
-        if l > length:
-            length = l
+        length = len(move.affected_squares)
+        if length > move_length:
+            move_length = length
             selected = move
     return selected
-

@@ -1,6 +1,4 @@
-import os
 from Tkinter import *
-from Tkconstants import W, E
 import Tkinter as tk
 from tkMessageBox import askyesnocancel
 from multiprocessing import freeze_support
@@ -11,6 +9,7 @@ from gamemanager import GameManager
 from centeredwindow import CenteredWindow
 from prefdlg import PreferencesDialog
 
+
 class MainFrame(object, CenteredWindow):
     def __init__(self, master):
         self.root = master
@@ -20,11 +19,11 @@ class MainFrame(object, CenteredWindow):
         self.root.protocol('WM_DELETE_WINDOW', self._on_close)
         self.thinkTime = IntVar(value=5)
         self.manager = GameManager(root=self.root, parent=self)
-        self.menubar = tk.Menu(self.root)
+        self.menu_bar = tk.Menu(self.root)
         self.create_game_menu()
         self.create_options_menu()
         self.create_help_menu()
-        self.root.config(menu=self.menubar)
+        self.root.config(menu=self.menu_bar)
         CenteredWindow.__init__(self, self.root)
         self.root.deiconify()
 
@@ -32,9 +31,9 @@ class MainFrame(object, CenteredWindow):
         if self.manager.view.is_dirty():
             msg = 'Do you want to save your changes before exiting?'
             result = askyesnocancel(TITLE, msg)
-            if result == True:
+            if result is True:
                 self.manager.save_game()
-            elif result == None:
+            elif result is None:
                 return
         self.root.destroy()
 
@@ -48,36 +47,36 @@ class MainFrame(object, CenteredWindow):
         self.stop_processes()
         self.manager.model.undo_all_moves(None,
                                           self.manager.view.get_annotation())
-        self.manager._controller1.remove_highlights()
-        self.manager._controller2.remove_highlights()
+        self.manager.controller1.remove_highlights()
+        self.manager.controller2.remove_highlights()
         self.manager.view.update_statusbar()
 
     def redo_all_moves(self, *args):
         self.stop_processes()
         self.manager.model.redo_all_moves(None,
                                           self.manager.view.get_annotation())
-        self.manager._controller1.remove_highlights()
-        self.manager._controller2.remove_highlights()
+        self.manager.controller1.remove_highlights()
+        self.manager.controller2.remove_highlights()
         self.manager.view.update_statusbar()
 
     def undo_single_move(self, *args):
         self.stop_processes()
         self.manager.model.undo_move(None, None, True, True,
                                      self.manager.view.get_annotation())
-        self.manager._controller1.remove_highlights()
-        self.manager._controller2.remove_highlights()
+        self.manager.controller1.remove_highlights()
+        self.manager.controller2.remove_highlights()
         self.manager.view.update_statusbar()
 
     def redo_single_move(self, *args):
         self.stop_processes()
         annotation = self.manager.view.get_annotation()
         self.manager.model.redo_move(None, None, annotation)
-        self.manager._controller1.remove_highlights()
-        self.manager._controller2.remove_highlights()
+        self.manager.controller1.remove_highlights()
+        self.manager.controller2.remove_highlights()
         self.manager.view.update_statusbar()
 
     def create_game_menu(self):
-        game = Menu(self.menubar, tearoff=0)
+        game = Menu(self.menu_bar, tearoff=0)
         game.add_command(label='New game', underline=0,
                          command=self.manager.new_game)
         game.add_command(label='Open game ...', underline=0,
@@ -95,10 +94,10 @@ class MainFrame(object, CenteredWindow):
         game.add_separator()
         game.add_command(label='Exit', underline=0,
                          command=self._on_close)
-        self.menubar.add_cascade(label='Game', menu=game)
+        self.menu_bar.add_cascade(label='Game', menu=game)
 
     def create_options_menu(self):
-        options = Menu(self.menubar, tearoff=0)
+        options = Menu(self.menu_bar, tearoff=0)
         think = Menu(options, tearoff=0)
         think.add_radiobutton(label="1 second", underline=None,
                               command=self.set_think_time,
@@ -129,19 +128,19 @@ class MainFrame(object, CenteredWindow):
         options.add_separator()
         options.add_command(label='Preferences ...', underline=0,
                             command=self.show_preferences_dialog)
-        self.menubar.add_cascade(label='Options', menu=options)
+        self.menu_bar.add_cascade(label='Options', menu=options)
 
     def create_help_menu(self):
-        helpmenu = Menu(self.menubar, tearoff=0)
-        helpmenu.add_command(label='About Raven ...', underline=0,
-                             command=self.show_about_box)
-        self.menubar.add_cascade(label='Help', menu=helpmenu)
+        help_menu = Menu(self.menu_bar, tearoff=0)
+        help_menu.add_command(label='About Raven ...', underline=0,
+                              command=self.show_about_box)
+        self.menu_bar.add_cascade(label='Help', menu=help_menu)
 
     def stop_processes(self):
         # stop any controller processes from making moves
         self.manager.model.curr_state.ok_to_move = False
-        self.manager._controller1.stop_process()
-        self.manager._controller2.stop_process()
+        self.manager.controller1.stop_process()
+        self.manager.controller2.stop_process()
 
     def show_about_box(self):
         AboutBox(self.root, 'About Raven')
@@ -162,19 +161,20 @@ class MainFrame(object, CenteredWindow):
             write_preferences_to_file(dlg.font, dlg.size)
 
     def set_think_time(self):
-        self.manager._controller1.set_search_time(self.thinkTime.get())
-        self.manager._controller2.set_search_time(self.thinkTime.get())
+        self.manager.controller1.set_search_time(self.thinkTime.get())
+        self.manager.controller2.set_search_time(self.thinkTime.get())
 
     def flip_board(self):
         if self.manager.model.to_move == BLACK:
-            self.manager._controller1.remove_highlights()
+            self.manager.controller1.remove_highlights()
         else:
-            self.manager._controller2.remove_highlights()
+            self.manager.controller2.remove_highlights()
         self.manager.view.flip_board(not self.manager.view.flip_view)
         if self.manager.model.to_move == BLACK:
-            self.manager._controller1.add_highlights()
+            self.manager.controller1.add_highlights()
         else:
-            self.manager._controller2.add_highlights()
+            self.manager.controller2.add_highlights()
+
 
 def start():
     root = Tk()
@@ -182,6 +182,7 @@ def start():
     mainframe.root.update()
     mainframe.root.mainloop()
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     freeze_support()
     start()

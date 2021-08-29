@@ -1,6 +1,5 @@
-import os
 from Tkinter import *
-from Tkconstants import END, N, S, E, W
+from Tkconstants import END
 from command import *
 from observer import *
 from globalconst import *
@@ -10,6 +9,7 @@ from hyperlinkmgr import HyperlinkManager
 from tkFileDialog import askopenfilename
 from tkFont import Font
 from tooltip import ToolTip
+
 
 class BoardView(Observer):
     def __init__(self, root, **props):
@@ -25,9 +25,12 @@ class BoardView(Observer):
         self.dark_color = props.get('darkcheckers') or DARK_CHECKERS
         self._square_size = self._board_side / 8
         self._piece_offset = self._square_size / 5
-        self._crownpic = PhotoImage(file=CROWN_IMAGE)
-        self._boardpos = create_position_map()
-        self._gridpos = create_grid_map()
+        self._crown_pic = PhotoImage(file=CROWN_IMAGE)
+        self._board_pos = create_position_map()
+        self._grid_pos = create_grid_map()
+        self._b_font = None
+        self._i_font = None
+
         self.canvas = Canvas(root, width=self._board_side,
                              height=self._board_side, borderwidth=0,
                              highlightthickness=0)
@@ -38,7 +41,7 @@ class BoardView(Observer):
         self.scrollbar = AutoScrollbar(root, container=right_panel,
                                        row=1, column=1, sticky='ns')
         self.txt = Text(root, width=40, height=1, borderwidth=0,
-                        font=(font,size), wrap='word',
+                        font=(font, size), wrap='word',
                         yscrollcommand=self.scrollbar.set)
         self.scrollbar.config(command=self.txt.yview)
         self.canvas.pack(side='left', fill='both', expand=False)
@@ -47,24 +50,75 @@ class BoardView(Observer):
         self.txt.grid(in_=right_panel, row=1, column=0, sticky='nsew')
         right_panel.grid_rowconfigure(1, weight=1)
         right_panel.grid_columnconfigure(0, weight=1)
-        self.init_images()
-        self.init_toolbar_buttons()
+        self.redo_all_image = PhotoImage(file=REDO_ALL_IMAGE)
+        self.redo_image = PhotoImage(file=REDO_IMAGE)
+        self.undo_all_image = PhotoImage(file=UNDO_ALL_IMAGE)
+        self.undo_image = PhotoImage(file=UNDO_IMAGE)
+        self.numbers_image = PhotoImage(file=NUMBERS_IMAGE)
+        self.bullet_image = PhotoImage(file=BULLET_IMAGE)
+        self.bullets_image = PhotoImage(file=BULLETS_IMAGE)
+        self.remove_link_image = PhotoImage(file=REMLINK_IMAGE)
+        self.add_link_image = PhotoImage(file=ADDLINK_IMAGE)
+        self.italic_image = PhotoImage(file=ITALIC_IMAGE)
+        self.bold_image = PhotoImage(file=BOLD_IMAGE)
+        self.bold = Button(name='bold', image=self.bold_image,
+                           borderwidth=1, command=self._on_bold)
+        self.bold.grid(in_=self.toolbar, row=0, column=0, sticky=W)
+        self.italic = Button(name='italic', image=self.italic_image,
+                             borderwidth=1, command=self._on_italic)
+        self.italic.grid(in_=self.toolbar, row=0, column=1, sticky=W)
+        self.bullets = Button(name='bullets', image=self.bullets_image,
+                              borderwidth=1, command=self._on_bullets)
+        self.bullets.grid(in_=self.toolbar, row=0, column=2, sticky=W)
+        self.numbers = Button(name='numbers', image=self.numbers_image,
+                              borderwidth=1, command=self._on_numbers)
+        self.numbers.grid(in_=self.toolbar, row=0, column=3, sticky=W)
+        self.addLink = Button(name='addlink', image=self.add_link_image,
+                              borderwidth=1, command=self._on_add_link)
+        self.addLink.grid(in_=self.toolbar, row=0, column=4, sticky=W)
+        self.remLink = Button(name='remlink', image=self.remove_link_image,
+                              borderwidth=1, command=self._on_remove_link)
+        self.remLink.grid(in_=self.toolbar, row=0, column=5, sticky=W)
+        self.frame = Frame(width=0)
+        self.frame.grid(in_=self.toolbar, padx=5, row=0, column=6, sticky=W)
+        self.undo_all = Button(name='undo_all', image=self.undo_all_image,
+                               borderwidth=1, command=self._on_undo_all)
+        self.undo_all.grid(in_=self.toolbar, row=0, column=7, sticky=W)
+        self.undo = Button(name='undo', image=self.undo_image,
+                           borderwidth=1, command=self._on_undo)
+        self.undo.grid(in_=self.toolbar, row=0, column=8, sticky=W)
+        self.redo = Button(name='redo', image=self.redo_image,
+                           borderwidth=1, command=self._on_redo)
+        self.redo.grid(in_=self.toolbar, row=0, column=9, sticky=W)
+        self.redo_all = Button(name='redo_all', image=self.redo_all_image,
+                               borderwidth=1, command=self._on_redo_all)
+        self.redo_all.grid(in_=self.toolbar, row=0, column=10, sticky=W)
+        self.bold_tooltip = ToolTip(self.bold, 'Bold')
+        self.italic_tooltip = ToolTip(self.italic, 'Italic')
+        self.bullets_tooltip = ToolTip(self.bullets, 'Bullet list')
+        self.numbers_tooltip = ToolTip(self.numbers, 'Numbered list')
+        self.add_link_tooltip = ToolTip(self.addLink, 'Add hyperlink')
+        self.remove_link_tooltip = ToolTip(self.remLink, 'Remove hyperlink')
+        self.undo_all_tooltip = ToolTip(self.undo_all, 'First move')
+        self.undo_tooltip = ToolTip(self.undo, 'Back one move')
+        self.redo_tooltip = ToolTip(self.redo, 'Forward one move')
+        self.redo_all_tooltip = ToolTip(self.redo_all, 'Last move')
         self.init_font_sizes(font, size)
         self.init_tags()
         self._register_event_handlers()
-        self.btnset = set([self.bold, self.italic, self.addLink, self.remLink])
-        self.btnmap = {'bold': self.bold, 'italic': self.italic,
-                       'bullet': self.bullets, 'number': self.numbers,
-                       'hyper': self.addLink}
-        self.hypermgr = HyperlinkManager(self.txt, self._gameMgr.load_game)
-        self.serializer = Serializer(self.txt, self.hypermgr)
+        self.button_set = {self.bold, self.italic, self.addLink, self.remLink}
+        self.button_map = {'bold': self.bold, 'italic': self.italic,
+                           'bullet': self.bullets, 'number': self.numbers,
+                           'hyper': self.addLink}
+        self.link_manager = HyperlinkManager(self.txt, self._gameMgr.load_game)
+        self.serializer = Serializer(self.txt, self.link_manager)
         self.curr_annotation = ''
         self._setup_board(root)
         starting_squares = [i for i in self._model.curr_state.valid_squares
                             if self._model.curr_state.squares[i] &
                             (BLACK | WHITE)]
         self._draw_checkers(Command(add=starting_squares))
-        self.flip_view = False # black on bottom
+        self.flip_view = False  # black on bottom
         self._label_board()
         self.update_statusbar()
 
@@ -86,7 +140,7 @@ class BoardView(Observer):
             if not already_tagged:
                 self.txt.tag_add(tag, 'sel.first', 'sel.last')
                 btn.configure(relief='sunken')
-                other_btns = self.btnset.difference([btn])
+                other_btns = self.button_set.difference([btn])
                 for b in other_btns:
                     b.configure(relief='raised')
             else:
@@ -178,7 +232,7 @@ class BoardView(Observer):
                 # Regex to match a tab, followed by any number of digits,
                 # followed by a period, all at the start of a line.
                 # The cnt variable stores the number of characters matched.
-                pos = self.txt.search('^\t\d+\.\t', start, end, None, None,
+                pos = self.txt.search(r'^\t\d+\.\t', start, end, None, None,
                                       None, True, None, cnt)
                 if pos:
                     end = '%d.%d' % (line, cnt.get())
@@ -190,7 +244,7 @@ class BoardView(Observer):
         self._gameMgr.parent.undo_single_move()
 
     def _on_undo_all(self):
-        self.undoall_tooltip.hide()
+        self.undo_all_tooltip.hide()
         self._gameMgr.parent.undo_all_moves()
 
     def _on_redo(self):
@@ -198,14 +252,14 @@ class BoardView(Observer):
         self._gameMgr.parent.redo_single_move()
 
     def _on_redo_all(self):
-        self.redoall_tooltip.hide()
+        self.redo_all_tooltip.hide()
         self._gameMgr.parent.redo_all_moves()
 
     def _on_add_link(self):
         filename = askopenfilename(initialdir='training')
         if filename:
             filename = os.path.relpath(filename, CUR_DIR)
-            self._toggle_state(self.hypermgr.add(filename), self.addLink)
+            self._toggle_state(self.link_manager.add(filename), self.addLink)
 
     def _on_remove_link(self):
         if self.txt.tag_ranges('sel'):
@@ -222,18 +276,18 @@ class BoardView(Observer):
         Widget.bind(self.txt, '<ButtonRelease-1>', self._sel_changed)
         Widget.bind(self.txt, '<<KeyRel>>', self._key_release)
 
-    def _key_release(self, event):
+    def _key_release(self, _):
         line, char = parse_index(self.txt.index(INSERT))
         self.update_button_state(to_string(line, char))
 
-    def _sel_changed(self, event):
+    def _sel_changed(self, _):
         self.update_button_state(self.txt.index(INSERT))
 
     def is_dirty(self):
         return self.curr_annotation != self.get_annotation()
 
     def reset_toolbar_buttons(self):
-        for btn in self.btnset:
+        for btn in self.button_set:
             btn.configure(relief='raised')
 
     def update_button_state(self, index):
@@ -241,11 +295,11 @@ class BoardView(Observer):
             current_tags = self.txt.tag_names('sel.first')
         else:
             current_tags = self.txt.tag_names(index)
-        for btn in self.btnmap.itervalues():
+        for btn in self.button_map.itervalues():
             btn.configure(relief='raised')
         for tag in current_tags:
-            if tag in self.btnmap.keys():
-                self.btnmap[tag].configure(relief='sunken')
+            if tag in self.button_map.keys():
+                self.button_map[tag].configure(relief='sunken')
 
     def init_font_sizes(self, font, size):
         self.txt.config(font=[font, size])
@@ -259,63 +313,6 @@ class BoardView(Observer):
                             lmargin1='0', lmargin2='1c')
         self.txt.tag_config('bullet', tabs='.5c center 1c left',
                             lmargin1='0', lmargin2='1c')
-
-    def init_images(self):
-        self.bold_image = PhotoImage(file=BOLD_IMAGE)
-        self.italic_image = PhotoImage(file=ITALIC_IMAGE)
-        self.addlink_image = PhotoImage(file=ADDLINK_IMAGE)
-        self.remlink_image = PhotoImage(file=REMLINK_IMAGE)
-        self.bullets_image = PhotoImage(file=BULLETS_IMAGE)
-        self.bullet_image = PhotoImage(file=BULLET_IMAGE)
-        self.numbers_image = PhotoImage(file=NUMBERS_IMAGE)
-        self.undo_image = PhotoImage(file=UNDO_IMAGE)
-        self.undoall_image= PhotoImage(file=UNDOALL_IMAGE)
-        self.redo_image = PhotoImage(file=REDO_IMAGE)
-        self.redoall_image = PhotoImage(file=REDOALL_IMAGE)
-
-    def init_toolbar_buttons(self):
-        self.bold = Button(name='bold', image=self.bold_image,
-                           borderwidth=1, command=self._on_bold)
-        self.bold.grid(in_=self.toolbar, row=0, column=0, sticky=W)
-        self.italic = Button(name='italic', image=self.italic_image,
-                             borderwidth=1, command=self._on_italic)
-        self.italic.grid(in_=self.toolbar, row=0, column=1, sticky=W)
-        self.bullets = Button(name='bullets', image=self.bullets_image,
-                             borderwidth=1, command=self._on_bullets)
-        self.bullets.grid(in_=self.toolbar, row=0, column=2, sticky=W)
-        self.numbers = Button(name='numbers', image=self.numbers_image,
-                             borderwidth=1, command=self._on_numbers)
-        self.numbers.grid(in_=self.toolbar, row=0, column=3, sticky=W)
-        self.addLink = Button(name='addlink', image=self.addlink_image,
-                              borderwidth=1, command=self._on_add_link)
-        self.addLink.grid(in_=self.toolbar, row=0, column=4, sticky=W)
-        self.remLink = Button(name='remlink', image=self.remlink_image,
-                              borderwidth=1, command=self._on_remove_link)
-        self.remLink.grid(in_=self.toolbar, row=0, column=5, sticky=W)
-        self.frame = Frame(width=0)
-        self.frame.grid(in_=self.toolbar, padx=5, row=0, column=6, sticky=W)
-        self.undoall = Button(name='undoall', image=self.undoall_image,
-                              borderwidth=1, command=self._on_undo_all)
-        self.undoall.grid(in_=self.toolbar, row=0, column=7, sticky=W)
-        self.undo = Button(name='undo', image=self.undo_image,
-                           borderwidth=1, command=self._on_undo)
-        self.undo.grid(in_=self.toolbar, row=0, column=8, sticky=W)
-        self.redo = Button(name='redo', image=self.redo_image,
-                           borderwidth=1, command=self._on_redo)
-        self.redo.grid(in_=self.toolbar, row=0, column=9, sticky=W)
-        self.redoall = Button(name='redoall', image=self.redoall_image,
-                              borderwidth=1, command=self._on_redo_all)
-        self.redoall.grid(in_=self.toolbar, row=0, column=10, sticky=W)
-        self.bold_tooltip = ToolTip(self.bold, 'Bold')
-        self.italic_tooltip = ToolTip(self.italic, 'Italic')
-        self.bullets_tooltip = ToolTip(self.bullets, 'Bullet list')
-        self.numbers_tooltip = ToolTip(self.numbers, 'Numbered list')
-        self.addlink_tooltip = ToolTip(self.addLink, 'Add hyperlink')
-        self.remlink_tooltip = ToolTip(self.remLink, 'Remove hyperlink')
-        self.undoall_tooltip = ToolTip(self.undoall, 'First move')
-        self.undo_tooltip = ToolTip(self.undo, 'Back one move')
-        self.redo_tooltip = ToolTip(self.redo, 'Forward one move')
-        self.redoall_tooltip = ToolTip(self.redoall, 'Last move')
 
     def reset_view(self, model):
         self._model = model
@@ -336,13 +333,13 @@ class BoardView(Observer):
         return xi, yi
 
     def calc_board_pos(self, xi, yi):
-        return self._boardpos.get(xi + yi * 8, 0)
+        return self._board_pos.get(xi + yi * 8, 0)
 
     def calc_grid_pos(self, pos):
-        return self._gridpos[pos]
+        return self._grid_pos[pos]
 
     def highlight_square(self, idx, color):
-        row, col = self._gridpos[idx]
+        row, col = self._grid_pos[idx]
         hpos = col + row * 8
         self.canvas.itemconfigure('o'+str(hpos), outline=color)
 
@@ -363,11 +360,11 @@ class BoardView(Observer):
         self.txt.delete('1.0', END)
         self.serializer.restore(move.annotation)
         self.curr_annotation = move.annotation
-        if self.txt.get('1.0','end').strip() == '':
+        if self.txt.get('1.0', 'end').strip() == '':
             start = keymap[move.affected_squares[FIRST][0]]
             dest = keymap[move.affected_squares[LAST][0]]
-            movestr = '%d-%d' % (start, dest)
-            self.txt.insert('1.0', movestr)
+            move_str = '%d-%d' % (start, dest)
+            self.txt.insert('1.0', move_str)
 
     def get_annotation(self):
         return self.serializer.dump()
@@ -381,8 +378,8 @@ class BoardView(Observer):
         self.canvas.delete(self.light_color)
         if self.flip_view != flip:
             self.flip_view = flip
-            self._gridpos = reverse_dict(self._gridpos)
-            self._boardpos = reverse_dict(self._boardpos)
+            self._grid_pos = reverse_dict(self._grid_pos)
+            self._board_pos = reverse_dict(self._board_pos)
         self._label_board()
         starting_squares = [i for i in self._model.curr_state.valid_squares
                             if self._model.curr_state.squares[i] &
@@ -410,13 +407,13 @@ class BoardView(Observer):
         else:
             self._statusbar['text'] = "Black to move"
 
-    def get_positions(self, type):
+    def get_positions(self, square_type):
         return map(str, sorted((keymap[i]
-                for i in self._model.curr_state.valid_squares
-                if self._model.curr_state.squares[i] == type)))
+                                for i in self._model.curr_state.valid_squares
+                                if self._model.curr_state.squares[i] == square_type)))
 
     # private functions
-    def _setup_board(self, root):
+    def _setup_board(self, _):
         for r in range(0, 8, 2):
             row = r * self._square_size
             for c in range(0, 8, 2):
@@ -451,7 +448,7 @@ class BoardView(Observer):
                                              tags='o'+str(((r+1)*8)+c))
 
     def _label_board(self):
-        for key, pair in self._gridpos.iteritems():
+        for key, pair in self._grid_pos.iteritems():
             row, col = pair
             xpos, ypos = col * self._square_size, row * self._square_size
             self.canvas.create_text(xpos+self._square_size-7,
@@ -463,14 +460,14 @@ class BoardView(Observer):
         self.canvas.delete('label')
 
     def _draw_checkers(self, change):
-        if change == None:
+        if change is None:
             return
         for i in change.remove:
             self.canvas.delete('c'+str(i))
         for i in change.add:
             checker = self._model.curr_state.squares[i]
             color = self.dark_color if checker & COLORS == BLACK else self.light_color
-            row, col = self._gridpos[i]
+            row, col = self._grid_pos[i]
             x = col * self._square_size + self._piece_offset
             y = row * self._square_size + self._piece_offset
             tag = 'c'+str(i)
@@ -481,5 +478,5 @@ class BoardView(Observer):
                                     outline='black', fill=color,
                                     tags=(color, tag))
             if checker & KING:
-                self.canvas.create_image(x+15, y+15, image=self._crownpic,
+                self.canvas.create_image(x + 15, y + 15, image=self._crown_pic,
                                          anchor=CENTER, tags=(color, tag))

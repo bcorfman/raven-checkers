@@ -1,8 +1,9 @@
 from globalconst import BLACK, WHITE, KING
-import checkers
+
 
 class Operator(object):
     pass
+
 
 class OneKingAttackOneKing(Operator):
     def precondition(self, board):
@@ -15,30 +16,31 @@ class OneKingAttackOneKing(Operator):
     
     def postcondition(self, board):
         board.make_move()
-        
+
+
 class PinEnemyKingInCornerWithPlayerKing(Operator):
     def __init__(self):
-        self.pidx = 0
-        self.eidx = 0
+        self.p_idx = 0
+        self.e_idx = 0
         self.goal = 8
 
     def precondition(self, state):
-        self.pidx, plr = self.plr_lst[0]      # only 1 piece per side
-        self.eidx, enemy = self.enemy_lst[0]
-        delta = abs(self.pidx - self.eidx)
+        self.p_idx, plr = self.plr_lst[0]      # only 1 piece per side
+        self.e_idx, enemy = self.enemy_lst[0]
+        delta = abs(self.p_idx - self.e_idx)
         return ((self.player_total == 1) and (self.enemy_total == 1) and
                 (plr & KING > 0) and (enemy & KING > 0) and
                 not (8 <= delta <= 10) and state.have_opposition(plr))
 
     def postcondition(self, state):
         new_state = None
-        old_delta = abs(self.eidx - self.pidx)
+        old_delta = abs(self.e_idx - self.p_idx)
         goal_delta = abs(self.goal - old_delta)
         for move in state.moves:
             for m in move:
                 newidx, _, _ = m[1]
-                new_delta = abs(self.eidx - newidx)
-                if abs(goal - new_delta) < goal_delta:
+                new_delta = abs(self.e_idx - newidx)
+                if abs(self.goal - new_delta) < goal_delta:
                     new_state = state.make_move(move)
                     break
         return new_state
@@ -54,10 +56,11 @@ class PinEnemyKingInCornerWithPlayerKing(Operator):
 #          5   6   7   8
 #   (black)
 
+
 class SingleKingFleeToDoubleCorner(Operator):
     def __init__(self):
-        self.pidx = 0
-        self.eidx = 0
+        self.p_idx = 0
+        self.e_idx = 0
         self.dest = [8, 13, 27, 32]
         self.goal_delta = 0
 
@@ -65,24 +68,26 @@ class SingleKingFleeToDoubleCorner(Operator):
         # fail fast
         if self.player_total == 1 and self.enemy_total == 1:
             return False
-        self.pidx, _ = self.plr_lst[0]
-        self.eidx, _ = self.enemy_lst[0]
+        self.p_idx, _ = self.plr_lst[0]
+        self.e_idx, _ = self.enemy_lst[0]
         for sq in self.dest:
-            if abs(self.pidx - sq) < abs(self.eidx - sq):
+            if abs(self.p_idx - sq) < abs(self.e_idx - sq):
                 self.goal = sq
                 return True
         return False
 
     def postcondition(self, state):
-        self.goal_delta = abs(self.goal - self.pidx)
+        self.goal_delta = abs(self.goal - self.p_idx)
+        new_state = None
         for move in state.moves:
             for m in move:
-                newidx, _, _ = m[1]
-                new_delta = abs(self.goal - newidx)
+                new_idx, _, _ = m[1]
+                new_delta = abs(self.goal - new_idx)
                 if new_delta < self.goal_delta:
                     new_state = state.make_move(move)
                     break
         return new_state
+
 
 class FormShortDyke(Operator):
     def precondition(self):
