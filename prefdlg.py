@@ -1,4 +1,4 @@
-from Tkinter import *
+from Tkinter import Frame, LabelFrame, LEFT, RIGHT, X
 from ttk import Combobox, Label
 from tkFont import families
 from tkSimpleDialog import Dialog
@@ -24,7 +24,7 @@ class PreferencesDialog(Dialog):
         self._sizeFrame = Frame(self._npFrame, borderwidth=0)
         self._sizeLabel = Label(self._sizeFrame, text='Size:', width=5)
         self._sizeLabel.pack(side=LEFT, padx=3)
-        self._sizeCombo = Combobox(self._sizeFrame, values=range(8,15),
+        self._sizeCombo = Combobox(self._sizeFrame, values=range(8, 15),
                                    state='readonly')
         self._sizeCombo.pack(side=RIGHT, fill=X)
         self._fontFrame.pack()

@@ -1,8 +1,9 @@
-from Tkinter import *
+import os
+from Tkinter import IntVar, Menu, Tk
 import Tkinter as tk
 from tkMessageBox import askyesnocancel
 from multiprocessing import freeze_support
-from globalconst import *
+from globalconst import RAVEN_ICON, VERSION, TITLE, BLACK, get_preferences_from_file, write_preferences_to_file
 from aboutbox import AboutBox
 from setupboard import SetupBoard
 from gamemanager import GameManager
@@ -147,7 +148,7 @@ class MainFrame(object, CenteredWindow):
 
     def show_setup_board_dialog(self):
         self.stop_processes()
-        dlg = SetupBoard(self.root, 'Set up board', self.manager)
+        _ = SetupBoard(self.root, 'Set up board', self.manager)
         self.manager.set_controllers()
         self.root.focus_set()
         self.manager.turn_finished()

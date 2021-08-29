@@ -14,6 +14,7 @@ import checkers
 #          6   7   8   9
 #   (black)
 
+
 class TestOneKingAttackOneKingEvaluator(unittest.TestCase):
     def setUp(self):
         self.game = checkers.Checkers()

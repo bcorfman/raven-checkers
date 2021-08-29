@@ -1,13 +1,19 @@
-from Tkinter import *
-from Tkconstants import END
-from command import *
-from observer import *
-from globalconst import *
+import os
+from Tkinter import PhotoImage, Canvas, Frame, Text, Button, IntVar, Widget
+from Tkconstants import END, W, INSERT, CENTER
+from tkFileDialog import askopenfilename
+from tkFont import Font
+from command import Command
+from observer import Observer
+from globalconst import NUMBERS_IMAGE, BULLET_IMAGE, BULLETS_IMAGE, DEFAULT_SIZE, LIGHT_SQUARES, DARK_SQUARES, \
+    LIGHT_CHECKERS, DARK_CHECKERS, CROWN_IMAGE, REDO_IMAGE, REDO_ALL_IMAGE, UNDO_IMAGE, UNDO_ALL_IMAGE, \
+    REMLINK_IMAGE, ADDLINK_IMAGE, ITALIC_IMAGE, BOLD_IMAGE, BLACK, WHITE, CUR_DIR, FREE, FIRST, LAST, \
+    COLORS, CHECKER_SIZE, KING
+from globalconst import create_grid_map, create_position_map, get_preferences_from_file, parse_index, to_string, \
+    keymap, reverse_dict
 from autoscrollbar import AutoScrollbar
 from textserialize import Serializer
 from hyperlinkmgr import HyperlinkManager
-from tkFileDialog import askopenfilename
-from tkFont import Font
 from tooltip import ToolTip
 
 

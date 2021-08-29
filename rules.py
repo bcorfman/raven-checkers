@@ -17,7 +17,7 @@ class LinkRules(object):
         self.addr_re = re.compile('|'.join([
                 self.extern,
                 self.interwiki,
-            ]), re.X | re.U) # for addresses
+            ]), re.X | re.U)  # for addresses
 
 
 class Rules(object):
@@ -45,17 +45,18 @@ class Rules(object):
             >>
         )'''
     code = r'(?P<code> {{{ (?P<code_text>.*?) }}} )'
-    emph = r'(?P<emph> (?<!:)// )' # there must be no : in front of the //
-                                   # avoids italic rendering in urls with
-                                   # unknown protocols
+    # there must be no : in front of the
+    # avoids italic rendering in urls with
+    # unknown protocols
+    emph = r'(?P<emph> (?<!:)// )'
     strong = r'(?P<strong> \*\* )'
     linebreak = r'(?P<break> \\\\ )'
     escape = r'(?P<escape> ~ (?P<escaped_char>\S) )'
-    char =  r'(?P<char> . )'
+    char = r'(?P<char> . )'
 
     # For the block elements:
-    separator = r'(?P<separator> ^ \s* ---- \s* $ )' # horizontal line
-    line = r'(?P<line> ^ \s* $ )' # empty line that separates paragraphs
+    separator = r'(?P<separator> ^ \s* ---- \s* $ )'  # horizontal line
+    line = r'(?P<line> ^ \s* $ )'  # empty line that separates paragraphs
     head = r'''(?P<head>
             ^ \s*
             (?P<head_head>=+) \s*
@@ -67,14 +68,13 @@ class Rules(object):
     list = r'''(?P<list>
             ^ [ \t]* ([*][^*\#]|[\#][^\#*]).* $
             ( \n[ \t]* [*\#]+.* $ )*
-        )''' # Matches the whole list, separate items are parsed later. The
-             # list *must* start with a single bullet.
+        )'''  # Matches the whole list, separate items are parsed later. The list *must* start with a single bullet.
     item = r'''(?P<item>
             ^ \s*
             (?P<item_head> [\#*]+) \s*
             (?P<item_text> .*?)
             $
-        )''' # Matches single list items
+        )'''  # Matches single list items
     pre = r'''(?P<pre>
             ^{{{ \s* $
             (\n)?
@@ -125,7 +125,7 @@ class Rules(object):
         # For inline elements:
         if url_protocols is not None:
             self.proto = '|'.join(re.escape(p) for p in url_protocols)
-        self.url =  r'''(?P<url>
+        self.url = r'''(?P<url>
             (^ | (?<=\s | [.,:;!?()/=]))
             (?P<escaped_url>~)?
             (?P<url_target> (?P<url_proto> %s ):\S+? )
@@ -137,7 +137,7 @@ class Rules(object):
         if wiki_words:
             import unicodedata
             up_case = u''.join(unichr(i) for i in xrange(sys.maxunicode)
-                               if unicodedata.category(unichr(i))=='Lu')
+                               if unicodedata.category(unichr(i)) == 'Lu')
             self.wiki = ur'''(?P<wiki>[%s]\w+[%s]\w+)''' % (up_case, up_case)
             inline_elements.insert(3, self.wiki)
         self.inline_re = c('|'.join(inline_elements), re.X | re.U)

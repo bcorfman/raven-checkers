@@ -1,6 +1,6 @@
-from Tkinter import *
+from Tkinter import Canvas, Button, TOP, BOTTOM, BOTH
 from tkSimpleDialog import Dialog
-from globalconst import *
+from globalconst import VERSION
 
 
 class AboutBox(Dialog):

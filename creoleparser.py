@@ -1,6 +1,3 @@
-import re
-import sys
-
 from rules import Rules
 from document import DocNode
 
@@ -23,13 +20,13 @@ class Parser(object):
         self.cur = self.root        # The most recent document node
         self.text = None            # The node to add inline characters to
 
-    def _upto(self, node, kinds):
+    def _up_to(self, node, kinds):
         """
-        Look up the tree to the first occurence
+        Look up the tree to the first occurrence
         of one of the listed kinds of nodes or root.
         Start at the node node.
         """
-        while node.parent is not None and not node.kind in kinds:
+        while node.parent is not None and node.kind not in kinds:
             node = node.parent
         return node
 
@@ -85,7 +82,7 @@ class Parser(object):
         self.text = None
 
     def _image_repl(self, groups):
-        """Handles images and attachemnts included in the page."""
+        """Handles images and attachments included in the page."""
 
         target = groups.get('image_target', '').strip()
         text = (groups.get('image_text', '') or '').strip()
@@ -94,7 +91,7 @@ class Parser(object):
         self.text = None
 
     def _separator_repl(self, groups):
-        self.cur = self._upto(self.cur, ('document', 'section', 'blockquote'))
+        self.cur = self._up_to(self.cur, ('document', 'section', 'blockquote'))
         DocNode('separator', self.cur)
 
     def _item_repl(self, groups):
@@ -108,16 +105,15 @@ class Parser(object):
         lst = self.cur
         # Find a list of the same kind and level up the tree
         while (lst and
-                   not (lst.kind in ('number_list', 'bullet_list') and
-                        lst.level == level) and
-                    not lst.kind in ('document', 'section', 'blockquote')):
+               lst.kind not in ('number_list', 'bullet_list') or
+               lst.level != level) and lst.kind not in ('document', 'section', 'blockquote'):
             lst = lst.parent
         if lst and lst.kind == kind:
             self.cur = lst
         else:
             # Create a new level of list
-            self.cur = self._upto(self.cur,
-                ('list_item', 'document', 'section', 'blockquote'))
+            self.cur = self._up_to(self.cur,
+                                   ('list_item', 'document', 'section', 'blockquote'))
             self.cur = DocNode(kind, self.cur)
             self.cur.level = level
         self.cur = DocNode('list_item', self.cur)
@@ -129,37 +125,34 @@ class Parser(object):
         self.parse_re(text, self.rules.item_re)
 
     def _head_repl(self, groups):
-        self.cur = self._upto(self.cur, ('document', 'section', 'blockquote'))
+        self.cur = self._up_to(self.cur, ('document', 'section', 'blockquote'))
         node = DocNode('header', self.cur, groups.get('head_text', '').strip())
         node.level = len(groups.get('head_head', ' '))
 
     def _text_repl(self, groups):
         text = groups.get('text', '')
-        if self.cur.kind in ('table', 'table_row', 'bullet_list',
-            'number_list'):
-            self.cur = self._upto(self.cur,
-                ('document', 'section', 'blockquote'))
+        if self.cur.kind in ('table', 'table_row', 'bullet_list', 'number_list'):
+            self.cur = self._up_to(self.cur,
+                                   ('document', 'section', 'blockquote'))
         if self.cur.kind in ('document', 'section', 'blockquote'):
             self.cur = DocNode('paragraph', self.cur)
         else:
             text = u' ' + text
         self.parse_inline(text)
-        if groups.get('break') and self.cur.kind in ('paragraph',
-            'emphasis', 'strong', 'code'):
+        if groups.get('break') and self.cur.kind in ('paragraph', 'emphasis', 'strong', 'code'):
             DocNode('break', self.cur, '')
         self.text = None
-    _break_repl = _text_repl
+    # _break_repl = _text_repl
 
     def _table_repl(self, groups):
         row = groups.get('table', '|').strip()
-        self.cur = self._upto(self.cur, (
+        self.cur = self._up_to(self.cur, (
             'table', 'document', 'section', 'blockquote'))
         if self.cur.kind != 'table':
             self.cur = DocNode('table', self.cur)
         tb = self.cur
         tr = DocNode('table_row', tb)
 
-        text = ''
         for m in self.rules.cell_re.finditer(row):
             cell = m.group('cell')
             if cell:
@@ -175,9 +168,10 @@ class Parser(object):
         self.text = None
 
     def _pre_repl(self, groups):
-        self.cur = self._upto(self.cur, ('document', 'section', 'blockquote'))
+        self.cur = self._up_to(self.cur, ('document', 'section', 'blockquote'))
         kind = groups.get('pre_kind', None)
         text = groups.get('pre_text', u'')
+
         def remove_tilde(m):
             return m.group('indent') + m.group('rest')
         text = self.rules.pre_escape_re.sub(remove_tilde, text)
@@ -186,7 +180,7 @@ class Parser(object):
         self.text = None
 
     def _line_repl(self, groups):
-        self.cur = self._upto(self.cur, ('document', 'section', 'blockquote'))
+        self.cur = self._up_to(self.cur, ('document', 'section', 'blockquote'))
 
     def _code_repl(self, groups):
         DocNode('code', self.cur, groups.get('code_text', u'').strip())
@@ -196,14 +190,14 @@ class Parser(object):
         if self.cur.kind != 'emphasis':
             self.cur = DocNode('emphasis', self.cur)
         else:
-            self.cur = self._upto(self.cur, ('emphasis', )).parent
+            self.cur = self._up_to(self.cur, ('emphasis',)).parent
         self.text = None
 
     def _strong_repl(self, groups):
         if self.cur.kind != 'strong':
             self.cur = DocNode('strong', self.cur)
         else:
-            self.cur = self._upto(self.cur, ('strong', )).parent
+            self.cur = self._up_to(self.cur, ('strong',)).parent
         self.text = None
 
     def _break_repl(self, groups):

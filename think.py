@@ -21,7 +21,7 @@ class GoalThink(CompositeGoal):
 
     def terminate(self):
         pass
-        
+
     def arbitrate(self):
         most_desirable = None
         best_score = 0

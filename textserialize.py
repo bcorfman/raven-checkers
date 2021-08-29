@@ -1,5 +1,5 @@
 from Tkinter import PhotoImage
-from Tkconstants import *
+from Tkconstants import END
 from globalconst import BULLET_IMAGE
 from creoleparser import Parser
 from rules import LinkRules
@@ -126,7 +126,6 @@ class TextTagEmitter(object):
         self.begin_link = '%d.%d' % (self.line, self.index)
 
     def leave_link(self, node):
-        end_link = '%d.%d' % (self.line, self.index)
         # TODO: Revisit unicode encode/decode issues later.
         # 1. Decode early.  2. Unicode everywhere  3. Encode late
         # However, decoding filename and link_text here works for now.

@@ -1,8 +1,7 @@
-__author__ = 'brandon_corfman'
 import multiprocessing
 from abc import ABCMeta, abstractmethod
 from goal import Goal
-from utils import argmin_score
+from utils import argmin_random_tie
 from formation import BLACK_MAP
 from globalconst import FIRST, LAST
 
@@ -52,11 +51,11 @@ def calc_best_move(formation, owner, term_event, child_conn):
     score_func = get_score_move(board)
     primary_move, primary_score = None, 999
     if primary:
-        primary_move, primary_score = argmin_score(primary, score_func)
+        primary_move, primary_score = argmin_random_tie(primary, score_func)
         primary_score -= 1  # bonus for primary moves since they are within the formation
     secondary_move, secondary_score = None, 0
     if secondary:
-        secondary_move, secondary_score = argmin_score(secondary, score_func)
+        secondary_move, secondary_score = argmin_random_tie(secondary, score_func)
     if term_event.is_set():  # a signal means terminate
         term_event.clear()
         child_conn.send(None)
@@ -123,7 +122,10 @@ class GoalLongDyke(GoalFormation):
                                                       self.child_conn))
         self._process.daemon = True
         self._process.start()
-        return ACTIVE
+        return Goal.ACTIVE
+
+    def add_subgoal(self, goal):
+        pass
 
 
 class GoalPyramid(GoalFormation):
@@ -142,7 +144,11 @@ class GoalPyramid(GoalFormation):
                                                       self.child_conn))
         self._process.daemon = True
         self._process.start()
-        return ACTIVE
+        return Goal.ACTIVE
+
+    def add_subgoal(self, goal):
+        pass
+
 
 class GoalPhalanx(GoalFormation):
     def __init__(self, owner):
@@ -160,6 +166,9 @@ class GoalPhalanx(GoalFormation):
                                                       self.child_conn))
         self._process.daemon = True
         self._process.start()
+
+    def add_subgoal(self, goal):
+        pass
 
 
 class GoalMill(GoalFormation):
@@ -179,6 +188,9 @@ class GoalMill(GoalFormation):
         self._process.daemon = True
         self._process.start()
 
+    def add_subgoal(self, goal):
+        pass
+
 
 class GoalEchelon(GoalFormation):
     def __init__(self, owner):
@@ -196,3 +208,6 @@ class GoalEchelon(GoalFormation):
                                                       self.child_conn))
         self._process.daemon = True
         self._process.start()
+
+    def add_subgoal(self, goal):
+        pass

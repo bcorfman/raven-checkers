@@ -1,7 +1,9 @@
-import copy, textwrap
-from globalconst import *
-from move import Move
+import copy
+import textwrap
+from globalconst import FIRST, LAST, WHITE, BLACK, MAN, KING, KING_IDX
+from globalconst import keymap, square_map
 from checkers import Checkers
+
 
 class SavedGame(object):
     def __init__(self):
@@ -54,11 +56,11 @@ class SavedGame(object):
             elif self.to_move == BLACK:
                 f.write('black_first\n')
             else:
-                raise ValueError, "Unknown value for to_move variable"
-            if self.num_players >=0 and self.num_players <=2:
+                raise ValueError("Unknown value for to_move variable")
+            if 0 <= self.num_players <= 2:
                 f.write('%d_player_game\n' % self.num_players)
             else:
-                raise ValueError, "Unknown value for num_players variable"
+                raise ValueError("Unknown value for num_players variable")
             if self.flip_board:
                 f.write('flip_board 1\n')
             else:
@@ -91,7 +93,7 @@ class SavedGame(object):
             elif line.startswith('<moves>'):
                 i = self._parse_moves(lines, i, linelen)
             else:
-                raise IOError, 'Unrecognized section in file, line %d' % (i+1)
+                raise IOError('Unrecognized section in file, line %d' % (i+1))
 
     def _parse_items(self, line):
         men = line.split()[1:]
@@ -104,13 +106,13 @@ class SavedGame(object):
                 idx = square_map[loc]
                 squares[idx] = val
         except ValueError:
-            raise IOError, 'Checker location not valid, line %d' % (i+1)
+            raise IOError('Checker location not valid, line %d' % (idx + 1))
 
-    def _parse_setup(self, lines, idx, linelen):
+    def _parse_setup(self, lines, idx, line_len):
         curr_state = self._model.curr_state
         curr_state.clear()
         idx += 1
-        while idx < linelen and '<moves>' not in lines[idx]:
+        while idx < line_len and '<moves>' not in lines[idx]:
             line = lines[idx].strip().lower()
             if line == 'white_first':
                 self.to_move = curr_state.to_move = WHITE
@@ -143,8 +145,8 @@ class SavedGame(object):
                 self._wk_check = True
             idx += 1
         if (not self._move_check and not self._bm_check and not self._wm_check
-            and not self._bk_check and not self._wk_check):
-            raise IOError, 'Error in <setup> section: not all required items found'
+                and not self._bk_check and not self._wk_check):
+            raise IOError('Error in <setup> section: not all required items found')
         return idx
 
     def _is_move(self, delta):
@@ -159,31 +161,30 @@ class SavedGame(object):
         found = False
         startsq, destsq = square_map[start], square_map[dest]
         for move in legal_moves:
-            if (startsq == move.affected_squares[FIRST][0] and
-                destsq == move.affected_squares[LAST][0]):
+            if startsq == move.affected_squares[FIRST][0] and destsq == move.affected_squares[LAST][0]:
                 self._model.make_move(move, state_copy, False, False)
                 move.annotation = annotation
                 self.moves.append(move)
                 found = True
                 break
         if not found:
-            raise IOError, 'Illegal move found in file, line %d' % (idx+1)
+            raise IOError('Illegal move found in file, line %d' % (idx+1))
 
     def _try_jump(self, idx, start, dest, state_copy, annotation):
         if not self._model.captures_available(state_copy):
             return False
         legal_moves = self._model.legal_moves(state_copy)
         # match jump from file with available jumps on checkerboard
-        startsq, destsq = square_map[start], square_map[dest]
-        small, large = min(startsq, destsq), max(startsq, destsq)
+        start_square, dest_square = square_map[start], square_map[dest]
+        _, _ = min(start_square, dest_square), max(start_square, dest_square)
+        # small, large = min(start_square, dest_square), max(start_square, dest_square)
         found = False
         for move in legal_moves:
             # a valid jump may either have a single jump in it, or
-            # multiple jumps. In the multiple jump case, startsq is the
-            # source of the first jump, and destsq is the endpoint of the
+            # multiple jumps. In the multiple jump case, start_square is the
+            # source of the first jump, and dest_square is the endpoint of the
             # last jump.
-            if (startsq == move.affected_squares[FIRST][0] and
-                destsq == move.affected_squares[LAST][0]):
+            if start_square == move.affected_squares[FIRST][0] and dest_square == move.affected_squares[LAST][0]:
                 self._model.make_move(move, state_copy, False, False)
                 move.annotation = annotation
                 self.moves.append(move)
@@ -203,30 +204,32 @@ class SavedGame(object):
             line = lines[idx].strip()
             if line == "":
                 idx += 1
-                continue # ignore blank lines
+                continue  # ignore blank lines
 
             try:
                 movestr, annotation = line.split(';', 1)
             except ValueError:
-                raise IOError, 'Unrecognized section in file, line %d' % (idx+1)
+                raise IOError('Unrecognized section in file, line %d' % (idx+1))
 
             # move is always part of the annotation; I just don't want to
             # have to repeat it explicitly in the file.
             annotation = movestr + annotation
 
             # analyze affected squares to perform a move or jump.
+            start = None
+            dest = None
             try:
                 start, dest = [int(x) for x in movestr.split('-')]
+                delta = square_map[start] - square_map[dest]
             except ValueError:
-                raise IOError, 'Bad move fmt in file, line %d' % idx
-            delta = square_map[start] - square_map[dest]
+                raise IOError('Bad move fmt in file, line %d' % idx)
             if self._is_move(delta):
                 self._try_move(idx, start, dest, state_copy, annotation)
             else:
                 jumped = self._try_jump(idx, start, dest, state_copy,
                                         annotation)
                 if not jumped:
-                    raise IOError, 'Bad move fmt in file, line %d' % idx
+                    raise IOError('Bad move fmt in file, line %d' % idx)
             idx += 1
         self.moves.reverse()
         return idx

@@ -1,4 +1,4 @@
-from globalconst import BLACK, WHITE, KING
+from globalconst import KING
 
 
 class Operator(object):
@@ -13,7 +13,7 @@ class OneKingAttackOneKing(Operator):
                 any((x & KING for x in board.get_pieces(opp_color))) and
                 any((x & KING for x in board.get_pieces(plr_color))) and
                 board.has_opposition(plr_color))
-    
+
     def postcondition(self, board):
         board.make_move()
 
@@ -92,4 +92,3 @@ class SingleKingFleeToDoubleCorner(Operator):
 class FormShortDyke(Operator):
     def precondition(self):
         pass
-    

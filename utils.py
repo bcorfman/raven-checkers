@@ -15,7 +15,7 @@ infinity = 1.0e400
 
 
 def Dict(**entries):
-    """Create a dict out of the argument=value arguments.
+    """Create a dct out of the argument=value arguments.
     Ex: Dict(a=1, b=2, c=3) ==> {'a':1, 'b':2, 'c':3}"""
     return entries
 
@@ -53,7 +53,7 @@ class Struct:
 
 
 def update(x, **entries):
-    """Update a dict, or an obj with slots, according to entries.
+    """Update a dct, or an obj with slots, according to entries.
     Ex: update({'a': 1}, a=10, b=20) ==> {'a': 10, 'b': 20}
     update(Struct(a=1), a=10, b=20) ==> Struct(a=10, b=20)"""
     if isinstance(x, dict):
@@ -120,8 +120,9 @@ def unique(seq):
 def count_if(predicate, seq):
     """Count the number of elements of seq for which the predicate is true.
     count_if(callable, [42, None, max, min]) ==> 2"""
-    f = lambda count, x: count + (not not predicate(x))
-    return reduce(f, seq, 0)
+    def count_func(count, x):
+        return count + (not not predicate(x))
+    return reduce(count_func, seq, 0)
 
 
 def find_if(predicate, seq):
@@ -341,12 +342,12 @@ def num_or_str(x):
 
 
 def distance((ax, ay), (bx, by)):
-    """The distance between two (x, y) points."""
+    """The dist between two (x, y) points."""
     return math.hypot((ax - bx), (ay - by))
 
 
 def distance2((ax, ay), (bx, by)):
-    """"The square of the distance between two (x, y) points."""
+    """"The square of the dist between two (x, y) points."""
     return (ax - bx)**2 + (ay - by)**2
 
 
@@ -390,7 +391,7 @@ def memoize(fn, slot=None):
                 return val
     else:
         def memoized_fn(*args):
-            if not memoized_fn.cache.has_key(args):
+            if args not in memoized_fn.cache:
                 memoized_fn.cache[args] = fn(*args)
             return memoized_fn.cache[args]
         memoized_fn.cache = {}
@@ -477,8 +478,10 @@ def print_table(table, header=None, sep=' ', numfmt='%g'):
         table = [header] + table
     table = [[if_(is_number(x), lambda: numfmt % x, x) for x in row]
              for row in table]
-    max_len = lambda seq: max(map(len, seq))
-    sizes = map(max_len, zip(*[map(str, row) for row in table]))
+
+    def max_length(seq):
+        return max(map(len, seq))
+    sizes = map(max_length, zip(*[map(str, row) for row in table]))
     for row in table:
         for (j, size, x) in zip(justs, sizes, row):
             print getattr(str(x), j)(size), sep,

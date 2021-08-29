@@ -1,12 +1,14 @@
-from Tkinter import *
+from Tkinter import LabelFrame, Frame, Radiobutton, Label, Entry, StringVar, IntVar
+from Tkinter import DISABLED, NORMAL, LEFT, X
 from ttk import Checkbutton
 from tkSimpleDialog import Dialog
-from globalconst import *
+from globalconst import BLACK, WHITE, square_map, MAN, KING, MAX_VALID_SQ
+
 
 class SetupBoard(Dialog):
-    def __init__(self, parent, title, gameManager):
+    def __init__(self, parent, title, game_manager):
         self._master = parent
-        self._manager = gameManager
+        self._manager = game_manager
         self._load_entry_box_vars()
         self.result = False
         Dialog.__init__(self, parent, title)
@@ -108,8 +110,8 @@ class SetupBoard(Dialog):
         self.wk_list = self._parse_int_list(self._white_kings.get())
         self.bm_list = self._parse_int_list(self._black_men.get())
         self.bk_list = self._parse_int_list(self._black_kings.get())
-        if (self.wm_list == None or self.wk_list == None
-            or self.bm_list == None or self.bk_list == None):
+        if (self.wm_list is None or self.wk_list is None
+                or self.bm_list is None or self.bk_list is None):
             return 0  # Error occurred during parsing
         if not self._all_unique(self.wm_list, self.wk_list,
                                 self.bm_list, self.bk_list):
@@ -127,10 +129,10 @@ class SetupBoard(Dialog):
 
         # only reset the BoardView if men or kings have new positions
         if (sorted(self.wm_list) != sorted(self._orig_white_men) or
-            sorted(self.wk_list) != sorted(self._orig_white_kings) or
-            sorted(self.bm_list) != sorted(self._orig_black_men) or
-            sorted(self.bk_list) != sorted(self._orig_black_kings) or
-            self._bsState.get() == 1):
+                sorted(self.wk_list) != sorted(self._orig_white_kings) or
+                sorted(self.bm_list) != sorted(self._orig_black_men) or
+                sorted(self.bk_list) != sorted(self._orig_black_kings) or
+                self._bsState.get() == 1):
             state.clear()
             sq = state.squares
             for item in self.wm_list:
@@ -210,7 +212,7 @@ class SetupBoard(Dialog):
         except ValueError:
             return None
 
-        if not all(((x>=1 and x<=MAX_VALID_SQ) for x in lst)):
+        if not all(((1 <= x <= MAX_VALID_SQ) for x in lst)):
             return None
 
         return lst

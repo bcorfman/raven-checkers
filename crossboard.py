@@ -4,7 +4,7 @@ import copy
 import games
 import multiprocessing
 from goal import Goal
-from globalconst import *
+from globalconst import MAX_DEPTH
 
 
 class GoalCrossboard(Goal):
@@ -36,7 +36,6 @@ class GoalCrossboard(Goal):
 
 
 def calc_move(model, search_time, term_event, child_conn):
-    move = None
     term_event.clear()
     captures = model.captures_available()
     if captures:
@@ -73,4 +72,3 @@ def longest_of(moves):
             move_length = length
             selected = move
     return selected
-

@@ -34,12 +34,12 @@ class GoalMoveTowardBestDoubleCorner(Goal):
     def process(self):
         # if status is inactive, activate
         self.activateIfInactive()
-        
+
         # only moves (not captures) are a valid goal
         if self.owner.captures:
             self.status = self.FAILED
             return
-        
+
         # identify player king and enemy king
         plr_color = self.owner.to_move
         enemy_color = self.owner.enemy
@@ -49,10 +49,10 @@ class GoalMoveTowardBestDoubleCorner(Goal):
         enemy = self.owner.get_pieces(enemy_color)[0]
         e_idx, _ = enemy
         e_row, e_col = self.owner.row_col_for_index(e_idx)
-        
+
         # pick DC that isn't blocked by enemy
         lowest_dist = sys.maxint
-        dc = 0 
+        dc = 0
         for i in self.dc:
             dc_row, dc_col = self.owner.row_col_for_index(i)
             p_dist = abs(dc_row - p_row) + abs(dc_col - p_col)
@@ -60,13 +60,13 @@ class GoalMoveTowardBestDoubleCorner(Goal):
             if p_dist < lowest_dist and e_dist > p_dist:
                 lowest_dist = p_dist
                 dc = i
-                
-        # if lowest distance is 0, then goal is complete.
+
+        # if lowest dist is 0, then goal is complete.
         if lowest_dist == 0:
             self.status = self.COMPLETED
             return
-        
-        # select the available move that decreases the distance
+
+        # select the available move that decreases the dist
         # between the original player position and the chosen double corner.
         # If no such move exists, the goal has failed.
         dc_row, dc_col = self.owner.row_col_for_index(dc)
@@ -86,7 +86,7 @@ class GoalMoveTowardBestDoubleCorner(Goal):
             self.owner.make_move(good_move, True, True)
         else:
             self.status = self.FAILED
-        
+
     def terminate(self):
         self.status = self.INACTIVE
 

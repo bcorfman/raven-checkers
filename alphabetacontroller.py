@@ -3,7 +3,7 @@ import copy
 import multiprocessing
 import time
 from controller import Controller
-from globalconst import *
+from globalconst import OUTLINE_COLOR, DARK_SQUARES, MAX_DEPTH
 
 
 class AlphaBetaController(Controller):

@@ -1,6 +1,6 @@
 import unittest
 import checkers
-from globalconst import *
+from globalconst import BLACK, WHITE, MAN, KING, FREE
 
 #   (white)
 #            45  46  47  48

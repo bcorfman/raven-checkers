@@ -227,7 +227,7 @@ class TicTacToe(Game):
     """Play TicTacToe on an h x v board, with Max (first player) playing 'X'.
     A st has the player to move, a cached utility, a list of moves in
     the form of a list of (x, y) positions, and a board, in the form of
-    a dict of {(x, y): Player} entries, where Player is 'X' or 'O'."""
+    a dct of {(x, y): Player} entries, where Player is 'X' or 'O'."""
     def __init__(self, h=3, v=3, k=3):
         Game.__init__(self)
         update(self, h=h, v=v, k=k)

@@ -1,4 +1,4 @@
-from Tkinter import *
+from Tkinter import Toplevel, StringVar, Message, Tk, Button, N, S, E, W
 from time import time, localtime, strftime
 
 
@@ -7,11 +7,11 @@ class ToolTip(Toplevel):
     Provides a ToolTip widget for Tkinter.
     To apply a ToolTip to any Tkinter widget, simply pass the widget to the
     ToolTip constructor
-    """ 
+    """
     def __init__(self, wdgt, msg=None, msg_func=None, delay=1, follow=True):
         """
         Initialize the ToolTip
-        
+
         Arguments:
           wdgt: The widget this ToolTip is assigned to
           msg:  A static string message assigned to the ToolTip
@@ -24,7 +24,7 @@ class ToolTip(Toplevel):
         Toplevel.__init__(self, self.parent, bg='black', padx=1, pady=1)      # Initialize the Toplevel
         self.withdraw()                                                         # Hide initially
         self.overrideredirect(True)   # The ToolTip Toplevel should have no frame or title bar
-        
+
         self.msgVar = StringVar()     # The msgVar will contain the text displayed by the ToolTip
         if msg is None:
             self.msgVar.set('No message provided')
@@ -41,18 +41,18 @@ class ToolTip(Toplevel):
         self.wdgt.bind('<Enter>', self.spawn, '+')
         self.wdgt.bind('<Leave>', self.hide, '+')
         self.wdgt.bind('<Motion>', self.move, '+')
-        
+
     def spawn(self, event=None):
         """
         Spawn the ToolTip.  This simply makes the ToolTip eligible for display.
         Usually this is caused by entering the widget
-        
+
         Arguments:
           event: The event that called this function
         """
         self.visible = 1
         self.after(int(self.delay * 1000), self.show)  # The after function takes a time argument in milliseconds
-        
+
     def show(self):
         """
         Displays the ToolTip if the time delay has been long enough
@@ -61,11 +61,11 @@ class ToolTip(Toplevel):
             self.visible = 2
         if self.visible == 2:
             self.deiconify()
-            
+
     def move(self, event):
         """
         Processes motion within the widget.
-        
+
         Arguments:
           event: The event that called this function
         """
@@ -81,11 +81,11 @@ class ToolTip(Toplevel):
         except TypeError:
             pass
         self.after(int(self.delay * 1000), self.show)
-            
+
     def hide(self, event=None):
         """
         Hides the ToolTip.  Usually this is caused by leaving the widget
-        
+
         Arguments:
           event: The event that called this function
         """
@@ -96,7 +96,7 @@ class ToolTip(Toplevel):
 def xrange2d(n, m):
     """
     Returns a generator of values in a 2d range
-    
+
     Arguments:
       n: The number of rows in the 2d range
       m: The number of columns in the 2d range
@@ -109,7 +109,7 @@ def xrange2d(n, m):
 def range2d(n, m):
     """
     Returns a list of values in a 2d range
-    
+
     Arguments:
       n: The number of rows in the 2d range
       m: The number of columns in the 2d range

@@ -1,5 +1,6 @@
+import sys
 import games
-from globalconst import *
+from globalconst import CB_MAP, IMAP
 
 
 class Player(object):

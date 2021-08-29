@@ -4,7 +4,7 @@ import copy
 import games
 import multiprocessing
 from goal import Goal
-from globalconst import *
+from globalconst import MAX_DEPTH
 
 
 class GoalCrossboard(Goal):

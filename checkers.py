@@ -456,12 +456,10 @@ class Checkerboard(object):
             evaluation += ENDGAME * tempo
 
         for s in self.safe_edge:
-            if nbk + nbm > nwk + nwm and nwk < 3:
-                if sq[s] == WHITE | KING:
-                    evaluation -= 15
-            if nwk + nwm > nbk + nbm and nbk < 3:
-                if sq[s] == BLACK | KING:
-                    evaluation += 15
+            if nbk + nbm > nwk + nwm and nwk < 3 and sq[s] == WHITE | KING:
+                evaluation -= 15
+            if nwk + nwm > nbk + nbm and nbk < 3 and sq[s] == BLACK | KING:
+                evaluation += 15
         return evaluation
 
     def _eval_player_opposition(self, sq, nwm, nwk, nbk, nbm, nm, nk):
@@ -520,6 +518,7 @@ class Checkerboard(object):
 
 class Checkers(games.Game):
     def __init__(self):
+        games.Game.__init__(self)
         self.curr_state = Checkerboard()
 
     def captures_available(self, curr_state=None):

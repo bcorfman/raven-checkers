@@ -14,5 +14,3 @@ class GoalEvaluator(object):
     @abstractmethod
     def set_goal(self, board):
         pass
-    
-

@@ -1,7 +1,8 @@
-from Tkinter import *
+from Tkinter import Label, SUNKEN, NW
 from tkFileDialog import askopenfilename, asksaveasfilename
 from tkMessageBox import askyesnocancel, showerror
-from globalconst import *
+from globalconst import BLACK, WHITE, TITLE, VERSION, KING, MAN, PROGRAM_TITLE, TRAINING_DIR
+from globalconst import square_map, keymap
 from checkers import Checkers
 from boardview import BoardView
 from playercontroller import PlayerController
