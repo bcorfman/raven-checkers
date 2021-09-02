@@ -1,3 +1,5 @@
+mainframe.build/
+mainframe.dist/
 .idea/
 .DS_Store
 raven.ini
