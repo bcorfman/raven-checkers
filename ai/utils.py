@@ -14,6 +14,7 @@ from functools import reduce
 
 infinity = 1.0e400
 
+
 def cmp(a, b):
     return (a > b) - (a < b) 
 

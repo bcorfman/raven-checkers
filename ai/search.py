@@ -6,8 +6,9 @@ functions."""
 import sys
 import math
 import random
-from util import abstract, update, FIFOQueue, Stack, memoize, PriorityQueue, if_, infinity, argmax_random_tie, \
-    probability, distance, argmin
+from util import abstract, update, FIFOQueue, Stack, memoize, PriorityQueue, \
+    if_, infinity, argmax_random_tie, probability, distance, argmin
+from utils import cmp
 
 
 class Problem(object):
