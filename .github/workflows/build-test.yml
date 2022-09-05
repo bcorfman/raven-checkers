@@ -25,19 +25,13 @@ jobs:
       - name: Install dependencies
         run: |
           pip3 install pdm
-      - name: Configure PDM for PEP582 use and install project dependencies (Windows)
-        if: matrix.os == 'windows-latest'
+      - name: Install project dependencies
         run: |
-          pdm --pep582
-          pdm install -G dev
-      - name: Configure PDM for PEP582 use and install project dependencies (Linux/Mac)
-        if: matrix.os != 'windows-latest'
-        run: |
-          eval "$(pdm --pep582)"
+          pdm config python.use_venv false
           pdm install -G dev
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
-          pdm run python3 -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          pdm run python -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          pdm run python3 -m flake8 . --count --exit-zero --max-complexity=27 --max-line-length=127 --statistics
+          pdm run python -m flake8 . --count --exit-zero --max-complexity=27 --max-line-length=127 --statistics
