@@ -28,7 +28,7 @@ jobs:
           pip install pdm
       - name: Install project dependencies
         run: |
-          pdm install
+          pdm install -G dev
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
