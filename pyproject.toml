@@ -21,6 +21,5 @@ cli = [
     "ipython>=7.34.0",
 ]
 dev = [
-    "pytest>=7.1.2",
     "flake8>=5.0.4",
 ]
