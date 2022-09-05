@@ -266,7 +266,7 @@ def depth_limited_search(problem, limit=50):
 
 def iterative_deepening_search(problem):
     """[Fig. 3.18]"""
-    for depth in xrange(sys.maxint):
+    for depth in range(sys.maxint):
         result = depth_limited_search(problem, depth)
         if result != 'cutoff':
             return result
@@ -341,7 +341,7 @@ def exp_schedule(k=20, lam=0.005, limit=100):
 def simulated_annealing(problem, schedule=exp_schedule()):
     """[Fig. 4.5]"""
     current = Node(problem.initial)
-    for t in xrange(sys.maxint):
+    for t in range(sys.maxint):
         t_prime = schedule(t)
         if t_prime == 0:
             return current
@@ -349,7 +349,8 @@ def simulated_annealing(problem, schedule=exp_schedule()):
         if not neighbors:
             return current
         next_neighbor = random.choice(neighbors)
-        delta_e = problem.value(next_neighbor.state) - problem.value(current.state)
+        delta_e = problem.value(next_neighbor.state) - \
+            problem.value(current.state)
         if delta_e > 0 or probability(math.exp(delta_e / t_prime)):
             current = next_neighbor
 

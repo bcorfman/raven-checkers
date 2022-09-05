@@ -1,5 +1,7 @@
-from game import Checkers
+import unittest
+from game.checkers import Checkers
 from util.globalconst import BLACK, WHITE, MAN, KING, FREE
+
 
 #   (white)
 #            45  46  47  48
@@ -12,13 +14,9 @@ from util.globalconst import BLACK, WHITE, MAN, KING, FREE
 #          6   7   8   9
 #   (black)
 
-
-def test_black_man_single_jump():
-    game = checkers.Checkers()
-
 class TestBlackManSingleJump(unittest.TestCase):
     def setUp(self):
-        self.game = checkers.Checkers()
+        self.game = Checkers()
         self.board = self.game.curr_state
         squares = self.board.squares
         self.board.clear()
@@ -35,7 +33,7 @@ class TestBlackManSingleJump(unittest.TestCase):
 
 class TestBlackManDoubleJump(unittest.TestCase):
     def setUp(self):
-        self.game = checkers.Checkers()
+        self.game = Checkers()
         self.board = self.game.curr_state
         squares = self.board.squares
         self.board.clear()
@@ -55,7 +53,7 @@ class TestBlackManDoubleJump(unittest.TestCase):
 
 class TestBlackManCrownKingOnJump(unittest.TestCase):
     def setUp(self):
-        self.game = checkers.Checkers()
+        self.game = Checkers()
         self.board = self.game.curr_state
         squares = self.board.squares
         self.board.clear()
@@ -91,7 +89,7 @@ class TestBlackManCrownKingOnJump(unittest.TestCase):
 
 class TestBlackManCrownKingOnMove(unittest.TestCase):
     def setUp(self):
-        self.game = checkers.Checkers()
+        self.game = Checkers()
         self.board = self.game.curr_state
         squares = self.board.squares
         self.board.clear()
@@ -107,7 +105,7 @@ class TestBlackManCrownKingOnMove(unittest.TestCase):
 
 class TestBlackKingOptionalJumpDiamond(unittest.TestCase):
     def setUp(self):
-        self.game = checkers.Checkers()
+        self.game = Checkers()
         self.board = self.game.curr_state
         squares = self.board.squares
         self.board.clear()
@@ -135,7 +133,7 @@ class TestBlackKingOptionalJumpDiamond(unittest.TestCase):
 
 class TestWhiteManSingleJump(unittest.TestCase):
     def setUp(self):
-        self.game = checkers.Checkers()
+        self.game = Checkers()
         self.board = self.game.curr_state
         self.board.to_move = WHITE
         squares = self.board.squares
@@ -153,7 +151,7 @@ class TestWhiteManSingleJump(unittest.TestCase):
 
 class TestWhiteManDoubleJump(unittest.TestCase):
     def setUp(self):
-        self.game = checkers.Checkers()
+        self.game = Checkers()
         self.board = self.game.curr_state
         self.board.to_move = WHITE
         squares = self.board.squares
@@ -174,7 +172,7 @@ class TestWhiteManDoubleJump(unittest.TestCase):
 
 class TestWhiteManCrownKingOnMove(unittest.TestCase):
     def setUp(self):
-        self.game = checkers.Checkers()
+        self.game = Checkers()
         self.board = self.game.curr_state
         self.board.to_move = WHITE
         squares = self.board.squares
@@ -191,7 +189,7 @@ class TestWhiteManCrownKingOnMove(unittest.TestCase):
 
 class TestWhiteManCrownKingOnJump(unittest.TestCase):
     def setUp(self):
-        self.game = checkers.Checkers()
+        self.game = Checkers()
         self.board = self.game.curr_state
         self.board.to_move = WHITE
         squares = self.board.squares
@@ -218,7 +216,7 @@ class TestWhiteManCrownKingOnJump(unittest.TestCase):
 
 class TestWhiteKingOptionalJumpDiamond(unittest.TestCase):
     def setUp(self):
-        self.game = checkers.Checkers()
+        self.game = Checkers()
         self.board = self.game.curr_state
         self.board.to_move = WHITE
         squares = self.board.squares
@@ -247,7 +245,7 @@ class TestWhiteKingOptionalJumpDiamond(unittest.TestCase):
 
 class TestUtilityFunc(unittest.TestCase):
     def setUp(self):
-        self.game = checkers.Checkers()
+        self.game = Checkers()
         self.board = self.game.curr_state
         self.board.to_move = WHITE
         self.squares = self.board.squares
@@ -276,7 +274,7 @@ class TestUtilityFunc(unittest.TestCase):
 
 class TestSuccessorFuncForBlack(unittest.TestCase):
     def setUp(self):
-        self.game = checkers.Checkers()
+        self.game = Checkers()
         self.board = self.game.curr_state
 
     def testInitialBlackMoves(self):
@@ -308,7 +306,7 @@ class TestSuccessorFuncForBlack(unittest.TestCase):
 
 class TestSuccessorFuncForWhite(unittest.TestCase):
     def setUp(self):
-        self.game = checkers.Checkers()
+        self.game = Checkers()
         self.board = self.game.curr_state
         # I'm cheating here ... white never moves first in
         # a real game, but I want to see that the moves
