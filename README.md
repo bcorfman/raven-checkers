@@ -10,4 +10,4 @@ Raven is a checkers game program, for one or two players. While there are exampl
 * **Cross-platform**. Raven has been tested on Python 3.7-3.10 with Windows, OS X, and Linux.
 * **Great for checkers study**. Raven allows you to quickly set up board configurations using standard checkerboard notation. You can also describe your moves in the annotation window, and you can save and load games for later study (note: this feature is under revision at the moment). This is great for working through checkers books and learning techniques and tactics.
 
-<img src="XcPri.jpg">
+<img src="images/XcPri.jpg">
