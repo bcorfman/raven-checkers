@@ -16,7 +16,7 @@ Raven is a checkers game program, for one or two players. While there are exampl
 
 * Python 3.7 or higher on your system.
 * Install [PDM](https://pdm.fming.dev) on your system.
-* From a command prompt in the project directory, type `pdm install` to install project dependencies.
+* From a command prompt in the project directory, type `pdm install --prod` to install project dependencies.
 
 ## Running the program
 
