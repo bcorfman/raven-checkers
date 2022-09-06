@@ -1,0 +1,25 @@
+[project]
+name = "Raven Checkers"
+version = "0.5"
+description = "Checkers board game engine and GUI with training features"
+authors = [
+    {name = "Brandon Corfman", email = "bcorfman@fastmail.fm"},
+]
+dependencies = []
+requires-python = ">=3.7"
+license = {text = "MIT"}
+[project.optional-dependencies]
+
+[build-system]
+requires = ["pdm-pep517>=1.0.0"]
+build-backend = "pdm.pep517.api"
+
+[tool]
+[tool.pdm]
+[tool.pdm.dev-dependencies]
+cli = [
+    "ipython>=7.34.0",
+]
+dev = [
+    "flake8>=5.0.4",
+]
