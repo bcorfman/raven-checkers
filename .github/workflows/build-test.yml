@@ -32,6 +32,9 @@ jobs:
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
-          python -m pdm run python -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          pdm run flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           # The GitHub editor is 127 chars wide
-          python -m pdm run python -m flake8 . --count --max-complexity=27 --max-line-length=127 --statistics
+          pdm run flake8 . --count --max-complexity=27 --max-line-length=127 --statistics
+      - name: Run unit tests
+        run: |
+          pdm run pytest
