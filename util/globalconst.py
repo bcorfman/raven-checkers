@@ -254,7 +254,7 @@ def get_preferences_from_file():
         config.set('AnnotationWindow', 'font', 'Arial')
         config.set('AnnotationWindow', 'size', '12')
         # Writing our configuration file to 'raven.ini'
-        with open('raven.ini', 'wb') as configfile:
+        with open('raven.ini', 'w') as configfile:
             config.write(configfile)
     config.read('raven.ini')
     font = config.get('AnnotationWindow', 'font')
@@ -268,7 +268,7 @@ def write_preferences_to_file(font, size):
     config.set('AnnotationWindow', 'font', font)
     config.set('AnnotationWindow', 'size', size)
     # Writing our configuration file to 'raven.ini'
-    with open('raven.ini', 'wb') as configfile:
+    with open('raven.ini', 'w') as configfile:
         config.write(configfile)
 
 
