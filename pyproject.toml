@@ -5,8 +5,10 @@ description = "Checkers board game engine and GUI with training features"
 authors = [
     {name = "Brandon Corfman", email = "bcorfman@fastmail.fm"},
 ]
-dependencies = []
-requires-python = ">=3.7"
+dependencies = [
+    "pydraughts>=0.4.3",
+]
+requires-python = ">=3.8"
 license = {text = "MIT"}
 [project.optional-dependencies]
 

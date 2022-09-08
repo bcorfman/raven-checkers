@@ -146,7 +146,8 @@ class SavedGame(object):
             idx += 1
         if (not self._move_check and not self._bm_check and not self._wm_check
                 and not self._bk_check and not self._wk_check):
-            raise IOError('Error in <setup> section: not all required items found')
+            raise IOError('Error in <setup> section: not all required items ' +
+                          'found')
         return idx
 
     def _is_move(self, delta):
@@ -161,7 +162,8 @@ class SavedGame(object):
         found = False
         startsq, destsq = square_map[start], square_map[dest]
         for move in legal_moves:
-            if startsq == move.affected_squares[FIRST][0] and destsq == move.affected_squares[LAST][0]:
+            if startsq == move.affected_squares[FIRST][0] and \
+               destsq == move.affected_squares[LAST][0]:
                 self._model.make_move(move, state_copy, False, False)
                 move.annotation = annotation
                 self.moves.append(move)
@@ -177,14 +179,16 @@ class SavedGame(object):
         # match jump from file with available jumps on checkerboard
         start_square, dest_square = square_map[start], square_map[dest]
         _, _ = min(start_square, dest_square), max(start_square, dest_square)
-        # small, large = min(start_square, dest_square), max(start_square, dest_square)
+        # small, large = min(start_square, dest_square), max(start_square,
+        # dest_square)
         found = False
         for move in legal_moves:
             # a valid jump may either have a single jump in it, or
             # multiple jumps. In the multiple jump case, start_square is the
             # source of the first jump, and dest_square is the endpoint of the
             # last jump.
-            if start_square == move.affected_squares[FIRST][0] and dest_square == move.affected_squares[LAST][0]:
+            if start_square == move.affected_squares[FIRST][0] and \
+               dest_square == move.affected_squares[LAST][0]:
                 self._model.make_move(move, state_copy, False, False)
                 move.annotation = annotation
                 self.moves.append(move)
@@ -209,7 +213,8 @@ class SavedGame(object):
             try:
                 movestr, annotation = line.split(';', 1)
             except ValueError:
-                raise IOError('Unrecognized section in file, line %d' % (idx+1))
+                raise IOError('Unrecognized section in file, line %d' %
+                              (idx+1))
 
             # move is always part of the annotation; I just don't want to
             # have to repeat it explicitly in the file.

@@ -9,7 +9,8 @@ class TextTagEmitter(object):
     """
     Generate tagged output compatible with the Tkinter Text widget
     """
-    def __init__(self, root, txtWidget, hyperMgr, bulletImage, link_rules=None):
+    def __init__(self, root, txtWidget, hyperMgr, bulletImage,
+                 link_rules=None):
         self.root = root
         self.link_rules = link_rules or LinkRules()
         self.txtWidget = txtWidget
@@ -95,12 +96,14 @@ class TextTagEmitter(object):
             content = '\t%s\t\n' % self.list_item
             self.txtWidget.insert(next, content)
             end_list_item = '%d.%d' % (self.line, self.index + len(content)+2)
-            self.txtWidget.tag_add('bullet', self.begin_list_item, end_list_item)
+            self.txtWidget.tag_add('bullet', self.begin_list_item,
+                                   end_list_item)
         elif self.number:
             content = '\t%d.\t%s\n' % (self.number, self.list_item)
             end_list_item = '%d.%d' % (self.line, self.index + len(content))
             self.txtWidget.insert(self.begin_list_item, content)
-            self.txtWidget.tag_add('number', self.begin_list_item, end_list_item)
+            self.txtWidget.tag_add('number', self.begin_list_item,
+                                   end_list_item)
             self.number += 1
         self.begin_list_item = ''
         self.list_item = ''
@@ -225,7 +228,8 @@ class Serializer(object):
                     # 1. Decode early.  2. Unicode everywhere  3. Encode late
                     # However, encoding filename and link_text here works for
                     # now.
-                    filename = self.filename.replace(' ', '%20').encode('utf-8')
+                    filename = self.filename.replace(' ',
+                                                     '%20').encode('utf-8')
                     link_text = value.replace(' ', '%20')
                     value = '[[%s|%s' % (filename, link_text)
                     self.link_start = False
@@ -240,4 +244,5 @@ class Serializer(object):
     def restore(self, creole):
         self.hyperMgr.reset()
         document = Parser(creole).parse()
-        return TextTagEmitter(document, self.txt, self.hyperMgr, self.bullet_image).emit()
+        return TextTagEmitter(document, self.txt, self.hyperMgr,
+                              self.bullet_image).emit()
