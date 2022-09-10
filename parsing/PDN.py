@@ -1,4 +1,6 @@
 import os
+import textwrap
+from io import StringIO
 from typing import NamedTuple
 
 
@@ -22,7 +24,6 @@ class PDNReader:
 
     @classmethod
     def from_string(cls, pdn_string):
-        from io import StringIO
         stream = StringIO(pdn_string)
         return cls(stream, "PDN string")
 
@@ -102,3 +103,47 @@ class PDNReader:
         self.PDNs.append(PDN(self._event, self._site, self._date, self._round,
                          self._white, self._black, self._result, self._fen))
         self._reset_pdn_vars()
+
+
+class PDNWriter:
+    def __init__(self, stream, event, site, date, rnd, black, white, result, 
+                 fen):
+        self.stream = stream
+        self._wrapper = textwrap.TextWrapper(width=79)
+        self._write(event, site, date, rnd, black, white, result, fen)
+
+    def _write(self, event, site, date, rnd, black, white, result, fen):
+        self.stream.write(f'[Event] "{event}]"\n')
+        self.stream.write(f'[Site] "{site}]"\n')
+        self.stream.write(f'[Date] "{date}]"\n')
+        self.stream.write(f'[Round] "{rnd}]"\n')
+        self.stream.write(f'[Black] "{black}]"\n')
+        self.stream.write(f'[White] "{white}]"\n')
+        self.stream.write(f'[Result] "{result}]"\n')
+        for line in self._wrap_lines(fen):
+            self.stream.write(line + '\n')
+
+    def _wrap_lines(self, lines):
+        output = []
+        for line in lines:
+            if not line:
+                output.append('')
+            else:
+                output.append(self._wrapper.fill(line))
+        return output
+
+    @classmethod
+    def to_string(cls, event, site, date, rnd, black, white, result, fen):
+        output = ""
+        with StringIO(output) as stream:
+            writer = cls(stream, event, site, date, rnd, black, white, result,
+                         fen)
+        return writer.stream
+
+    @classmethod
+    def to_file(cls, filepath, event, site, date, rnd, black, white, result,
+                fen):
+        with open(filepath) as stream:
+            writer = cls(stream, event, site, date, rnd, black, white, result,
+                         fen)
+        return writer.stream

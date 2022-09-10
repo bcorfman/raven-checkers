@@ -1,5 +1,6 @@
 import os
-from parsing.PDN import PDNReader
+import shutil
+from parsing.PDN import PDNReader, PDNWriter
 
 
 def test_parse_PDN_string_success():
@@ -65,3 +66,40 @@ def test_parse_PDN_file_success():
     reader = PDNReader.from_file(pdn_file)
     assert len(reader.PDNs) == 22621
     assert reader.PDNs[22620].event == "German Open 2004"
+
+
+def test_write_PDN_file_success():
+    if os.path.exists("temp"):
+        shutil.rmtree("temp")
+    os.mkdir("temp")
+    pdn_filepath = os.path.join("temp", "sample.pdn")
+    event = "German Open 2004"
+    date = "2004-05-01"
+    rnd = ""
+    black = "Morgan, John"
+    white = "Pawlek, Dennis"
+    site = "Reutlingen"
+    result = "1/2-1/2"
+    fen = "1. 11-15 22-17 2. 15-19 24x15 3. 10x19 23x16 4. 12x19 25-22 5. 7-10 27-24 6. " + \
+          "10-15 17-13 7. 9-14 29-25 8. 6-10 22-17 9. 1-6 26-23 10. 19x26 30x23 11. 8-11 " + \
+          "24-19 12. 15x24 28x19 13. 3-7 25-22 14. 11-15 32-28 15. 15x24 28x19 16. 7-11 " + \
+          "19-16 17. 11x20 23-19 18. 14-18 22x15 19. 4-8 31-27 20. 5-9 27-23 21. 9-14 19-16" + \
+          "22. 10x19x26 17x10x1 1/2-1/2"
+    PDNWriter.to_file(pdn_filepath, event, site, date, rnd, black, white, result, fen)
+
+
+def test_write_PDN_string_success():
+    event = "German Open 2004"
+    date = "2004-05-01"
+    rnd = ""
+    black = "Morgan, John"
+    white = "Pawlek, Dennis"
+    site = "Reutlingen"
+    result = "1/2-1/2"
+    fen = "1. 11-15 22-17 2. 15-19 24x15 3. 10x19 23x16 4. 12x19 25-22 5. 7-10 27-24 6. " + \
+          "10-15 17-13 7. 9-14 29-25 8. 6-10 22-17 9. 1-6 26-23 10. 19x26 30x23 11. 8-11 " + \
+          "24-19 12. 15x24 28x19 13. 3-7 25-22 14. 11-15 32-28 15. 15x24 28x19 16. 7-11 " + \
+          "19-16 17. 11x20 23-19 18. 14-18 22x15 19. 4-8 31-27 20. 5-9 27-23 21. 9-14 19-16" + \
+          "22. 10x19x26 17x10x1 1/2-1/2"
+    out = PDNWriter.to_string(event, site, date, rnd, black, white, result, fen)
+
