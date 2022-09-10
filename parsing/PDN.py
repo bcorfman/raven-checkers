@@ -106,8 +106,7 @@ class PDNReader:
 
 
 class PDNWriter:
-    def __init__(self, stream, event, site, date, rnd, black, white, result, 
-                 fen):
+    def __init__(self, stream, event, site, date, rnd, black, white, result, fen):
         self.stream = stream
         self._wrapper = textwrap.TextWrapper(width=79)
         self._write(event, site, date, rnd, black, white, result, fen)
