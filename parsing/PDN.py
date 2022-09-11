@@ -10,7 +10,7 @@ def _read_value(line):
 
 PDN = NamedTuple("PDN", [("event", str), ("site", str), ("date", str),
                          ("round", str), ("white", str), ("black", str),
-                         ("result", str), ("move_text", str)])
+                         ("result", str), ("fen", str), ("movetext", str)])
 
 
 class PDNReader:
@@ -41,7 +41,8 @@ class PDNReader:
         self._black = None
         self._white = None
         self._result = None
-        self._move_text = None
+        self._fen = None
+        self._movetext = None
 
     def _read_stream(self):
         parse_pdn = {"[Event": self._read_event,
@@ -51,7 +52,8 @@ class PDNReader:
                      "[White": self._read_white_player,
                      "[Black": self._read_black_player,
                      "[Result": self._read_result,
-                     "1.": self._read_move_text}
+                     "[FEN": self._read_fen,
+                     "1.": self._read_movetext}
         self._lineno = 0
         while True:
             line = self._stream.readline()
@@ -85,10 +87,13 @@ class PDNReader:
     def _read_result(self, line):
         self._result = _read_value(line)
 
-    def _read_move_text(self, line):
+    def _read_fen(self, line):
+        self._fen = _read_value(line)
+
+    def _read_movetext(self, line):
         if not self._result:
             raise IOError("Didn't get a result value")
-        self._move_text = line.rstrip('\n')
+        self._movetext = line.rstrip('\n')
         if self._result not in line:
             while True:
                 line = self._stream.readline()
@@ -97,23 +102,22 @@ class PDNReader:
                             f"line {self._lineno}"
                     raise IOError(error)
                 self._lineno += 1
-                self._move_text += line.rstrip('\n')
+                self._movetext += line.rstrip('\n')
                 if self._result in line:
                     break
-        self.PDNs.append(PDN(self._event, self._site, self._date, self._round,
-                             self._white, self._black, self._result,
-                             self._move_text))
+        self.PDNs.append(PDN(self._event, self._site, self._date, self._round, self._white, self._black, self._result,
+                             self._fen, self._movetext))
         self._reset_pdn_vars()
 
 
 class PDNWriter:
-    def __init__(self, stream, event, site, date, rnd, black, white, result, move_text):
+    def __init__(self, stream, event, site, date, rnd, black, white, result, fen, movetext):
         self.stream = stream
         self._wrapper = textwrap.TextWrapper(width=79)
-        self._write(event, site, date, rnd, black, white, result, move_text)
+        self._write(event, site, date, rnd, black, white, result, fen, movetext)
 
-    def _write(self, event: str, site: str, date: str, rnd: str, black: str, white: str, result: str,
-               move_text: str):
+    def _write(self, event: str, site: str, date: str, rnd: str, black: str, white: str, result: str, fen: str,
+               movetext: str):
         self.stream.write(f'[Event "{event}"]\n')
         self.stream.write(f'[Date "{date}"]\n')
         if rnd:
@@ -122,17 +126,19 @@ class PDNWriter:
         self.stream.write(f'[White "{white}"]\n')
         self.stream.write(f'[Site "{site}"]\n')
         self.stream.write(f'[Result "{result}"]\n')
-        for line in self._wrapper.wrap(move_text):
+        if fen:
+            self.stream.write('[SetUp "1"]')
+            self.stream.write(f'[FEN "{result}"]\n')
+        for line in self._wrapper.wrap(movetext):
             self.stream.write(line + '\n')
 
     @classmethod
-    def to_string(cls, event, site, date, rnd, black, white, result, move_text):
+    def to_string(cls, event, site, date, rnd, black, white, result, fen, movetext):
         with StringIO() as stream:
-            cls(stream, event, site, date, rnd, black, white, result, move_text)
+            cls(stream, event, site, date, rnd, black, white, result, fen, movetext)
             return stream.getvalue()
 
     @classmethod
-    def to_file(cls, filepath, event, site, date, rnd, black, white, result,
-                move_text):
+    def to_file(cls, filepath, event, site, date, rnd, black, white, result, fen, movetext):
         with open(filepath, 'w') as stream:
-            cls(stream, event, site, date, rnd, black, white, result, move_text)
+            cls(stream, event, site, date, rnd, black, white, result, fen, movetext)
