@@ -142,3 +142,7 @@ class PDNWriter:
     def to_file(cls, filepath, event, site, date, rnd, black, white, result, fen, movetext):
         with open(filepath, 'w') as stream:
             cls(stream, event, site, date, rnd, black, white, result, fen, movetext)
+
+    @classmethod
+    def to_stream(cls, stream, event, site, date, rnd, black, white, result, fen, movetext):
+        cls(stream, event, site, date, rnd, black, white, result, fen, movetext)

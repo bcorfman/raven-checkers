@@ -1,6 +1,7 @@
 __pypackages__/
 mainframe.build/
 mainframe.dist/
+.vscode/
 .idea/
 .DS_Store
 .pdm.toml
