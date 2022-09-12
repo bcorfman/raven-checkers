@@ -5,4 +5,3 @@ import os
 def test_migrate_first_position_rcf_string():
     rcf_filepath = os.path.join('training', 'KeyEndgames', 'FirstPosition.rcf')
     assert rcf_filepath
-
