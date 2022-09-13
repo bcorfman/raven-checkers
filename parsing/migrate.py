@@ -104,7 +104,26 @@ class RCF2PDN:
 
     def _get_game_moves(self):
         movetext = ""
+        if self.moves:
+            start, dest = self.moves[0].split("-")
+            strength = self._get_move_strength(0)
+            movetext += f"{start}-{dest}{strength}"
+            for i, move in enumerate(self.moves[1:]):
+                start, dest = move.split("-")
+                strength = self._get_move_strength(i)
+                if abs(start-dest) <= 5:
+                    movetext += f" {start}-{dest}{strength}"  # regular move
+                else:
+                    movetext += f" {start}x{dest}{strength}"  # jump
+            movetext += " *"  # end of moves marked with asterisk
         return movetext
+
+    def _get_move_strength(self, idx):
+        if self.annotations[idx][0] in ['?', '!'] and self.annotations[idx][1] == " ":
+            move_strength = self.annotations[idx][0]
+        else:
+            move_strength = ""
+        return move_strength
 
     def _read_description(self, stream):
         line = stream.readline()
@@ -112,9 +131,10 @@ class RCF2PDN:
         if not line:
             raise IOError(f"Unexpected end of file at line {self.lineno}")
         line = line.strip()
-        if line.beginswith('**') and line.endswith('**'):
+        if line.startswith('**') and line.endswith('**'):
             self.event_name = line.split('**')[1].strip()
-        self.description.append(line)
+        if line != "":
+            self.description.append(line)
         while True:
             prior_loc = stream.tell()
             line = stream.readline()
@@ -126,7 +146,8 @@ class RCF2PDN:
                 stream.seek(prior_loc)
                 self.lineno -= 1
                 break
-            self.description.append(line)
+            if line != "":
+                self.description.append(line)
 
     def _read_setup(self, stream):
         setup_tags = {"white_first": self._read_turn,
@@ -188,4 +209,6 @@ class RCF2PDN:
         self.white_kings = [int(i) for i in line.split()[1:]]
 
     def _validate_rcf(self):
-        return False
+        return (self.num_players in range(3) and self.first_to_move in ['B', 'W'] and
+                self.flip_board in range(2) and self.moves and
+                (self.black_men or self.black_kings or self.white_men or self.white_kings))
