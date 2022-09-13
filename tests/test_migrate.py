@@ -1,4 +1,3 @@
-import os
 from io import StringIO
 from parsing.migrate import RCF2PDN
 
@@ -153,4 +152,3 @@ def test_migrate_first_position_moves_string():
                                    '',
                                    '',
                                    '**White wins.**']
-
