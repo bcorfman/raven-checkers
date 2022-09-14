@@ -180,10 +180,13 @@ class RCF2PDN:
             self.lineno += 1
             if not line:
                 break
-            move, annotation = line.strip().split(';')
-            self.moves.append(move)
+            try:
+                move, annotation = line.strip().split(';', 1)
+            except ValueError:
+                raise IOError(f"Missing newline on line {self.lineno}")
             if annotation[0:2] == '. ':
                 annotation = annotation[2:]
+            self.moves.append(move)
             self.annotations.append(annotation)
 
     def _read_turn(self, line):

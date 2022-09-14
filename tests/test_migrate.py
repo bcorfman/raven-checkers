@@ -2,12 +2,12 @@ from io import StringIO
 from parsing.migrate import RCF2PDN
 
 
-def test_migrate_first_position_description_string():
-    desc = "**Key Ending 10: First Position**\n\n" + \
-           "//Summary//\n\n" + \
-           "Force: 2 v 2.\n" + \
-           "Opposition: White has it.\n" + \
-           "Terms: White to move and win.\n" + \
+def test_read_first_position_description_string():
+    desc = "**Key Ending 10: First Position**\n\n" \
+           "//Summary//\n\n" \
+           "Force: 2 v 2.\n" \
+           "Opposition: White has it.\n" \
+           "Terms: White to move and win.\n" \
            "Description: The diagrammed position represents a late, and critical, phase of\n" + \
            "First Position. Before tackling the winning procedure, it would be wise for the\n" + \
            "student to take note of those features which distinguish First Position from a\n" + \
@@ -59,7 +59,7 @@ def test_migrate_first_position_description_string():
                                    "-- From //Key Endings// by Richard Pask"]
 
 
-def test_migrate_first_position_setup_string():
+def test_read_first_position_setup_string():
     setup = "white_first\n" + \
             "2_player_game\n" + \
             "flip_board 1\n" + \
@@ -80,7 +80,7 @@ def test_migrate_first_position_setup_string():
         assert cvt.white_kings == [19, 23]
 
 
-def test_migrate_first_position_moves_string():
+def test_read_first_position_moves_string():
     moves = "23-27;\n" + \
             "28-32;\n" + \
             "19-23;\n" + \
@@ -152,3 +152,84 @@ def test_migrate_first_position_moves_string():
                                    '',
                                    '',
                                    '**White wins.**']
+
+
+def test_read_glasgow_moves_string():
+    moves = "11-15;\n" \
+            "23-19;!\n" \
+            "8-11;\n" \
+            "22-17;\n" \
+            "11-16;. These moves form the opening, which is excellent for inexperienced players to adopt.\n" \
+            "24-20;\n" \
+            "16-23;\n" \
+            "27-11;\n" \
+            "7-16;\n" \
+            "20-11;\n" \
+            "3-7;\n" \
+            "28-24;. The alternative 11-8 is also playable.\n" \
+            "7-16;\n" \
+            "24-20;\n" \
+            "16-19;\n" \
+            "25-22;\n" \
+            "4-8;\n" \
+            "29-25;\n" \
+            "19-24;. This leads to " \
+            "[[training/Openings/support/Glasgow_Alternate1.rcf|interesting%20complications]].\n" \
+            "17-14;. An interesting though only temporary sacrifice. " \
+            "Instead, White can play safe with 17-13; 9-14, 26-23; etc.\n" \
+            "9-18;\n" \
+            "22-15;\n" \
+            "10-19;\n" \
+            "32-28;\n" \
+            "6-10;! Now if White plays 26-23, Black wins with the " \
+            "[[training/Openings/support/Glasgow_BlackWin.rcf|following%20line]].\n" \
+            "25-22;. If now 8-11, White can draw with the " \
+            "[[training/Openings/support/Glasgow_Draw.rcf|following%20line]].\n" \
+            "5-9;\n" \
+            "22-18;. If now 8-11 White plays 21-17 and holds the position despite the fact that he is temporarily " \
+            'a man down. Black therefore "pitches" a man, and this leads to interesting complications.\n' \
+            "9-14;\n" \
+            "18-9;\n" \
+            "1-5;\n" \
+            "9-6;\n" \
+            "2-9;\n" \
+            "20-16;\n" \
+            "9-14;\n" \
+            "26-23;. The safest, at last recovering the sacrificed man.\n" \
+            "19-26;\n" \
+            "28-19;\n" \
+            "5-9;\n" \
+            "31-22;. Even game.\n"
+
+    with StringIO(moves) as rcf:
+        cvt = RCF2PDN()
+        cvt._read_moves(rcf)
+        assert cvt.moves == ["11-15", "23-19", "8-11", "22-17", "11-16", "24-20", "16-23", "27-11", "7-16", "20-11",
+                             "3-7", "28-24", "7-16", "24-20", "16-19", "25-22", "4-8", "29-25", "19-24", "17-14",
+                             "9-18", "22-15", "10-19", "32-28", "6-10", "25-22", "5-9", "22-18", "9-14", "18-9",
+                             "1-5", "9-6", "2-9", "20-16", "9-14", "26-23", "19-26", "28-19", "5-9", "31-22"]
+        assert cvt.annotations == ["",
+                                   "!",
+                                   "", "",
+                                   "These moves form the opening, "
+                                   "which is excellent for inexperienced players to adopt.",
+                                   "", "", "", "", "", "",
+                                   "The alternative 11-8 is also playable.",
+                                   "", "", "", "", "", "",
+                                   "This leads to [[training/Openings/support/Glasgow_Alternate1.rcf|"
+                                   "interesting%20complications]].",
+                                   "An interesting though only temporary sacrifice. "
+                                   "Instead, White can play safe with 17-13; 9-14, 26-23; etc.",
+                                   "", "", "", "",
+                                   "! Now if White plays 26-23, Black wins with the "
+                                   r"[[training/Openings/support/Glasgow_BlackWin.rcf|following%20line]].",
+                                   "If now 8-11, White can draw with the "
+                                   r"[[training/Openings/support/Glasgow_Draw.rcf|following%20line]].",
+                                   "",
+                                   "If now 8-11 White plays 21-17 and holds the position despite the fact that he is "
+                                   'temporarily a man down. Black therefore "pitches" a man, and this leads to '
+                                   "interesting complications.",
+                                   "", "", "", "", "", "", "",
+                                   "The safest, at last recovering the sacrificed man.",
+                                   "", "", "",
+                                   "Even game."]
