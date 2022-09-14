@@ -233,4 +233,3 @@ def test_read_glasgow_moves_string():
                                    "The safest, at last recovering the sacrificed man.",
                                    "", "", "",
                                    "Even game."]
-    
