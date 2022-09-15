@@ -20,7 +20,7 @@ build-backend = "pdm.pep517.api"
 [tool.pdm]
 [tool.pdm.dev-dependencies]
 cli = [
-    "ipython>=7.34.0",
+    "ipython>=8.5.0",
 ]
 dev = [
     "flake8>=5.0.4",

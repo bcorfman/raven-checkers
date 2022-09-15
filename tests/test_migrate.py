@@ -1,3 +1,4 @@
+from datetime import datetime
 from io import StringIO
 from parsing.migrate import RCF2PDN
 
@@ -233,3 +234,82 @@ def test_read_glasgow_moves_string():
                                    "The safest, at last recovering the sacrificed man.",
                                    "", "", "",
                                    "Even game."]
+
+
+def test_glasgow_rcf2pdn_string():
+    rcf_str = "<description>\n" \
+              "**Glasgow opening**, part of the 11-15 group\n" \
+              "11-15 is considered Black's best opening move. It is so popular that it has " \
+              "branched off into more openings than any other initial move. Among the replies " \
+              "that can be recommended for White are 23-19 or 23-18 or 22-18 or 22-17. On the " \
+              "other hand, 24-20 and 24-19 and 21-17 are all considered inferior in varying degrees.\n" \
+              "- from //How to Win At Checkers// by Fred Reinfeld\n" \
+              "<setup>\n" \
+              "black_first\n" \
+              "2_player_game\n" \
+              "flip_board 0\n" \
+              "black_men 1 2 3 4 5 6 7 8 9 10 11 12\n" \
+              "black_kings\n" \
+              "white_men 21 22 23 24 25 26 27 28 29 30 31 32\n" \
+              "white_kings\n" \
+              "<moves>\n" \
+              "11-15;\n" \
+              "23-19;!\n" \
+              "8-11;\n" \
+              "22-17;\n" \
+              "11-16;. These moves form the opening, which is excellent for inexperienced players to adopt.\n" \
+              "24-20;\n" \
+              "16-23;\n" \
+              "27-11;\n" \
+              "7-16;\n" \
+              "20-11;\n" \
+              "3-7;\n" \
+              "28-24;. The alternative 11-8 is also playable.\n" \
+              "7-16;\n" \
+              "24-20;\n" \
+              "16-19;\n" \
+              "25-22;\n" \
+              "4-8;\n" \
+              "29-25;\n" \
+              "19-24;. This leads to " \
+              "[[training/Openings/support/Glasgow_Alternate1.rcf|interesting%20complications]].\n" \
+              "17-14;. An interesting though only temporary sacrifice. " \
+              "Instead, White can play safe with 17-13; 9-14, 26-23; etc.\n" \
+              "9-18;\n" \
+              "22-15;\n" \
+              "10-19;\n" \
+              "32-28;\n" \
+              "6-10;! Now if White plays 26-23, Black wins with the " \
+              "[[training/Openings/support/Glasgow_BlackWin.rcf|following%20line]].\n" \
+              "25-22;. If now 8-11, White can draw with the " \
+              "[[training/Openings/support/Glasgow_Draw.rcf|following%20line]].\n" \
+              "5-9;\n" \
+              "22-18;. If now 8-11 White plays 21-17 and holds the position despite the fact that he is temporarily " \
+              'a man down. Black therefore "pitches" a man, and this leads to interesting complications.\n' \
+              "9-14;\n" \
+              "18-9;\n" \
+              "1-5;\n" \
+              "9-6;\n" \
+              "2-9;\n" \
+              "20-16;\n" \
+              "9-14;\n" \
+              "26-23;. The safest, at last recovering the sacrificed man.\n" \
+              "19-26;\n" \
+              "28-19;\n" \
+              "5-9;\n" \
+              "31-22;. Even game.\n"
+
+    with StringIO(rcf_str) as rcf:
+        pdn_str = RCF2PDN.with_string(rcf)
+        now = datetime.now().strftime("%d/%m/%Y")
+        assert pdn_str == '[Event "Glasgow opening"]' \
+                          '[Site "*"]' \
+                          f'[Date "{now}"]' \
+                          '[Round "*"]' \
+                          '[Black "Player2"]' \
+                          '[White "Player1"]' \
+                          '[Result "*"]' \
+                          ' 1.11-15 23-19  2. 8-11 22-17  3.11-16 24-20   4.16-23 27x11  5. 7x16 20x11\n' \
+                          ' 6. 3-7  28-24  7. 7x16 24-20  8.16-19 25-22   9. 4-8  29-25 10.19-24 17-14\n' \
+                          '11. 9x18 22x15 12.10x19 32-28 13. 6-10 25-22  14. 5-9  22-18 15. 9-14 18x9\n' \
+                          '16. 1-5   9-6  17. 2x9  20-16 18. 9-14 26-23  19.19x26 28x19 20. 5-9  31x22\n'

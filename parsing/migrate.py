@@ -1,7 +1,8 @@
 import os.path
-from datetime import datetime
+from pathlib import Path
+from datetime import datetime, timezone
 from io import StringIO
-from parsing.PDN import PDNWriter
+from parsing.PDN import PDN, PDNWriter
 
 
 def _make_fen_sublist(tag, men, kings):
@@ -35,6 +36,8 @@ class RCF2PDN:
         self.annotations = []
         self.lineno = 0
         self.event_name = None
+        self.file_mod_time = None
+        self._pdn = None
 
     @classmethod
     def with_string(cls, rcf):
@@ -45,16 +48,24 @@ class RCF2PDN:
     @classmethod
     def with_file(cls, rcf_filepath, pdn_filepath):
         event = os.path.splitext(os.path.basename(rcf_filepath))[0]
+        file_mtime = Path(rcf_filepath).stat().st_mtime
+        file_mod_time = datetime.fromtimestamp(file_mtime, tz=timezone.utc).strftime(r'%m/%d/%Y')
         with open(rcf_filepath) as rcf:
             with open(pdn_filepath, 'w') as pdn:
-                RCF2PDN().translate(rcf, pdn, event)
+                RCF2PDN().translate(rcf, pdn, event, file_mod_time)
 
-    def translate(self, rcf_stream, pdn_stream, event_name=None):
+    def translate(self, rcf_stream, pdn_stream, event_name=None, file_mod_time=None):
+        self.event_name = event_name
+        self.file_mod_time = file_mod_time
+        self._read_input(rcf_stream)
+        if self._validate_input():
+            self._transform_input()
+            self._write_output(pdn_stream)
+
+    def _read_input(self, rcf_stream):
         rcf_tags = {'<description>': self._read_description,
                     '<setup>': self._read_setup,
                     '<moves>': self._read_moves}
-
-        self.event_name = event_name
 
         while True:
             line = rcf_stream.readline()
@@ -67,17 +78,22 @@ class RCF2PDN:
                     rcf_tags[tag](rcf_stream)
                     break
 
-        if self._validate_rcf():
-            event = self.event_name
-            site = "*"
-            date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-            rnd = "*"
-            black = "Player1"
-            white = "Player2"
-            result = self._get_game_result()
-            fen = self._get_game_fen()
-            movetext = self._get_game_moves()
-            PDNWriter.to_stream(pdn_stream, event, site, date, rnd, black, white, result, fen, movetext)
+    def _transform_input(self):
+        event = self.event_name
+        site = "*"
+        date = self.file_mod_time or datetime.now().strftime("%d/%m/%Y")
+        rnd = "*"
+        black = "Player1"
+        white = "Player2"
+        result = self._get_game_result()
+        fen = self._get_game_fen()
+        movetext = self._get_game_moves()
+        self.PDN = PDN(event, site, date, rnd, black, white, result, fen, movetext)
+
+    def _write_output(self, pdn_stream):
+        pdn = self._pdn
+        PDNWriter.to_stream(pdn_stream, pdn.event, pdn.site, pdn.date, pdn.rnd, pdn.black, pdn.white, pdn.result,
+                            pdn.fen, pdn.movetext)
 
     def _get_game_fen(self):
         if (self.black_kings or self.white_kings or self.black_men != set(range(12)) or
@@ -211,7 +227,7 @@ class RCF2PDN:
     def _read_white_kings(self, line):
         self.white_kings = [int(i) for i in line.split()[1:]]
 
-    def _validate_rcf(self):
+    def _validate_input(self):
         return (self.num_players in range(3) and self.first_to_move in ['B', 'W'] and
                 self.flip_board in range(2) and self.moves and
                 (self.black_men or self.black_kings or self.white_men or self.white_kings))
