@@ -88,16 +88,19 @@ class RCF2PDN:
         result = self._get_game_result()
         fen = self._get_game_fen()
         movetext = self._get_game_moves()
-        self.PDN = PDN(event, site, date, rnd, black, white, result, fen, movetext)
+        description = ""
+        for line in self.description:
+            description += line
+        self._pdn = PDN(event, site, date, rnd, black, white, result, fen, description, movetext)
 
     def _write_output(self, pdn_stream):
         pdn = self._pdn
-        PDNWriter.to_stream(pdn_stream, pdn.event, pdn.site, pdn.date, pdn.rnd, pdn.black, pdn.white, pdn.result,
-                            pdn.fen, pdn.movetext)
+        PDNWriter.to_stream(pdn_stream, pdn.event, pdn.site, pdn.date, pdn.round, pdn.black, pdn.white, pdn.result,
+                            pdn.fen, pdn.description, pdn.movetext)
 
     def _get_game_fen(self):
-        if (self.black_kings or self.white_kings or self.black_men != set(range(12)) or
-                self.white_men != set(range(20, 33))):
+        if (self.black_kings or self.white_kings or frozenset(self.black_men) != frozenset(range(1, 13)) or
+                frozenset(self.white_men) != frozenset(range(21, 33))):
             turn = 'B' if self.first_to_move == 'black_first' else 'W'
             fen = f'{turn}:'
             fen += _make_fen_sublist('W', self.white_men, self.white_kings)
@@ -121,13 +124,14 @@ class RCF2PDN:
     def _get_game_moves(self):
         movetext = ""
         if self.moves:
-            start, dest = self.moves[0].split("-")
-            strength = self._get_move_strength(0)
-            movetext += f"{start}-{dest}{strength}"
-            for i, move in enumerate(self.moves[1:]):
+            for i, move in enumerate(self.moves):
                 start, dest = move.split("-")
                 strength = self._get_move_strength(i)
-                if abs(start-dest) <= 5:
+                if i == 0:
+                    movetext += f"{i+1}."
+                elif i % 2 == 0:
+                    movetext += f"  {i+1}."
+                if abs(int(start)-int(dest)) <= 5:
                     movetext += f" {start}-{dest}{strength}"  # regular move
                 else:
                     movetext += f" {start}x{dest}{strength}"  # jump
@@ -135,34 +139,37 @@ class RCF2PDN:
         return movetext
 
     def _get_move_strength(self, idx):
-        if self.annotations[idx][0] in ['?', '!'] and self.annotations[idx][1] == " ":
+        if self.annotations[idx] and self.annotations[idx][0] in ['?', '!']:
             move_strength = self.annotations[idx][0]
         else:
             move_strength = ""
         return move_strength
+
+    def _read_event_name(self, line):
+        tokens = line.split('**')
+        if len(tokens) == 3:
+            self.event_name = tokens[1].strip()
 
     def _read_description(self, stream):
         line = stream.readline()
         self.lineno += 1
         if not line:
             raise IOError(f"Unexpected end of file at line {self.lineno}")
-        line = line.strip()
-        if line.startswith('**') and line.endswith('**'):
-            self.event_name = line.split('**')[1].strip()
-        if line != "":
-            self.description.append(line)
+        self._read_event_name(line)
+        self.description.append(line)
         while True:
             prior_loc = stream.tell()
             line = stream.readline()
             self.lineno += 1
             if not line:
                 raise IOError(f"Unexpected end of file at line {self.lineno}")
-            line = line.strip()
-            if line == "<setup>":
+            elif line.startswith("<setup>"):
                 stream.seek(prior_loc)
                 self.lineno -= 1
                 break
-            if line != "":
+            elif line == '\n':
+                continue
+            else:
                 self.description.append(line)
 
     def _read_setup(self, stream):

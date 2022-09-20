@@ -1,4 +1,4 @@
-<description>
+x<description>
 **White to move and win.**
 
 With 3 Kings v 2 Kings, there are three cases to be considered:
@@ -7,9 +7,7 @@ With 3 Kings v 2 Kings, there are three cases to be considered:
 # Where the defending kings occupy the same double-corner;
 # Where the defending kings occupy the same single-corner.
 
-
-The third case is illustrated in this scenario. White must employ a sacrifice
-before he can win.
+The third case is illustrated in this scenario. White must employ a sacrifice before he can win.
 
 - Richard Pask
 <setup>

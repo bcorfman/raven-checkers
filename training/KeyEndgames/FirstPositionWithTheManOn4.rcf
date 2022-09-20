@@ -3,9 +3,7 @@
 
 //Diagnosis//
 
-The point of this particular setting of First Position is that great care must
-be taken to prevent the black king from reaching his own single-corner. If so
-allowed, a draw will result.
+The point of this particular setting of First Position is that great care must be taken to prevent the black king from reaching his own single-corner. If so allowed, a draw will result.
 <setup>
 white_first
 2_player_game

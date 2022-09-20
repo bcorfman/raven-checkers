@@ -10,7 +10,8 @@ def _read_value(line):
 
 PDN = NamedTuple("PDN", [("event", str), ("site", str), ("date", str),
                          ("round", str), ("white", str), ("black", str),
-                         ("result", str), ("fen", str), ("movetext", str)])
+                         ("result", str), ("fen", str), ("description", str),
+                         ("movetext", str)])
 
 
 class PDNReader:
@@ -42,6 +43,7 @@ class PDNReader:
         self._white = None
         self._result = None
         self._fen = None
+        self._description = None
         self._movetext = None
 
     def _read_stream(self):
@@ -106,18 +108,18 @@ class PDNReader:
                 if self._result in line:
                     break
         self.PDNs.append(PDN(self._event, self._site, self._date, self._round, self._white, self._black, self._result,
-                             self._fen, self._movetext))
+                             self._fen, self._description, self._movetext))
         self._reset_pdn_vars()
 
 
 class PDNWriter:
-    def __init__(self, stream, event, site, date, rnd, black, white, result, fen, movetext):
+    def __init__(self, stream, event, site, date, rnd, black, white, result, fen, description, movetext):
         self.stream = stream
         self._wrapper = textwrap.TextWrapper(width=79)
-        self._write(event, site, date, rnd, black, white, result, fen, movetext)
+        self._write(event, site, date, rnd, black, white, result, fen, description, movetext)
 
     def _write(self, event: str, site: str, date: str, rnd: str, black: str, white: str, result: str, fen: str,
-               movetext: str):
+               description: str, movetext: str):
         self.stream.write(f'[Event "{event}"]\n')
         self.stream.write(f'[Date "{date}"]\n')
         if rnd:
@@ -126,6 +128,9 @@ class PDNWriter:
         self.stream.write(f'[White "{white}"]\n')
         self.stream.write(f'[Site "{site}"]\n')
         self.stream.write(f'[Result "{result}"]\n')
+        if description:
+            wrapper = textwrap.TextWrapper(width=80, initial_indent='; ', subsequent_indent='; ')
+            self.stream.write(description)
         if fen:
             self.stream.write('[SetUp "1"]')
             self.stream.write(f'[FEN "{result}"]\n')
@@ -133,16 +138,16 @@ class PDNWriter:
             self.stream.write(line + '\n')
 
     @classmethod
-    def to_string(cls, event, site, date, rnd, black, white, result, fen, movetext):
+    def to_string(cls, event, site, date, rnd, black, white, result, fen, movetext, description=""):
         with StringIO() as stream:
-            cls(stream, event, site, date, rnd, black, white, result, fen, movetext)
+            cls(stream, event, site, date, rnd, black, white, result, fen, description, movetext)
             return stream.getvalue()
 
     @classmethod
-    def to_file(cls, filepath, event, site, date, rnd, black, white, result, fen, movetext):
+    def to_file(cls, filepath, event, site, date, rnd, black, white, result, fen, movetext, description=""):
         with open(filepath, 'w') as stream:
-            cls(stream, event, site, date, rnd, black, white, result, fen, movetext)
+            cls(stream, event, site, date, rnd, black, white, result, fen, description, movetext)
 
     @classmethod
-    def to_stream(cls, stream, event, site, date, rnd, black, white, result, fen, movetext):
-        cls(stream, event, site, date, rnd, black, white, result, fen, movetext)
+    def to_stream(cls, stream, event, site, date, rnd, black, white, result, fen, description, movetext):
+        cls(stream, event, site, date, rnd, black, white, result, fen, description, movetext)

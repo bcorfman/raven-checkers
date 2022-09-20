@@ -9,11 +9,11 @@ def test_read_first_position_description_string():
            "Force: 2 v 2.\n" \
            "Opposition: White has it.\n" \
            "Terms: White to move and win.\n" \
-           "Description: The diagrammed position represents a late, and critical, phase of\n" + \
-           "First Position. Before tackling the winning procedure, it would be wise for the\n" + \
-           "student to take note of those features which distinguish First Position from a\n" + \
-           "nondescript two against two setting. In this way he will be able to recognize it\n" + \
-           "in its early stages, and take the appropriate action. Aside from the attacker,\n" + \
+           "Description: The diagrammed position represents a late, and critical, phase of " + \
+           "First Position. Before tackling the winning procedure, it would be wise for the " + \
+           "student to take note of those features which distinguish First Position from a " + \
+           "nondescript two against two setting. In this way he will be able to recognize it " + \
+           "in its early stages, and take the appropriate action. Aside from the attacker, " + \
            "having the Opposition, here White, the following conditions must also hold:\n" + \
            "# At least one of the defender's pieces is a single man rather than a king.\n" + \
            "# The attacker has, or can develop, two kings while keeping the defender's single man pinned to the " + \
@@ -22,10 +22,10 @@ def test_read_first_position_description_string():
            "and the position would just be a draw.\n" + \
            "# The defender's other piece, which becomes a king (in the double-corner), is unable to reach the " + \
            "sanctuary of the opposite double-corner.\n\n" + \
-           "Broadly speaking, White's winning procedure consists of attacking Black's king,\n" + \
-           "immobilizing it, and forcing Black's single man to advance into trouble.\n" + \
+           "Broadly speaking, White's winning procedure consists of attacking Black's king, " + \
+           "immobilizing it, and forcing Black's single man to advance into trouble. " + \
            "Naturally, Black tries to avoid the advance of this man for as long as possible.\n" + \
-           "This theme, of attacking one piece to force another to move, arises in numerous\n" + \
+           "This theme, of attacking one piece to force another to move, arises in numerous " + \
            "endings, and should be thoroughly grasped by the student.\n\n" + \
            "-- From //Key Endings// by Richard Pask\n" + \
            "<setup>"
@@ -33,31 +33,31 @@ def test_read_first_position_description_string():
     with StringIO(desc) as rcf:
         cvt = RCF2PDN()
         cvt._read_description(rcf)
-        assert cvt.description == ["**Key Ending 10: First Position**",
-                                   "//Summary//",
-                                   "Force: 2 v 2.",
-                                   "Opposition: White has it.",
-                                   "Terms: White to move and win.",
-                                   "Description: The diagrammed position represents a late, and critical, phase of",
-                                   "First Position. Before tackling the winning procedure, it would be wise for the",
-                                   "student to take note of those features which distinguish First Position from a",
-                                   "nondescript two against two setting. In this way he will be able to recognize it",
-                                   "in its early stages, and take the appropriate action. Aside from the attacker,",
-                                   "having the Opposition, here White, the following conditions must also hold:",
-                                   "# At least one of the defender's pieces is a single man rather than a king.",
+        assert cvt.description == ["**Key Ending 10: First Position**\n",
+                                   "//Summary//\n",
+                                   "Force: 2 v 2.\n",
+                                   "Opposition: White has it.\n",
+                                   "Terms: White to move and win.\n",
+                                   "Description: The diagrammed position represents a late, and critical, phase of ",
+                                   "First Position. Before tackling the winning procedure, it would be wise for the ",
+                                   "student to take note of those features which distinguish First Position from a ",
+                                   "nondescript two against two setting. In this way he will be able to recognize it ",
+                                   "in its early stages, and take the appropriate action. Aside from the attacker, ",
+                                   "having the Opposition, here White, the following conditions must also hold:\n",
+                                   "# At least one of the defender's pieces is a single man rather than a king. ",
                                    "# The attacker has, or can develop, two kings while keeping the defender's " +
                                    "single man pinned to the right-hand side of the board. Typically, this man " +
                                    "will initially be placed on square 3, 4 or 12. Of course, if it was placed " +
                                    "on square 1 or 2, then it would have free access to White's left-hand side, " +
-                                   "and the position would just be a draw.",
+                                   "and the position would just be a draw.\n",
                                    "# The defender's other piece, which becomes a king (in the double-corner), is " +
-                                   "unable to reach the sanctuary of the opposite double-corner.",
+                                   "unable to reach the sanctuary of the opposite double-corner.\n",
                                    "Broadly speaking, White's winning procedure consists of attacking Black's king,",
                                    "immobilizing it, and forcing Black's single man to advance into trouble.",
                                    "Naturally, Black tries to avoid the advance of this man for as long as possible.",
                                    "This theme, of attacking one piece to force another to move, arises in numerous",
-                                   "endings, and should be thoroughly grasped by the student.",
-                                   "-- From //Key Endings// by Richard Pask"]
+                                   "endings, and should be thoroughly grasped by the student.\n",
+                                   "-- From //Key Endings// by Richard Pask\n"]
 
 
 def test_read_first_position_setup_string():
@@ -302,14 +302,31 @@ def test_glasgow_rcf2pdn_string():
     with StringIO(rcf_str) as rcf:
         pdn_str = RCF2PDN.with_string(rcf)
         now = datetime.now().strftime("%d/%m/%Y")
-        assert pdn_str == '[Event "Glasgow opening"]' \
-                          '[Site "*"]' \
-                          f'[Date "{now}"]' \
-                          '[Round "*"]' \
-                          '[Black "Player2"]' \
-                          '[White "Player1"]' \
-                          '[Result "*"]' \
-                          ' 1.11-15 23-19  2. 8-11 22-17  3.11-16 24-20   4.16-23 27x11  5. 7x16 20x11\n' \
-                          ' 6. 3-7  28-24  7. 7x16 24-20  8.16-19 25-22   9. 4-8  29-25 10.19-24 17-14\n' \
-                          '11. 9x18 22x15 12.10x19 32-28 13. 6-10 25-22  14. 5-9  22-18 15. 9-14 18x9\n' \
-                          '16. 1-5   9-6  17. 2x9  20-16 18. 9-14 26-23  19.19x26 28x19 20. 5-9  31x22\n'
+        assert pdn_str == '[Event "Glasgow opening"]\n' \
+                          f'[Date "{now}"]\n' \
+                          '[Round "*"]\n' \
+                          '[Black "Player2"]\n' \
+                          '[White "Player1"]\n' \
+                          '[Site "*"]\n' \
+                          '[Result "*"]\n' \
+                          "; **Glasgow opening**, part of the 11-15 group\n" \
+                          "; 11-15 is considered Black's best opening move. It is so popular that it\n" \
+                          "; has branched off into more openings than any other initial move. Among the\n" \
+                          "; replies that can be recommended for White are 23-19 or 23-18 or 22-18 or\n" \
+                          "; 22-17. On the other hand, 24-20 and 24-19 and 21-17 are all considered\n" \
+                          "; inferior in varying degrees.\n" \
+                          "; - from //How to Win At Checkers// by Fred Reinfeld\n" \
+                          "1. 11-15 23-19!  2. 8-11 22-17  3. 11-16 {These moves form the opening, which is " \
+                          "excellent for inexperienced players to adopt.} 24-20 4. 16-23 27x11  5. 7x16 20x11 " \
+                          "6. 3-7 28-24 {The alternative 11-8 is also playable.}  7. 7x16 24-20  8. 16-19 25-22 " \
+                          "9. 4-8 29-25  10. 19-24 {This leads to [[training/Openings/support/Glasgow_Alternate1.rcf|" \
+                          "interesting%20complications]].} 17-14 {An interesting though only temporary sacrifice. " \
+                          "Instead, White can play safe with 17-13; 9-14, 26-23; etc.}  11. 9x18 22x15  12.10x19 " \
+                          "32-28  13. 6-10! {Now if White plays 26-23, Black wins with the " \
+                          "[[training/Openings/support/Glasgow_BlackWin.rcf|following%20line]].} 25-22 {If now 8-11, " \
+                          "White can draw with the [[training/Openings/support/Glasgow_Draw.rcf|following%20line]].} " \
+                          "14. 5-9 22-18 {If now 8-11 White plays 21-17 and holds the position despite the fact that " \
+                          'he is temporarily a man down. Black therefore "pitches" a man, and this leads to ' \
+                          'interesting complications.}  15. 9-14 18x9  16. 1-5 9-6  17. 2x9 20-16  18. 9-14 26-23 ' \
+                          "{The safest, at last recovering the sacrificed man.}  19. 19x26 28x19  20. 5-9 31x22 " \
+                          "{Even game.} *\n"

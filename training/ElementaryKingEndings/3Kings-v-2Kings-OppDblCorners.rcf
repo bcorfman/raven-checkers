@@ -7,11 +7,9 @@ With 3 Kings v 2 Kings, there are three cases to be considered:
 # Where the defending kings occupy the same double-corner;
 # Where the defending kings occupy the same single-corner.
 
-
 The first case is illustrated in this scenario.
 
-When the two Black kings occupy opposite double-corners, the win is effected by
-forcing an exchange. Black, of course, tries to avoid this.
+When the two Black kings occupy opposite double-corners, the win is effected by forcing an exchange. Black, of course, tries to avoid this.
 
 - From //Key Endings// by Richard Pask
 <setup>

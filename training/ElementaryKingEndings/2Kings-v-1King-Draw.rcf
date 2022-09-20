@@ -1,9 +1,7 @@
 <description>
 **White to move and draw.**
 
-From William Payne's draughts book in English -- //An Introduction to the Game
-of Draughts// -- written in 1756. The single-corner zone is shown to be
-inherently restricting, and White's single king can draw because of this.
+From William Payne's draughts book in English -- //An Introduction to the Game of Draughts// -- written in 1756. The single-corner zone is shown to be inherently restricting, and White's single king can draw because of this.
 <setup>
 white_first
 2_player_game

@@ -1,0 +1,16 @@
+[Event "Double Corner Dyke"]
+[Black "Jordan,A"]
+[White "Tesheliet,F"]
+[Event "This is an 8x8 draughts game"]
+[Result "1/2-1/2"]
+[GameType "21"]
+
+1.  9-14 22-17 2. 11-15 25-22 3. 15-19 {Forms the Double Corner Dyke, With
+ black aiming to occupy sqr 19, attacking white's double corner.} 23x16
+4. 12x19 24x15 5. 10x19 17x10 6.  6x15 21-17 7.  5-9 29-25 8.  8-12 25-21
+9.  7-10 17-13 10.  1-6 {It seems unwise to abondon the key back row sqr 1,
+ but it is necessary to prevent 13-9..} 27-24 11.  4-8 32-27 12.  9-14
+27-23 13.  3-7 23x16 14. 12x19 22-17 15.  7-11 26-23 16. 19x26 30x23
+17.  8-12 24-20 18. 15-18 23-19 19. 11-15 20-16 20. 15x24 28x19 21.  2-7
+31-26 22. 18-23 26-22 23. 23-27 16-11 {! a really beautiful escape}
+24.  7x23 22-18 *
