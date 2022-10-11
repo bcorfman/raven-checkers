@@ -400,7 +400,7 @@ class BoardView(Observer):
             return
 
         if self._model.terminal_test():
-            text = "Game over. "
+            text = "_Game over. "
             if self._model.curr_state.to_move == WHITE:
                 text += "Black won."
             else:

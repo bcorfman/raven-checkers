@@ -6,7 +6,7 @@ authors = [
     {name = "Brandon Corfman", email = "bcorfman@fastmail.fm"},
 ]
 dependencies = [
-    "pydraughts>=0.4.3",
+    "charset-normalizer>=2.1.1",
 ]
 requires-python = ">=3.8"
 license = {text = "MIT"}

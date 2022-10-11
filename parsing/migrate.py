@@ -2,7 +2,7 @@ import os.path
 from pathlib import Path
 from datetime import datetime, timezone
 from io import StringIO
-from parsing.PDN import PDN, PDNWriter
+from parsing.PDN import Game, PDNWriter
 
 
 def _make_fen_sublist(tag, men, kings):
@@ -37,7 +37,7 @@ class RCF2PDN:
         self.lineno = 0
         self.event_name = None
         self.file_mod_time = None
-        self._pdn = None
+        self._game = None
 
     @classmethod
     def with_string(cls, rcf):
@@ -83,31 +83,21 @@ class RCF2PDN:
         site = "*"
         date = self.file_mod_time or datetime.now().strftime("%d/%m/%Y")
         rnd = "*"
-        black = "Player1"
-        white = "Player2"
+        black_player = "Player1"
+        white_player = "Player2"
         result = self._get_game_result()
-        fen = self._get_game_fen()
-        movetext = self._get_game_moves()
         description = ""
         for line in self.description:
             description += line
-        self._pdn = PDN(event, site, date, rnd, black, white, result, fen, description, movetext)
+        self._game = Game(event, site, date, rnd, black_player, white_player, self.first_to_move, list(self.black_men),
+                          list(self.white_men), list(self.black_kings), list(self.white_kings), result, self.flip_board,
+                          description, self.moves)
 
     def _write_output(self, pdn_stream):
-        pdn = self._pdn
-        PDNWriter.to_stream(pdn_stream, pdn.event, pdn.site, pdn.date, pdn.round, pdn.black, pdn.white, pdn.result,
-                            pdn.fen, pdn.description, pdn.movetext)
-
-    def _get_game_fen(self):
-        if (self.black_kings or self.white_kings or frozenset(self.black_men) != frozenset(range(1, 13)) or
-                frozenset(self.white_men) != frozenset(range(21, 33))):
-            turn = 'B' if self.first_to_move == 'black_first' else 'W'
-            fen = f'{turn}:'
-            fen += _make_fen_sublist('W', self.white_men, self.white_kings)
-            fen += _make_fen_sublist('B', self.black_men, self.black_kings)
-        else:
-            fen = ""
-        return fen
+        game = self._game
+        PDNWriter.to_stream(pdn_stream, game.event, game.site, game.date, game.round, game.black_player,
+                            game.white_player, game.next_to_move, game.black_men, game.white_men, game.black_kings,
+                            game.white_kings, game.result, game.board_orientation, game.description, game.moves)
 
     def _get_game_result(self):
         final_annotation = self.annotations[-1].lower()

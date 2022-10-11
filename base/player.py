@@ -41,7 +41,7 @@ class HumanPlayer(Player):
             positions = []
             idx = 0
             while 1:
-                request = 'Move to? ' if positions else 'Move from? '
+                request = '_Move to? ' if positions else '_Move from? '
                 # do any positions match the input
                 pos = self._valid_pos(input(request), moves, idx)
                 if pos:

@@ -1,17 +1,58 @@
+import charset_normalizer
 import os
 import textwrap
 from io import StringIO
+from pyparsing import Combine, Forward, Group, LineStart, LineEnd, Literal, OneOrMore, Optional, \
+    QuotedString, Suppress, Word, WordEnd, WordStart, ZeroOrMore, nums, one_of, rest_of_line, srange
 from typing import NamedTuple
 
 
-def _read_value(line):
-    return line.split('"')[1]
+def _removeLineFeed(s):
+    return s[0].replace('\n', ' ')
 
 
-PDN = NamedTuple("PDN", [("event", str), ("site", str), ("date", str),
-                         ("round", str), ("white", str), ("black", str),
-                         ("result", str), ("fen", str), ("description", str),
-                         ("movetext", str)])
+def _join(result):
+    return ''.join(result)
+
+
+Game = NamedTuple("Game", [("event", str), ("site", str), ("date", str),
+                           ("round", str), ("black_player", str), ("white_player", str),
+                           ("next_to_move", str), ("black_men", list), ("white_men", list),
+                           ("black_kings", list), ("white_kings", list),
+                           ("result", str), ("board_orientation", int),
+                           ("description", str), ("moves", list)])
+
+_MoveStrength = one_of('! ?') | '(' + one_of('! ?') + ')'
+_Identifier = Word(srange('[A-Z]'), srange('[A-Za-z0-9_]'))
+_lbrace, _rbrace = map(Literal, "{}")
+_Comment = Suppress('{') + ... + Suppress('}')
+_Comment = _Comment.setParseAction(_removeLineFeed)
+
+_Win = WordStart() + '1-0' + WordEnd()
+_Draw = WordStart() + '1/2-1/2' + WordEnd()
+_Loss = WordStart() + '0-1' + WordEnd()
+_Asterisk = WordStart() + '*' + WordEnd()
+_Result = _Asterisk | _Win | _Draw | _Loss
+_Ellipses = '...'
+_MoveNumber = WordStart() + Combine(Word(nums) + '.')("move_number")
+_Square = Word(nums).set_parse_action(lambda n: [int(n[0])])
+_MoveSeparator = '-'
+_CaptureSeparator = 'x'
+_NormalMove = Group(_Square + Suppress(_MoveSeparator) + _Square)
+_CaptureMove = Group(_Square + OneOrMore(Suppress(_CaptureSeparator) + _Square))
+_Move = _NormalMove | _CaptureMove
+_LineComment = LineStart() + Group('% ' + rest_of_line()('comment'))
+_PDNTag = LineStart() + Suppress('[') + Group(_Identifier('key') + QuotedString('"')('value')) + Suppress(']') + \
+          Suppress(LineEnd())
+_GameHeader = OneOrMore(_PDNTag)
+_SingleGameMove = Group(_MoveNumber('number') + _Move('first') + Optional(_Comment('comment1')) + Group(_Result))
+_DoubleGameMove = Group(_MoveNumber('number') + _Move('first') + Optional(_Comment('comment1')) +
+                        _Move('second') + Optional(_Comment('comment2')))
+_Variation = Forward()
+_GameBody = OneOrMore(_SingleGameMove | _DoubleGameMove | _Variation | _LineComment)('body')
+_Variation <<= Combine('(' + _GameBody + ')')
+_Game = (_GameHeader('header') + Optional(_GameBody)) | _GameBody
+_PDNStream = _Game + Suppress(ZeroOrMore(_Result + _Game)) + Suppress(_Result[0, 1])
 
 
 class PDNReader:
@@ -19,7 +60,7 @@ class PDNReader:
         self._stream = stream
         self._source = f"in {source}" if source else ""
         self._lineno = 0
-        self.PDNs = []
+        self.games = []
         self._reset_pdn_vars()
         self._read_stream()
 
@@ -31,123 +72,216 @@ class PDNReader:
     @classmethod
     def from_file(cls, filepath):
         filename = os.path.basename(filepath)
-        with open(filepath) as stream:
-            return cls(stream, filename)
+        with open(filepath, 'rb') as test:
+            pdn_encoding = charset_normalizer.detect(test.read())['encoding']
+            with open(filepath, encoding=pdn_encoding) as stream:
+                return cls(stream, filename)
 
     def _reset_pdn_vars(self):
         self._event = None
         self._site = None
         self._date = None
         self._round = None
-        self._black = None
-        self._white = None
+        self._black_player = None
+        self._white_player = None
+        self._next_to_move = None
+        self._black_men = None
+        self._white_men = None
+        self._black_kings = None
+        self._white_kings = None
         self._result = None
-        self._fen = None
-        self._description = None
-        self._movetext = None
+        self._orientation = None
+        self._description = ""
+        self._moves = []
 
     def _read_stream(self):
-        parse_pdn = {"[Event": self._read_event,
-                     "[Site": self._read_site,
-                     "[Date": self._read_date,
-                     "[Round": self._read_round,
-                     "[White": self._read_white_player,
-                     "[Black": self._read_black_player,
-                     "[Result": self._read_result,
-                     "[FEN": self._read_fen,
-                     "1.": self._read_movetext}
-        self._lineno = 0
-        while True:
-            line = self._stream.readline()
-            if not line:
-                break
-            self._lineno += 1
-            line = line.rstrip('\n')
-            for tag in parse_pdn:
-                if line.lstrip().startswith(tag):
-                    parse_pdn[tag](line)
-                    break
+        parse_header = {"Event": self._read_event,
+                        "Site": self._read_site,
+                        "Date": self._read_date,
+                        "White": self._read_white_player,
+                        "Black": self._read_black_player,
+                        "BlackType": self._read_black_type,
+                        "WhiteType": self._read_white_type,
+                        "GameType": self._read_game_type,
+                        "Result": self._read_result,
+                        "FEN": self._read_fen}
+        pdn = _PDNStream.search_string(self._stream.read())
+        for game in pdn:
+            if game.header:
+                for tag in game.header:
+                    if parse_header.get(tag.key):
+                        parse_header[tag.key](tag.value)
+            if game.comment:
+                self._description += game.comment
+            if game.body:
+                for item in game.body:
+                    if len(item) > 1:
+                        idx = 1
+                        move_list = [list(item[idx])]
+                        if item.comment1:
+                            idx += 1
+                            move_list.append(list(item[idx]))
+                        idx += 1
+                        move_list.append(list(item[idx]))
+                        if item.comment2:
+                            idx += 1
+                            move_list.append(item[idx])
+                        self._moves.append(move_list)
+                self.games.append(Game(self._event, self._site, self._date, self._round, self._black_player,
+                                       self._white_player, self._next_to_move, self._black_men, self._white_men,
+                                       self._black_kings, self._white_kings, self._result, self._orientation,
+                                       self._description, self._moves))
+                self._reset_pdn_vars()
 
-    def _read_event(self, line):
-        self._event = _read_value(line)
+    def _read_event(self, value):
+        self._event = value
 
-    def _read_site(self, line):
-        self._site = _read_value(line)
+    def _read_site(self, value):
+        self._site = value
 
-    def _read_date(self, line):
-        self._date = _read_value(line)
+    def _read_date(self, value):
+        self._date = value
 
-    def _read_round(self, line):
-        self._round = _read_value(line)
+    def _read_round(self, value):
+        self._round = value
 
-    def _read_white_player(self, line):
-        self._white = _read_value(line)
+    def _read_white_player(self, value):
+        self._white_player = value
 
-    def _read_black_player(self, line):
-        self._black = _read_value(line)
+    def _read_black_player(self, value):
+        self._black_player = value
 
-    def _read_result(self, line):
-        self._result = _read_value(line)
+    def _read_black_type(self, value):
+        self._black_type = value
 
-    def _read_fen(self, line):
-        self._fen = _read_value(line)
+    def _read_white_type(self, value):
+        self._white_type = value
 
-    def _read_movetext(self, line):
-        if not self._result:
-            raise IOError("Didn't get a result value")
-        self._movetext = line.rstrip('\n')
-        if self._result not in line:
-            while True:
-                line = self._stream.readline()
-                if not line:
-                    error = f"Unexpected EOF {self._source} on " + \
-                            f"line {self._lineno}"
-                    raise IOError(error)
-                self._lineno += 1
-                self._movetext += line.rstrip('\n')
-                if self._result in line:
-                    break
-        self.PDNs.append(PDN(self._event, self._site, self._date, self._round, self._white, self._black, self._result,
-                             self._fen, self._description, self._movetext))
-        self._reset_pdn_vars()
+    def _read_game_type(self, value):
+        self._game_type = value
 
+    def _read_result(self, value):
+        self._result = value
+
+    def _get_player_to_move(self, turn):
+        turn = turn.upper()
+        if turn == "B":
+            result = "black"
+        elif turn == "W":
+            result = "white"
+        else:
+            raise SyntaxError("Unknown turn type {turn} in FEN")
+        return result
+
+    def _get_player_pieces(self, fen_line: str):
+        fen_line = fen_line[1:]
+        sq_text = fen_line.split(",")
+        men = []
+        kings = []
+        for sq in sq_text:
+            if sq.startswith('K'):
+                kings.append(int(sq[1:]))
+            else:
+                men.append(int(sq))
+        return men, kings
+
+    def _read_fen(self, value):
+        turn, first_squares, second_squares = value.split(":")
+        self._next_to_move = self._get_player_to_move(turn)
+        player = first_squares[0].upper()
+        if player == "W":
+            self._white_men, self._white_kings = self._get_player_pieces(first_squares)
+        elif player == "B":
+            self._black_men, self._black_kings = self._get_player_pieces(first_squares)
+        else:
+            raise SyntaxError("Unknown player type {player} in first set of FEN squares")
+        player = second_squares[0].upper()
+        if player == "W":
+            self._white_men, self._white_kings = self._get_player_pieces(second_squares)
+        elif player == "B":
+            self._black_men, self._black_kings = self._get_player_pieces(second_squares)
+        else:
+            raise SyntaxError("Unknown player type {player} in second set of FEN squares")
+
+
+def _translate_to_fen(next_to_move, black_men, white_men, black_kings, white_kings):
+    if next_to_move.lower() == "black":
+        fen = "B:"
+    elif next_to_move.lower() == "white":
+        fen = "W:"
+    else:
+        raise RuntimeError(f"Unknown player {next_to_move} in next_to_move variable")
+    if white_men or white_kings:
+        fen += "W"
+        if white_men:
+            s = StringIO()
+            print(white_men, sep=',', end='', file=s)
+            fen += s.getvalue()
+        if white_kings:
+            kings = [f'K{n}' for n in white_kings]
+            s = StringIO()
+            print(kings, sep=',', end='', file=s)
+            fen += s.getvalue()
+        fen += ":"
+    if black_men or black_kings:
+        fen += "B"
+        if black_men:
+            s = StringIO()
+            print(black_men, sep=',', end='', file=s)
+            fen += s.getvalue()
+        if black_kings:
+            kings = [f'K{n}' for n in black_kings]
+            s = StringIO()
+            print(kings, sep=',', end='', file=s)
+            fen += s.getvalue()
+    return fen
 
 class PDNWriter:
-    def __init__(self, stream, event, site, date, rnd, black, white, result, fen, description, movetext):
+    def __init__(self, stream, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men,
+                 black_kings, white_kings, result, board_orientation, description, moves):
         self.stream = stream
         self._wrapper = textwrap.TextWrapper(width=79)
-        self._write(event, site, date, rnd, black, white, result, fen, description, movetext)
+        self._write(event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men, black_kings,
+                    white_kings, result, board_orientation, description, moves)
 
-    def _write(self, event: str, site: str, date: str, rnd: str, black: str, white: str, result: str, fen: str,
-               description: str, movetext: str):
+    def _write(self, event: str, site: str, date: str, rnd: str, black_player: str, white_player: str,
+               next_to_move: str, black_men: list, white_men: list, black_kings: list, white_kings: list, result: str,
+               board_orientation: str, description: str, moves: list):
         self.stream.write(f'[Event "{event}"]\n')
         self.stream.write(f'[Date "{date}"]\n')
         if rnd:
             self.stream.write(f'[Round "{rnd}"]\n')
-        self.stream.write(f'[Black "{black}"]\n')
-        self.stream.write(f'[White "{white}"]\n')
+        self.stream.write(f'[Black "{black_player}"]\n')
+        self.stream.write(f'[White "{white_player}"]\n')
         self.stream.write(f'[Site "{site}"]\n')
         self.stream.write(f'[Result "{result}"]\n')
         if description:
             wrapper = textwrap.TextWrapper(width=80, initial_indent='; ', subsequent_indent='; ')
             self.stream.write(description)
-        if fen:
+        if (black_kings or white_kings or frozenset(black_men) != frozenset(range(1, 13)) or
+                frozenset(white_men) != frozenset(range(21, 33))):
             self.stream.write('[SetUp "1"]')
             self.stream.write(f'[FEN "{result}"]\n')
-        for line in self._wrapper.wrap(movetext):
+        for line in self._wrapper.wrap(_translate_to_fen(moves)):
             self.stream.write(line + '\n')
 
     @classmethod
-    def to_string(cls, event, site, date, rnd, black, white, result, fen, movetext, description=""):
+    def to_string(cls, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men,
+                  black_kings, white_kings, result, board_orientation, moves, description=""):
         with StringIO() as stream:
-            cls(stream, event, site, date, rnd, black, white, result, fen, description, movetext)
+            cls(stream, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men,
+                black_kings, white_kings, result, board_orientation, description, moves)
             return stream.getvalue()
 
     @classmethod
-    def to_file(cls, filepath, event, site, date, rnd, black, white, result, fen, movetext, description=""):
+    def to_file(cls, filepath, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men,
+                black_kings, white_kings, result, board_orientation, moves, description=""):
         with open(filepath, 'w') as stream:
-            cls(stream, event, site, date, rnd, black, white, result, fen, description, movetext)
+            cls(stream, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men,
+                black_kings, white_kings, result, board_orientation, description, moves)
 
     @classmethod
-    def to_stream(cls, stream, event, site, date, rnd, black, white, result, fen, description, movetext):
-        cls(stream, event, site, date, rnd, black, white, result, fen, description, movetext)
+    def to_stream(cls, stream, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men,
+                  black_kings, white_kings, result, board_orientation, description, moves):
+        cls(stream, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men, black_kings,
+            white_kings, result, board_orientation, description, moves)
