@@ -12,7 +12,6 @@ from util.globalconst import NUMBERS_IMAGE, BULLET_IMAGE, BULLETS_IMAGE, DEFAULT
 from util.globalconst import create_grid_map, create_position_map, get_preferences_from_file, parse_index, to_string, \
     keymap, reverse_dict
 from gui.autoscrollbar import AutoScrollbar
-from parsing.textserialize import Serializer
 from gui.hyperlinkmgr import HyperlinkManager
 from gui.tooltip import ToolTip
 
@@ -117,7 +116,6 @@ class BoardView(Observer):
                            'bullet': self.bullets, 'number': self.numbers,
                            'hyper': self.addLink}
         self.link_manager = HyperlinkManager(self.txt, self._gameMgr.load_game)
-        self.serializer = Serializer(self.txt, self.link_manager)
         self.curr_annotation = ''
         self._setup_board(root)
         starting_squares = [i for i in self._model.curr_state.valid_squares
@@ -364,7 +362,7 @@ class BoardView(Observer):
         cmd = Command(add=add_lst, remove=rem_lst)
         self._draw_checkers(cmd)
         self.txt.delete('1.0', END)
-        self.serializer.restore(move.annotation)
+        #self.serializer.restore(move.annotation)
         self.curr_annotation = move.annotation
         if self.txt.get('1.0', 'end').strip() == '':
             start = keymap[move.affected_squares[FIRST][0]]
@@ -373,7 +371,8 @@ class BoardView(Observer):
             self.txt.insert('1.0', move_str)
 
     def get_annotation(self):
-        return self.serializer.dump()
+        #return self.serializer.dump()
+        pass
 
     def erase_checker(self, index):
         self.canvas.delete('c'+str(index))

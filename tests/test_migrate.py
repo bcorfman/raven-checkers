@@ -73,7 +73,7 @@ def test_read_first_position_setup_string():
     with StringIO(setup) as rcf:
         cvt = RCF2PDN()
         cvt._read_setup(rcf)
-        assert cvt.first_to_move == 'W'
+        assert cvt.next_to_move == 'white'
         assert cvt.num_players == 2
         assert cvt.flip_board == 1
         assert cvt.black_men == [12]

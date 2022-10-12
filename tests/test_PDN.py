@@ -68,20 +68,26 @@ def test_write_PDN_file_success(tmp_path):
     event = "German Open 2004"
     date = "2004-05-01"
     rnd = ""
-    black = "Morgan, John"
-    white = "Pawlek, Dennis"
+    black_player = "Morgan, John"
+    white_player = "Pawlek, Dennis"
     site = "Reutlingen"
+    next_to_move = "black"
+    black_men = range(1, 13)
+    white_men = range(21, 33)
+    black_kings = []
+    white_kings = []
+    board_orientation = "white_on_top"
     result = "1/2-1/2"
-    fen = ""
-    movetext = "1. 11-15 22-17 2. 15-19 24x15 3. 10x19 23x16 4. 12x19 25-22 " + \
-               "5. 7-10 27-24 6. 10-15 17-13 7. 9-14 29-25 8. 6-10 22-17 9. " + \
-               "1-6 26-23 10. 19x26 30x23 11. 8-11 24-19 12. 15x24 28x19 13. " + \
-               "3-7 25-22 14. 11-15 32-28 15. 15x24 28x19 16. 7-11 19-16 17. " + \
-               "11x20 23-19 18. 14-18 22x15 19. 4-8 31-27 20. 5-9 27-23 21. " + \
-               "9-14 19-16 22. 10x19x26 17x10x1 1/2-1/2"
-    PDNWriter.to_file(pdn_filepath, event, site, date, rnd, black, white, result, fen, movetext)
+    moves = [['1.', [11, 15], [22, 17]], ['2.', [15, 19], [24, 15]], ['3.', [10, 19], [23, 16]], ['4.', [12, 19], [25, 22]],
+             ['5.', [7, 10], [27, 24]], ['6.', [10, 15], [17, 13]], ['7.', [9, 14], [29, 25]], ['8.', [6, 10], [22, 17]],
+             ['9.', [1, 6], [26, 23]], ['10.', [19, 26], [30, 23]], ['11.', [8, 11], [24, 19]], ['12.', [15, 24], [28, 19]],
+             ['13.', [3, 7], [25, 22]], ['14.', [11, 15], [32, 28]], ['15.', [15, 24], [28, 19]], ['16.', [7, 11], [19, 16]],  
+             ['17.', [11, 20], [23, 19]], ['18.', [14, 18], [22, 15]], ['19.', [4, 8], [31, 27]], ['20.', [5, 9], [27, 23]],
+             ['21.', [9, 14], [19, 16]], ['22.', [10, 19, 26], [17, 10, 1]], ['1/2-1/2']]
+    PDNWriter.to_file(pdn_filepath, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men, black_kings, white_kings,
+                      result, board_orientation, moves)
     with open(pdn_filepath) as f1:
-        with open(os.path.join('training', 'german_open_2004.pdn')) as f2:
+        with open(os.path.join('training', 'german_open_2004.pdn')) as f2:  
             assert f1.readlines() == f2.readlines()
 
 
@@ -90,23 +96,30 @@ def test_write_PDN_string_success():
     site = "Reutlingen"
     date = "2004-05-01"
     rnd = ""
-    black = "Morgan, John"
-    white = "Pawlek, Dennis"
+    next_to_move = "black"
+    black_player = "Morgan, John"
+    white_player = "Pawlek, Dennis"
+    black_men = range(1, 13)
+    white_men = range(21, 33)
+    black_kings = []
+    white_kings = []
+    board_orientation = "white_on_top"
     result = "1/2-1/2"
-    fen = ""
-    movetext = "1. 11-15 22-17 2. 15-19 24x15 3. 10x19 23x16 4. 12x19 25-22 5. " + \
-               "7-10 27-24 6. 10-15 17-13 7. 9-14 29-25 8. 6-10 22-17 9. " + \
-               "1-6 26-23 10. 19x26 30x23 11. 8-11 24-19 12. 15x24 28x19 " + \
-               "13. 3-7 25-22 14. 11-15 32-28 15. 15x24 28x19 16. 7-11 " + \
-               "19-16 17. 11x20 23-19 18. 14-18 22x15 19. 4-8 31-27 20. " + \
-               "5-9 27-23 21. 9-14 19-16 22. 10x19x26 17x10x1 1/2-1/2"
-    pdn = PDNWriter.to_string(event, site, date, rnd, black, white, result, fen, movetext)
+    moves = [['1.', [11, 15], [22, 17]], ['2.', [15, 19], [24, 15]], ['3.', [10, 19], [23, 16]], ['4.', [12, 19], [25, 22]],
+             ['5.', [7, 10], [27, 24]], ['6.', [10, 15], [17, 13]], ['7.', [9, 14], [29, 25]], ['8.', [6, 10], [22, 17]],
+             ['9.', [1, 6], [26, 23]], ['10.', [19, 26], [30, 23]], ['11.', [8, 11], [24, 19]], ['12.', [15, 24], [28, 19]],
+             ['13.', [3, 7], [25, 22]], ['14.', [11, 15], [32, 28]], ['15.', [15, 24], [28, 19]], ['16.', [7, 11], [19, 16]],  
+             ['17.', [11, 20], [23, 19]], ['18.', [14, 18], [22, 15]], ['19.', [4, 8], [31, 27]], ['20.', [5, 9], [27, 23]],
+             ['21.', [9, 14], [19, 16]], ['22.', [10, 19, 26], [17, 10, 1]], ['1/2-1/2']]
+    pdn = PDNWriter.to_string(event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men, black_kings, white_kings, 
+                              result, board_orientation, moves)
     assert pdn == '[Event "German Open 2004"]\n' + \
            '[Date "2004-05-01"]\n' + \
            '[Black "Morgan, John"]\n' + \
            '[White "Pawlek, Dennis"]\n' + \
            '[Site "Reutlingen"]\n' + \
            '[Result "1/2-1/2"]\n' + \
+           '[BoardOrientation "white_on_top"]\n' + \
            '1. 11-15 22-17 2. 15-19 24x15 3. 10x19 23x16 4. 12x19 25-22 5. 7-10 27-24 6.\n' + \
            '10-15 17-13 7. 9-14 29-25 8. 6-10 22-17 9. 1-6 26-23 10. 19x26 30x23 11. 8-11\n' + \
            '24-19 12. 15x24 28x19 13. 3-7 25-22 14. 11-15 32-28 15. 15x24 28x19 16. 7-11\n' + \

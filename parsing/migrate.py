@@ -26,7 +26,7 @@ class RCF2PDN:
     def __init__(self):
         self.description = []
         self.num_players = None
-        self.first_to_move = None
+        self.next_to_move = None
         self.flip_board = None
         self.black_men = set()
         self.black_kings = set()
@@ -89,7 +89,7 @@ class RCF2PDN:
         description = ""
         for line in self.description:
             description += line
-        self._game = Game(event, site, date, rnd, black_player, white_player, self.first_to_move, list(self.black_men),
+        self._game = Game(event, site, date, rnd, black_player, white_player, self.next_to_move, list(self.black_men),
                           list(self.white_men), list(self.black_kings), list(self.white_kings), result, self.flip_board,
                           description, self.moves)
 
@@ -203,7 +203,7 @@ class RCF2PDN:
             self.annotations.append(annotation)
 
     def _read_turn(self, line):
-        self.first_to_move = line[0].capitalize()
+        self.next_to_move = line.split("_")[0].lower()
 
     def _read_num_players(self, line):
         self.num_players = int(line[0])
@@ -225,6 +225,6 @@ class RCF2PDN:
         self.white_kings = [int(i) for i in line.split()[1:]]
 
     def _validate_input(self):
-        return (self.num_players in range(3) and self.first_to_move in ['B', 'W'] and
+        return (self.num_players in range(3) and self.next_to_move in ['black', 'white'] and
                 self.flip_board in range(2) and self.moves and
                 (self.black_men or self.black_kings or self.white_men or self.white_kings))

@@ -1,8 +1,6 @@
 from tkinter import PhotoImage
 from tkinter.constants import END
 from util.globalconst import BULLET_IMAGE
-from parsing.creoleparser import Parser
-from parsing.rules import LinkRules
 
 
 class TextTagEmitter(object):

@@ -104,7 +104,8 @@ class PDNReader:
                         "WhiteType": self._read_white_type,
                         "GameType": self._read_game_type,
                         "Result": self._read_result,
-                        "FEN": self._read_fen}
+                        "FEN": self._read_fen,
+                        "BoardOrientation": self._read_board_orientation}
         pdn = _PDNStream.search_string(self._stream.read())
         for game in pdn:
             if game.header:
@@ -162,6 +163,9 @@ class PDNReader:
 
     def _read_result(self, value):
         self._result = value
+
+    def _read_board_orientation(self, value):
+        self._board_orientation = value
 
     def _get_player_to_move(self, turn):
         turn = turn.upper()
@@ -231,6 +235,34 @@ def _translate_to_fen(next_to_move, black_men, white_men, black_kings, white_kin
     return fen
 
 
+def _translate_to_movetext(moves):
+    def _translate_to_text(move):
+        sq1, sq2 = move[0], move[1]
+        sep = '-' if abs(sq1 - sq2) <= 5 else 'x'
+        return sep.join([str(n) for n in move])
+
+    moves.reverse()
+    movetext = ""
+    while True:
+        if len(moves) == 0:
+            break
+        item = moves.pop()
+        if len(item) == 1:
+            movetext += item.pop()
+        else:
+            item.reverse()
+            movenum = item.pop()
+            movetext += f"{movenum} "
+            black_move = item.pop()
+            movetext += f"{_translate_to_text(black_move)}"
+            if item:
+                white_move = item.pop()
+                movetext += f" {_translate_to_text(white_move)}"
+            if moves:
+                movetext += " "
+    return movetext
+
+
 class PDNWriter:
     def __init__(self, stream, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men,
                  black_kings, white_kings, result, board_orientation, description, moves):
@@ -250,14 +282,18 @@ class PDNWriter:
         self.stream.write(f'[White "{white_player}"]\n')
         self.stream.write(f'[Site "{site}"]\n')
         self.stream.write(f'[Result "{result}"]\n')
-        if description:
-            wrapper = textwrap.TextWrapper(width=80, initial_indent='; ', subsequent_indent='; ')
-            self.stream.write(description)
         if (black_kings or white_kings or frozenset(black_men) != frozenset(range(1, 13)) or
                 frozenset(white_men) != frozenset(range(21, 33))):
             self.stream.write('[SetUp "1"]')
             self.stream.write(f'[FEN "{result}"]\n')
-        for line in self._wrapper.wrap(_translate_to_fen(moves)):
+            for line in self._wrapper.wrap(_translate_to_fen(next_to_move, black_men, white_men, black_kings, white_kings)):
+                self.stream.write(line + '\n')
+        self.stream.write(f'[BoardOrientation "{board_orientation}"]\n')
+        if description:
+            wrapper = textwrap.TextWrapper(width=79, initial_indent='; ', subsequent_indent='; ')
+            for line in wrapper.wrap(description):
+                self.stream.write(line + '\n')
+        for line in self._wrapper.wrap(_translate_to_movetext(moves)):
             self.stream.write(line + '\n')
 
     @classmethod
