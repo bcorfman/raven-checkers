@@ -214,27 +214,22 @@ def _translate_to_fen(next_to_move, black_men, white_men, black_kings, white_kin
     if white_men or white_kings:
         fen += "W"
         if white_men:
-            s = StringIO()
-            print(white_men, sep=',', end='', file=s)
-            fen += s.getvalue()
+            fen += ",".join([str(n) for n in white_men])
         if white_kings:
-            kings = [f'K{n}' for n in white_kings]
-            s = StringIO()
-            print(kings, sep=',', end='', file=s)
-            fen += s.getvalue()
+            if white_men:
+                fen += ','
+            fen += ",".join([f"K{n}" for n in white_kings])
         fen += ":"
     if black_men or black_kings:
         fen += "B"
         if black_men:
-            s = StringIO()
-            print(black_men, sep=',', end='', file=s)
-            fen += s.getvalue()
+            fen += ",".join([str(n) for n in black_men])
         if black_kings:
-            kings = [f'K{n}' for n in black_kings]
-            s = StringIO()
-            print(kings, sep=',', end='', file=s)
-            fen += s.getvalue()
+            if white_men:
+                fen += ','
+            fen += ",".join([f"K{n}" for n in black_kings])
     return fen
+
 
 class PDNWriter:
     def __init__(self, stream, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men,

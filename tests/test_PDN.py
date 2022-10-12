@@ -1,5 +1,5 @@
 import os
-from parsing.PDN import PDNReader, PDNWriter
+from parsing.PDN import PDNReader, PDNWriter, _translate_to_fen
 
 
 def test_parse_PDN_string_success():
@@ -112,3 +112,14 @@ def test_write_PDN_string_success():
            '24-19 12. 15x24 28x19 13. 3-7 25-22 14. 11-15 32-28 15. 15x24 28x19 16. 7-11\n' + \
            '19-16 17. 11x20 23-19 18. 14-18 22x15 19. 4-8 31-27 20. 5-9 27-23 21. 9-14\n' + \
            '19-16 22. 10x19x26 17x10x1 1/2-1/2\n'
+
+
+def test_translate_to_fen():
+    # Captive Cossacks - Pask's SOIC p. 83, Diagram 57
+    next_to_move = "white"
+    black_men = [17]
+    white_men = [26]
+    black_kings = [30]
+    white_kings = [27]
+    assert _translate_to_fen(next_to_move, black_men, white_men, black_kings, white_kings) == \
+        "W:W26,K27:B17,K30"
