@@ -100,7 +100,7 @@ class RCF2PDN:
                             game.white_kings, game.result, game.board_orientation, game.description, game.moves)
 
     def _get_game_result(self):
-        final_annotation = self.annotations[-1].lower()
+        final_annotation = self.annotations[-1][-1].lower()
         if "white wins" in final_annotation:
             result = "1-0"
         elif "black wins" in final_annotation:
@@ -188,6 +188,8 @@ class RCF2PDN:
                 break
 
     def _read_moves(self, stream):
+        moves = []
+        annotations = []
         while True:
             line = stream.readline()
             self.lineno += 1
@@ -199,9 +201,25 @@ class RCF2PDN:
                 raise IOError(f"Missing newline on line {self.lineno}")
             if annotation[0:2] == '. ':
                 annotation = annotation[2:]
-            self.moves.append(move)
-            self.annotations.append(annotation)
-
+            move_list = [int(sq) for sq in move.split('-')]
+            moves.append(move_list)
+            annotations.append(annotation)
+        # populate real moves list with move pairs
+        move_pair = []
+        annotation_pair = []
+        i = 0
+        while moves:
+            move_pair.append(moves.pop())
+            annotation_pair.append(annotations.pop()) 
+            if i % 2 == 1:
+                self.moves.append(move_pair)
+                self.annotations.append(annotation_pair)
+                move_pair.clear() 
+                annotation_pair.clear()
+                i = 0
+            else:
+                i += 1
+        
     def _read_turn(self, line):
         self.next_to_move = line.split("_")[0].lower()
 

@@ -243,6 +243,7 @@ def _translate_to_movetext(moves):
 
     moves.reverse()
     movetext = ""
+    movenum = 0
     while True:
         if len(moves) == 0:
             break
@@ -251,13 +252,17 @@ def _translate_to_movetext(moves):
             movetext += item.pop()
         else:
             item.reverse()
-            movenum = item.pop()
-            movetext += f"{movenum} "
+            movenum += 1
+            # use a pipe as a temporary delimiter so TextWrapper will treat each numbered move
+            # as a single item for wrapping. After the wrapping is done, the pipe characters
+            # will be replaced with spaces.  
+            # TODO: handle annotations also. 
+            movetext += f"{movenum}.|"
             black_move = item.pop()
             movetext += f"{_translate_to_text(black_move)}"
             if item:
                 white_move = item.pop()
-                movetext += f" {_translate_to_text(white_move)}"
+                movetext += f"|{_translate_to_text(white_move)}"
             if moves:
                 movetext += " "
     return movetext
@@ -294,6 +299,7 @@ class PDNWriter:
             for line in wrapper.wrap(description):
                 self.stream.write(line + '\n')
         for line in self._wrapper.wrap(_translate_to_movetext(moves)):
+            line = line.replace("|", " ")  # NOTE: see _translate_to_movetext function
             self.stream.write(line + '\n')
 
     @classmethod
