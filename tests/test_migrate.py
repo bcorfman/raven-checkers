@@ -123,22 +123,23 @@ def test_read_first_position_moves_string():
         assert cvt.moves == [[[23, 27], [28, 32]], [[19, 23], [32, 28]], [[27, 32], [28, 24]], [[23, 18], [24, 28]], [[18, 15], [28, 24]],
                              [[32, 28], [24, 27]], [[15, 18], [12, 16]], [[28, 32], [27, 24]], [[18, 15], [24, 28]], [[15, 11], [16, 19]],
                              [[32, 27], [28, 32]], [[27, 31], [19, 23]], [[11, 15], [32, 28]], [[15, 19]]]
-        assert cvt.annotations == [['', ''], ['', ''], ['', 'The early advance with 12-16 '\
-                                                            '[[./Training/KeyEndgames/support/FirstPosition_AlternativeA.rcf|'\
-                                                            'loses%20quickly%20for%20Black]].'],
+        assert cvt.annotations == [['', ''], ['', ''],
+                                   ['', 'The early advance with 12-16 '
+                                        '[[./Training/KeyEndgames/support/FirstPosition_AlternativeA.rcf|'
+                                        'loses%20quickly%20for%20Black]].'],
                                    ['Of course 32-28, and the exchange with 24-19, cannot be permitted.',
-                                    "This represents Black's most stubborn defense. However, there "\
-                                    '[[./Training/KeyEndgames/support/FirstPosition_AlternativeB1.rcf|are]] '\
-                                    '[[./Training/KeyEndgames/support/FirstPosition_AlternativeB2.rcf|three]] '\
-                                    '[[./Training/KeyEndgames/support/FirstPosition_AlternativeB3.rcf|alternatives]] '\
+                                    "This represents Black's most stubborn defense. However, there "
+                                    '[[./Training/KeyEndgames/support/FirstPosition_AlternativeB1.rcf|are]] '
+                                    '[[./Training/KeyEndgames/support/FirstPosition_AlternativeB2.rcf|three]] '
+                                    '[[./Training/KeyEndgames/support/FirstPosition_AlternativeB3.rcf|alternatives]] '
                                     'for White to master.'],
-                                   ['', ''], ['', 'Black could alternately play 24-20 here, leading to '\
-                                                  '[[./Training/KeyEndgames/support/FirstPosition_AlternativeC.rcf'\
+                                   ['', ''], ['', 'Black could alternately play 24-20 here, leading to '
+                                                  '[[./Training/KeyEndgames/support/FirstPosition_AlternativeC.rcf'
                                                   '|this%20line%20of%20play]].'],
                                    ['', 'Forced now, as 27-32 loses quickly after 18-23.'],
-                                   ['', ''], ['',''],
-                                   ["! Don't be tempted by 15-18?, as it "\
-                                   '[[./Training/KeyEndgames/support/FirstPosition_AlternativeD1.rcf'\
+                                   ['', ''], ['', ''],
+                                   ["! Don't be tempted by 15-18?, as it "
+                                   '[[./Training/KeyEndgames/support/FirstPosition_AlternativeD1.rcf'
                                    '|leads%20to%20a%20draw]].', ''],
                                    ['', ''], ['', ''], ['', ''], ['**White wins.**']]
 
@@ -193,10 +194,11 @@ def test_read_glasgow_moves_string():
     with StringIO(moves) as rcf:
         cvt = RCF2PDN()
         cvt._read_moves(rcf)
-        assert cvt.moves == [[[11, 15], [23, 19]], [[8, 11], [22, 17]], [[11, 16], [24, 20]], [[16, 23], [27, 11]], [[7, 16], [20, 11]],
-                             [[3, 7], [28, 24]], [[7, 16], [24, 20]], [[16, 19], [25, 22]], [[4, 8], [29, 25]], [[19, 24], [17, 14]],
-                             [[9, 18], [22, 15]], [[10, 19], [32, 28]], [[6, 10], [25, 22]], [[5, 9], [22, 18]], [[9, 14], [18, 9]],
-                             [[1, 5], [9, 6]], [[2, 9], [20, 16]], [[9, 14], [26, 23]], [[19, 26], [28, 19]], [[5, 9], [31, 22]]]
+        assert cvt.moves == [[[11, 15], [23, 19]], [[8, 11], [22, 17]], [[11, 16], [24, 20]], [[16, 23], [27, 11]],
+                             [[7, 16], [20, 11]], [[3, 7], [28, 24]], [[7, 16], [24, 20]], [[16, 19], [25, 22]],
+                             [[4, 8], [29, 25]], [[19, 24], [17, 14]], [[9, 18], [22, 15]], [[10, 19], [32, 28]],
+                             [[6, 10], [25, 22]], [[5, 9], [22, 18]], [[9, 14], [18, 9]], [[1, 5], [9, 6]],
+                             [[2, 9], [20, 16]], [[9, 14], [26, 23]], [[19, 26], [28, 19]], [[5, 9], [31, 22]]]
         assert cvt.annotations == [["", "!"], ["", ""], 
                                    ["These moves form the opening, which is excellent for inexperienced players to adopt.", ""], 
                                    ["", ""], ["", ""], ["", "The alternative 11-8 is also playable."], ["", ""], ["", ""], ["", ""],
