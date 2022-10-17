@@ -148,10 +148,10 @@ class GameManager(object):
         self._stop_updates()
         filename = self.filename
         if not self.filename:
-            filename = asksaveasfilename(filetypes=(('Raven Checkers files', '*.rcf'),
+            filename = asksaveasfilename(filetypes=(('Portable Draughts Notation files', '*.pdn'),
                                                     ('All files', '*.*')),
                                          initialdir=TRAINING_DIR,
-                                         defaultextension='.rcf')
+                                         defaultextension='.pdn')
             if filename == '':
                 return
         self._write_file(filename)

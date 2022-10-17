@@ -3,7 +3,7 @@ import os
 import textwrap
 from io import StringIO
 from pyparsing import Combine, Forward, Group, LineStart, LineEnd, Literal, OneOrMore, Optional, \
-    QuotedString, Suppress, Word, WordEnd, WordStart, ZeroOrMore, nums, one_of, rest_of_line, srange
+    QuotedString, Suppress, Word, WordEnd, WordStart, nums, one_of, rest_of_line, srange
 from typing import NamedTuple
 
 
@@ -52,7 +52,7 @@ _Variation = Forward()
 _GameBody = OneOrMore(_SingleGameMove | _DoubleGameMove | _Variation | _LineComment)('body')
 _Variation <<= Combine('(' + _GameBody + ')')
 _Game = (_GameHeader('header') + Optional(_GameBody)) | _GameBody
-_PDNStream = _Game + Suppress(ZeroOrMore(_Result + _Game)) + Suppress(_Result[0, 1])
+# _PDNStream = _Game + Suppress(ZeroOrMore(_Result + _Game)) + Suppress(_Result[0, 1])
 
 
 class PDNReader:
@@ -62,7 +62,6 @@ class PDNReader:
         self._lineno = 0
         self.games = []
         self._reset_pdn_vars()
-        self._read_stream()
 
     @classmethod
     def from_string(cls, pdn_string):
@@ -82,6 +81,9 @@ class PDNReader:
         self._site = None
         self._date = None
         self._round = None
+        self._event_name = None
+        self._black_name = None
+        self._white_name = None
         self._black_player = None
         self._white_player = None
         self._next_to_move = None
@@ -93,46 +95,9 @@ class PDNReader:
         self._orientation = None
         self._description = ""
         self._moves = []
-
-    def _read_stream(self):
-        parse_header = {"Event": self._read_event,
-                        "Site": self._read_site,
-                        "Date": self._read_date,
-                        "White": self._read_white_player,
-                        "Black": self._read_black_player,
-                        "BlackType": self._read_black_type,
-                        "WhiteType": self._read_white_type,
-                        "GameType": self._read_game_type,
-                        "Result": self._read_result,
-                        "FEN": self._read_fen,
-                        "BoardOrientation": self._read_board_orientation}
-        pdn = _PDNStream.search_string(self._stream.read())
-        for game in pdn:
-            if game.header:
-                for tag in game.header:
-                    if parse_header.get(tag.key):
-                        parse_header[tag.key](tag.value)
-            if game.comment:
-                self._description += game.comment
-            if game.body:
-                for item in game.body:
-                    if len(item) > 1:
-                        idx = 1
-                        move_list = [list(item[idx])]
-                        if item.comment1:
-                            idx += 1
-                            move_list.append(list(item[idx]))
-                        idx += 1
-                        move_list.append(list(item[idx]))
-                        if item.comment2:
-                            idx += 1
-                            move_list.append(item[idx])
-                        self._moves.append(move_list)
-                self.games.append(Game(self._event, self._site, self._date, self._round, self._black_player,
-                                       self._white_player, self._next_to_move, self._black_men, self._white_men,
-                                       self._black_kings, self._white_kings, self._result, self._orientation,
-                                       self._description, self._moves))
-                self._reset_pdn_vars()
+        self._annotations = []
+        self._game_idx = 0
+        self._game_names = []
 
     def _read_event(self, value):
         self._event = value
@@ -167,6 +132,90 @@ class PDNReader:
     def _read_board_orientation(self, value):
         self._board_orientation = value
 
+    def _start_game(self, _):
+        self._game_idx += 1
+
+    def _read_fen(self, value):
+        turn, first_squares, second_squares = value.split(":")
+        self._next_to_move = self._get_player_to_move(turn)
+        player = first_squares[0].upper()
+        if player == "W":
+            self._white_men, self._white_kings = self._get_player_pieces(first_squares)
+        elif player == "B":
+            self._black_men, self._black_kings = self._get_player_pieces(first_squares)
+        else:
+            raise SyntaxError("Unknown player type {player} in first set of FEN squares")
+        player = second_squares[0].upper()
+        if player == "W":
+            self._white_men, self._white_kings = self._get_player_pieces(second_squares)
+        elif player == "B":
+            self._black_men, self._black_kings = self._get_player_pieces(second_squares)
+        else:
+            raise SyntaxError("Unknown player type {player} in second set of FEN squares")
+
+    def get_game_list(self):
+        parse_header = {"[Event": self._read_event,
+                        "[White": self._read_white_player,
+                        "[Black": self._read_black_player,
+                        "1.": self._start_game,
+                        }
+
+        self._game_names = []
+        while True:
+            line = self._stream.readline()
+            if line == "":
+                break
+            for key in parse_header:
+                if line.lstrip().startswith(key):
+                    parse_header[key](line)
+                    break
+
+    def read_game(self, idx):
+        parse_header = {"Event": self._read_event,
+                        "Site": self._read_site,
+                        "Date": self._read_date,
+                        "White": self._read_white_player,
+                        "Black": self._read_black_player,
+                        "BlackType": self._read_black_type,
+                        "WhiteType": self._read_white_type,
+                        "GameType": self._read_game_type,
+                        "Result": self._read_result,
+                        "FEN": self._read_fen,
+                        "BoardOrientation": self._read_board_orientation}
+        pdn = _Game.search_string(self._stream.read())
+        for game in pdn:
+            if game.header:
+                for tag in game.header:
+                    if parse_header.get(tag.key):
+                        parse_header[tag.key](tag.value)
+            if game.comment:
+                self._description += game.comment
+            if game.body:
+                for item in game.body:
+                    if len(item) > 1:
+                        idx = 1
+                        moves = [list(item[idx])]
+                        annotations = []
+                        if item.comment1:
+                            idx += 1
+                            annotations.append(list(item[idx]))
+                        else:
+                            annotations.append("")
+                        idx += 1
+                        moves.append(list(item[idx]))
+                        if item.comment2:
+                            idx += 1
+                            annotations.append(item[idx])
+                        else:
+                            annotations.append("")
+                        self._moves.append(moves)
+
+                self.games.append(Game(self._event, self._site, self._date, self._round, self._black_player,
+                                       self._white_player, self._next_to_move, self._black_men, self._white_men,
+                                       self._black_kings, self._white_kings, self._result, self._orientation,
+                                       self._description, self._moves))
+                self._reset_pdn_vars()
+
     def _get_player_to_move(self, turn):
         turn = turn.upper()
         if turn == "B":
@@ -188,24 +237,6 @@ class PDNReader:
             else:
                 men.append(int(sq))
         return men, kings
-
-    def _read_fen(self, value):
-        turn, first_squares, second_squares = value.split(":")
-        self._next_to_move = self._get_player_to_move(turn)
-        player = first_squares[0].upper()
-        if player == "W":
-            self._white_men, self._white_kings = self._get_player_pieces(first_squares)
-        elif player == "B":
-            self._black_men, self._black_kings = self._get_player_pieces(first_squares)
-        else:
-            raise SyntaxError("Unknown player type {player} in first set of FEN squares")
-        player = second_squares[0].upper()
-        if player == "W":
-            self._white_men, self._white_kings = self._get_player_pieces(second_squares)
-        elif player == "B":
-            self._black_men, self._black_kings = self._get_player_pieces(second_squares)
-        else:
-            raise SyntaxError("Unknown player type {player} in second set of FEN squares")
 
 
 def _translate_to_fen(next_to_move, black_men, white_men, black_kings, white_kings):
@@ -291,7 +322,8 @@ class PDNWriter:
                 frozenset(white_men) != frozenset(range(21, 33))):
             self.stream.write('[SetUp "1"]')
             self.stream.write(f'[FEN "{result}"]\n')
-            for line in self._wrapper.wrap(_translate_to_fen(next_to_move, black_men, white_men, black_kings, white_kings)):
+            for line in self._wrapper.wrap(_translate_to_fen(next_to_move, black_men, white_men, black_kings,
+                                                             white_kings)):
                 self.stream.write(line + '\n')
         self.stream.write(f'[BoardOrientation "{board_orientation}"]\n')
         if description:

@@ -75,23 +75,23 @@ class SavedGame(object):
         with open(filename, 'r') as f:
             lines = f.readlines()
 
-        linelen = len(lines)
+        line_len = len(lines)
         i = 0
         while True:
-            if i >= linelen:
+            if i >= line_len:
                 break
 
             line = lines[i].strip()
             if line.startswith('<description>'):
                 self.description = ''
                 i += 1
-                while i < linelen and not lines[i].startswith('<setup>'):
+                while i < line_len and not lines[i].startswith('<setup>'):
                     self.description += lines[i]
                     i += 1
             elif line.startswith('<setup>'):
-                i = self._parse_setup(lines, i, linelen)
+                i = self._parse_setup(lines, i, line_len)
             elif line.startswith('<moves>'):
-                i = self._parse_moves(lines, i, linelen)
+                i = self._parse_moves(lines, i, line_len)
             else:
                 raise IOError('Unrecognized section in file, line %d' % (i+1))
 
