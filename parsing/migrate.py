@@ -207,11 +207,11 @@ class RCF2PDN:
         # populate real moves list with move pairs
         move_pair = []
         annotation_pair = []
-        i = 0
+        i = 1
         while moves:
             move_pair.append(moves.pop())
             annotation_pair.append(annotations.pop()) 
-            if i % 2 == 1:
+            if i % 2 == 0:
                 self.moves.append(move_pair)
                 self.annotations.append(annotation_pair)
                 move_pair.clear() 

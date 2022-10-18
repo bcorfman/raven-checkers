@@ -1,0 +1,36 @@
+<description>
+**White to move and win.**
+
+With 3 Kings v 2 Kings, there are three cases to be considered:
+
+# Where the defending kings occupy opposite double-corners;
+# Where the defending kings occupy the same double-corner;
+# Where the defending kings occupy the same single-corner.
+
+The first case is illustrated in this scenario.
+
+When the two Black kings occupy opposite double-corners, the win is effected by forcing an exchange. Black, of course, tries to avoid this.
+
+- From //Key Endings// by Richard Pask
+<setup>
+white_first
+2_player_game
+flip_board 1
+black_men 
+black_kings 9 27 
+white_men 
+white_kings 10 15 19 
+<moves>
+15-18;
+9-5;
+10-6;
+27-32; (if 5-1, White replies 18-15)
+19-23; (threatening 6-9)
+5-1;
+6-9;
+32-28; (if 1-5, White replies with 9-14, threatening two exchanges simultaneously on his next move)
+23-27; (forming the key position)
+1-5; (28-32 amounts to the same thing)
+27-23;
+5-14;
+18-9;. **White wins.**

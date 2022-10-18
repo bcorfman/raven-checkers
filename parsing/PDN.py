@@ -22,6 +22,8 @@ Game = NamedTuple("Game", [("event", str), ("site", str), ("date", str),
                            ("result", str), ("board_orientation", int),
                            ("description", str), ("moves", list)])
 
+GameTitle = NamedTuple("GameTitle", [("index", int), ("name", str)])
+
 _MoveStrength = one_of('! ?') | '(' + one_of('! ?') + ')'
 _Identifier = Word(srange('[A-Z]'), srange('[A-Za-z0-9_]'))
 _lbrace, _rbrace = map(Literal, "{}")
@@ -60,7 +62,8 @@ class PDNReader:
         self._stream = stream
         self._source = f"in {source}" if source else ""
         self._lineno = 0
-        self.games = []
+        self._games = []
+        self._namelist = []
         self._reset_pdn_vars()
 
     @classmethod
@@ -97,7 +100,7 @@ class PDNReader:
         self._moves = []
         self._annotations = []
         self._game_idx = 0
-        self._game_names = []
+        self._game_titles = []
 
     def _read_event(self, value):
         self._event = value
@@ -132,7 +135,12 @@ class PDNReader:
     def _read_board_orientation(self, value):
         self._board_orientation = value
 
-    def _start_game(self, _):
+    def _start_move_list(self, _):
+        if self._black_player and self._white_player:
+            title = f"{self._event}: {self._black_player} vs. {self._white_player}"
+        else:
+            title = f"{self._event}"  
+        self._game_titles.append(GameTitle(index=self._game_idx, name=title))
         self._game_idx += 1
 
     def _read_fen(self, value):
@@ -157,10 +165,10 @@ class PDNReader:
         parse_header = {"[Event": self._read_event,
                         "[White": self._read_white_player,
                         "[Black": self._read_black_player,
-                        "1.": self._start_game,
+                        "1.": self._start_move_list,
                         }
 
-        self._game_names = []
+        self._game_titles = []
         while True:
             line = self._stream.readline()
             if line == "":
@@ -169,6 +177,7 @@ class PDNReader:
                 if line.lstrip().startswith(key):
                     parse_header[key](line)
                     break
+        return self._game_titles
 
     def read_game(self, idx):
         parse_header = {"Event": self._read_event,
@@ -210,10 +219,10 @@ class PDNReader:
                             annotations.append("")
                         self._moves.append(moves)
 
-                self.games.append(Game(self._event, self._site, self._date, self._round, self._black_player,
-                                       self._white_player, self._next_to_move, self._black_men, self._white_men,
-                                       self._black_kings, self._white_kings, self._result, self._orientation,
-                                       self._description, self._moves))
+                self._games.append(Game(self._event, self._site, self._date, self._round, self._black_player,
+                                        self._white_player, self._next_to_move, self._black_men, self._white_men,
+                                        self._black_kings, self._white_kings, self._result, self._orientation,
+                                        self._description, self._moves))
                 self._reset_pdn_vars()
 
     def _get_player_to_move(self, turn):

@@ -220,7 +220,7 @@ def test_double_corner_block_white_wins():
     """ Final state of Pask's SOIC Chap 4, Diagram 44 (p. 79). White win. """
     game = checkers.Checkers()
     board = game.curr_state
-    board.to_move = WHITE
+    board.to_move = BLACK
     squares = board.squares
     board.clear()
     squares[35] = WHITE | KING
@@ -229,7 +229,7 @@ def test_double_corner_block_white_wins():
     squares[45] = BLACK | KING
     moves = game.legal_moves(board)
     assert moves == []
-    assert board.utility(BLACK) == -100
+    assert board.utility(WHITE) == -100
 
 
 def test_utility_func():
