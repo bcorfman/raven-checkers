@@ -5,23 +5,6 @@ from io import StringIO
 from parsing.PDN import Game, PDNWriter
 
 
-def _make_fen_sublist(tag, men, kings):
-    output = ''
-    if men or kings:
-        output += tag
-        if men:
-            output += _write_list(men)
-        if kings:
-            output += _write_list(kings)
-    return output
-
-
-def _write_list(items):
-    with StringIO() as s:
-        print(items, file=s, end='', sep=',')
-        return s.getvalue()
-
-
 class RCF2PDN:
     def __init__(self):
         self.description = []
@@ -86,12 +69,13 @@ class RCF2PDN:
         black_player = "Player1"
         white_player = "Player2"
         result = self._get_game_result()
+        orientation = "black_on_top" if self.flip_board == 1 else "white_on_top"
         description = ""
         for line in self.description:
             description += line
         self._game = Game(event, site, date, rnd, black_player, white_player, self.next_to_move, list(self.black_men),
-                          list(self.white_men), list(self.black_kings), list(self.white_kings), result, self.flip_board,
-                          description, self.moves)
+                          list(self.white_men), list(self.black_kings), list(self.white_kings), result, orientation,
+                          list(self.description), self.moves)
 
     def _write_output(self, pdn_stream):
         game = self._game
@@ -207,19 +191,23 @@ class RCF2PDN:
         # populate real moves list with move pairs
         move_pair = []
         annotation_pair = []
-        i = 1
+        i = 0
+        moves.reverse()
+        annotations.reverse()
         while moves:
             move_pair.append(moves.pop())
             annotation_pair.append(annotations.pop()) 
+            i += 1
             if i % 2 == 0:
-                self.moves.append(move_pair)
-                self.annotations.append(annotation_pair)
-                move_pair.clear() 
-                annotation_pair.clear()
-                i = 0
-            else:
-                i += 1
+                self.moves.append(move_pair[:])
+                self.annotations.append(annotation_pair[:])
+                move_pair = []
+                annotation_pair = []
+        if move_pair:
+            self.moves.append(move_pair[:])
+            self.annotations.append(annotation_pair[:])
         
+            
     def _read_turn(self, line):
         self.next_to_move = line.split("_")[0].lower()
 

@@ -284,17 +284,18 @@ def test_glasgow_rcf2pdn_string():
         assert pdn_str == '[Event "Glasgow opening"]\n' \
                           f'[Date "{now}"]\n' \
                           '[Round "*"]\n' \
-                          '[Black "Player2"]\n' \
-                          '[White "Player1"]\n' \
+                          '[Black "Player1"]\n' \
+                          '[White "Player2"]\n' \
                           '[Site "*"]\n' \
                           '[Result "*"]\n' \
+                          '[BoardOrientation "white_on_top"]\n' \
                           "; **Glasgow opening**, part of the 11-15 group\n" \
-                          "; 11-15 is considered Black's best opening move. It is so popular that it\n" \
-                          "; has branched off into more openings than any other initial move. Among the\n" \
-                          "; replies that can be recommended for White are 23-19 or 23-18 or 22-18 or\n" \
-                          "; 22-17. On the other hand, 24-20 and 24-19 and 21-17 are all considered\n" \
-                          "; inferior in varying degrees.\n" \
-                          "; - from //How to Win At Checkers// by Fred Reinfeld\n" \
+                          "; 11-15 is considered Black's best opening move. It is so popular that it " \
+                          "has branched off into more openings than any other initial move. Among the " \
+                          "replies that can be recommended for White are 23-19 or 23-18 or 22-18 or " \
+                          "22-17. On the other hand, 24-20 and 24-19 and 21-17 are all considered " \
+                          "inferior in varying degrees.\n" \
+                          "- from //How to Win At Checkers// by Fred Reinfeld\n" \
                           "1. 11-15 23-19!  2. 8-11 22-17  3. 11-16 {These moves form the opening, which is " \
                           "excellent for inexperienced players to adopt.} 24-20 4. 16-23 27x11  5. 7x16 20x11 " \
                           "6. 3-7 28-24 {The alternative 11-8 is also playable.}  7. 7x16 24-20  8. 16-19 25-22 " \

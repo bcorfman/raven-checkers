@@ -95,7 +95,7 @@ class PDNReader:
         self._black_kings = None
         self._white_kings = None
         self._result = None
-        self._orientation = None
+        self._flip_board = None
         self._description = ""
         self._moves = []
         self._annotations = []
@@ -133,7 +133,12 @@ class PDNReader:
         self._result = value
 
     def _read_board_orientation(self, value):
-        self._board_orientation = value
+        if value == "white_on_top":
+            self._flip_board = 0
+        elif value == "black_on_top":
+            self._flip_board = 1
+        else:
+            raise SyntaxError(f"Unknown {value} used in board_orientation tag.")
 
     def _start_move_list(self, _):
         if self._black_player and self._white_player:
@@ -221,7 +226,7 @@ class PDNReader:
 
                 self._games.append(Game(self._event, self._site, self._date, self._round, self._black_player,
                                         self._white_player, self._next_to_move, self._black_men, self._white_men,
-                                        self._black_kings, self._white_kings, self._result, self._orientation,
+                                        self._black_kings, self._white_kings, self._result, self._flip_board,
                                         self._description, self._moves))
                 self._reset_pdn_vars()
 
@@ -336,9 +341,8 @@ class PDNWriter:
                 self.stream.write(line + '\n')
         self.stream.write(f'[BoardOrientation "{board_orientation}"]\n')
         if description:
-            wrapper = textwrap.TextWrapper(width=79, initial_indent='; ', subsequent_indent='; ')
-            for line in wrapper.wrap(description):
-                self.stream.write(line + '\n')
+            for line in description:
+                self.stream.write(line)
         for line in self._wrapper.wrap(_translate_to_movetext(moves)):
             line = line.replace("|", " ")  # NOTE: see _translate_to_movetext function
             self.stream.write(line + '\n')
