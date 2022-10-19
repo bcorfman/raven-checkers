@@ -57,11 +57,11 @@ def test_parse_PDN_string_success():
                                       [[26, 23], [19, 26]], [[30, 23], [7, 3]], [[23, 18], [3, 8]],
                                       [[18, 15], ["1-0"]]]
 
-# def test_parse_PDN_file_success():
-#    pdn_file = os.path.join('training', 'OCA_2.0.pdn')
-#    reader = PDNReader.from_file(pdn_file)
-#    assert len(reader.games) == 22621
-#    assert reader.games[22620].event == "German Open 2004"
+def test_parse_PDN_file_success():
+    pdn_file = os.path.join('training', 'OCA_2.0.pdn')
+    reader = PDNReader.from_file(pdn_file)
+    assert len(reader.get_game_list()) == 22621
+    assert reader.read_game(22620).event == "German Open 2004"
 
 
 def test_write_PDN_file_success(tmp_path):
@@ -84,8 +84,11 @@ def test_write_PDN_file_success(tmp_path):
              [[8, 11], [24, 19]], [[15, 24], [28, 19]], [[3, 7], [25, 22]], [[11, 15], [32, 28]], [[15, 24], [28, 19]], 
              [[7, 11], [19, 16]], [[11, 20], [23, 19]], [[14, 18], [22, 15]], [[4, 8], [31, 27]], [[5, 9], [27, 23]],
              [[9, 14], [19, 16]], [[10, 19, 26], [17, 10, 1]], ['1/2-1/2']]
+    annotations = [[[], []], [[], []], [[], []], [[], []], [[], []], [[], []], [[], []], [[], []], [[], []], [[], []], 
+                   [[], []], [[], []], [[], []], [[], []], [[], []], [[], []], [[], []], [[], []], [[], []], [[], []], 
+                   [[], []], [[], []], [[]]]
     PDNWriter.to_file(pdn_filepath, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men, black_kings, white_kings,
-                      result, board_orientation, moves)
+                      result, board_orientation, moves, annotations)
     with open(pdn_filepath) as f1:
         with open(os.path.join('training', 'german_open_2004.pdn')) as f2:  
             assert f1.readlines() == f2.readlines()
@@ -110,8 +113,11 @@ def test_write_PDN_string_success():
              [[8, 11], [24, 19]], [[15, 24], [28, 19]], [[3, 7], [25, 22]], [[11, 15], [32, 28]], [[15, 24], [28, 19]], 
              [[7, 11], [19, 16]], [[11, 20], [23, 19]], [[14, 18], [22, 15]], [[4, 8], [31, 27]], [[5, 9], [27, 23]],
              [[9, 14], [19, 16]], [[10, 19, 26], [17, 10, 1]], ['1/2-1/2']]
+    annotations = [[[], []], [[], []], [[], []], [[], []], [[], []], [[], []], [[], []], [[], []], [[], []], [[], []], 
+                   [[], []], [[], []], [[], []], [[], []], [[], []], [[], []], [[], []], [[], []], [[], []], [[], []], 
+                   [[], []], [[], []], [[]]]
     pdn = PDNWriter.to_string(event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men, black_kings, white_kings, 
-                              result, board_orientation, moves)
+                              result, board_orientation, moves, annotations)
     assert pdn == '[Event "German Open 2004"]\n' + \
            '[Date "2004-05-01"]\n' + \
            '[Black "Morgan, John"]\n' + \

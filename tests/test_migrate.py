@@ -295,7 +295,7 @@ def test_glasgow_rcf2pdn_string():
                           "replies that can be recommended for White are 23-19 or 23-18 or 22-18 or " \
                           "22-17. On the other hand, 24-20 and 24-19 and 21-17 are all considered " \
                           "inferior in varying degrees.\n" \
-                          "- from //How to Win At Checkers// by Fred Reinfeld\n" \
+                          "; - from //How to Win At Checkers// by Fred Reinfeld\n" \
                           "1. 11-15 23-19!  2. 8-11 22-17  3. 11-16 {These moves form the opening, which is " \
                           "excellent for inexperienced players to adopt.} 24-20 4. 16-23 27x11  5. 7x16 20x11 " \
                           "6. 3-7 28-24 {The alternative 11-8 is also playable.}  7. 7x16 24-20  8. 16-19 25-22 " \

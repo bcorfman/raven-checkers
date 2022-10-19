@@ -20,7 +20,7 @@ Game = NamedTuple("Game", [("event", str), ("site", str), ("date", str),
                            ("next_to_move", str), ("black_men", list), ("white_men", list),
                            ("black_kings", list), ("white_kings", list),
                            ("result", str), ("board_orientation", int),
-                           ("description", str), ("moves", list)])
+                           ("description", str), ("moves", list), ("annotations", list)])
 
 GameTitle = NamedTuple("GameTitle", [("index", int), ("name", str)])
 
@@ -185,6 +185,26 @@ class PDNReader:
         return self._game_titles
 
     def read_game(self, idx):
+        # read up to the requested game index
+        if idx > 0:
+            num_games = 0
+            prior_loc = self._stream.tell()
+            line = self._stream.readline()
+            if line == "" or idx < num_games:
+                raise RuntimeError(f"Cannot find game number {idx+1}")
+
+            while True:
+                prior_loc = self._stream.tell()
+                line = self._stream.readline()
+                if line == "":
+                    raise RuntimeError(f"Cannot find game number {idx+1}")
+                if line.lstrip().startswith("[Event"):
+                    num_games += 1
+                if idx == num_games:
+                    self._stream.seek(prior_loc)
+                    break
+
+        # parse the game at the requested index
         parse_header = {"Event": self._read_event,
                         "Site": self._read_site,
                         "Date": self._read_date,
@@ -196,23 +216,6 @@ class PDNReader:
                         "Result": self._read_result,
                         "FEN": self._read_fen,
                         "BoardOrientation": self._read_board_orientation}
-
-        num_games = 1
-        if idx < num_games:
-            raise RuntimeError(f"Cannot find game number {idx}")
-
-        num_lines = 0
-        while True:
-            prior_loc = self._stream.tell()
-            line = self._stream.readline()
-            if line == "":
-                raise RuntimeError(f"Cannot find game number {idx}")
-            num_lines += 1
-            if line.lstrip().startswith("[Event"):
-                num_games += 1
-            if idx == num_games:
-                self._stream.seek(prior_loc)
-                break
 
         pdn = _Game.search_string(self._stream.read())
         for game in pdn:
@@ -298,7 +301,7 @@ def _translate_to_fen(next_to_move, black_men, white_men, black_kings, white_kin
     return fen
 
 
-def _translate_to_movetext(moves):
+def _translate_to_movetext(moves, annotations):
     def _translate_to_text(move):
         sq1, sq2 = move[0], move[1]
         sep = '-' if abs(sq1 - sq2) <= 5 else 'x'
@@ -323,9 +326,15 @@ def _translate_to_movetext(moves):
             movetext += f"{movenum}.|"
             black_move = item.pop()
             movetext += f"{_translate_to_text(black_move)}"
+            annotation = annotations.pop()
+            if annotation:
+                movetext += " {" + f"{annotation}" + "}"
             if item:
                 white_move = item.pop()
                 movetext += f"|{_translate_to_text(white_move)}"
+            annotation = annotations.pop()
+            if annotation:
+                movetext += " {" + f"{annotation}" + "}"
             if moves:
                 movetext += " "
     return movetext
@@ -333,15 +342,15 @@ def _translate_to_movetext(moves):
 
 class PDNWriter:
     def __init__(self, stream, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men,
-                 black_kings, white_kings, result, board_orientation, description, moves):
+                 black_kings, white_kings, result, board_orientation, description, moves, annotations):
         self.stream = stream
         self._wrapper = textwrap.TextWrapper(width=79)
         self._write(event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men, black_kings,
-                    white_kings, result, board_orientation, description, moves)
+                    white_kings, result, board_orientation, description, moves, annotations)
 
     def _write(self, event: str, site: str, date: str, rnd: str, black_player: str, white_player: str,
                next_to_move: str, black_men: list, white_men: list, black_kings: list, white_kings: list, result: str,
-               board_orientation: str, description: str, moves: list):
+               board_orientation: str, description: str, moves: list, annotations: list):
         self.stream.write(f'[Event "{event}"]\n')
         self.stream.write(f'[Date "{date}"]\n')
         if rnd:
@@ -361,27 +370,27 @@ class PDNWriter:
         if description:
             for line in description:
                 self.stream.write(line)
-        for line in self._wrapper.wrap(_translate_to_movetext(moves)):
+        for line in self._wrapper.wrap(_translate_to_movetext(moves, annotations)):
             line = line.replace("|", " ")  # NOTE: see _translate_to_movetext function
             self.stream.write(line + '\n')
 
     @classmethod
     def to_string(cls, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men,
-                  black_kings, white_kings, result, board_orientation, moves, description=""):
+                  black_kings, white_kings, result, board_orientation, moves, annotations, description=""):
         with StringIO() as stream:
             cls(stream, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men,
-                black_kings, white_kings, result, board_orientation, description, moves)
+                black_kings, white_kings, result, board_orientation, description, moves, annotations)
             return stream.getvalue()
 
     @classmethod
     def to_file(cls, filepath, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men,
-                black_kings, white_kings, result, board_orientation, moves, description=""):
+                black_kings, white_kings, result, board_orientation, moves, annotations, description=""):
         with open(filepath, 'w') as stream:
             cls(stream, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men,
-                black_kings, white_kings, result, board_orientation, description, moves)
+                black_kings, white_kings, result, board_orientation, description, moves, annotations)
 
     @classmethod
     def to_stream(cls, stream, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men,
-                  black_kings, white_kings, result, board_orientation, description, moves):
+                  black_kings, white_kings, result, board_orientation, moves, annotations, description=""):
         cls(stream, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men, black_kings,
-            white_kings, result, board_orientation, description, moves)
+            white_kings, result, board_orientation, description, moves, annotations)

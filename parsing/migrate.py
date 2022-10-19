@@ -72,10 +72,10 @@ class RCF2PDN:
         orientation = "black_on_top" if self.flip_board == 1 else "white_on_top"
         description = ""
         for line in self.description:
-            description += line
+            description += f"; {line}"
         self._game = Game(event, site, date, rnd, black_player, white_player, self.next_to_move, list(self.black_men),
                           list(self.white_men), list(self.black_kings), list(self.white_kings), result, orientation,
-                          list(self.description), self.moves)
+                          description, self.moves)
 
     def _write_output(self, pdn_stream):
         game = self._game
