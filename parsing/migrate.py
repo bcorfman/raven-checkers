@@ -75,13 +75,14 @@ class RCF2PDN:
             description += f"; {line}"
         self._game = Game(event, site, date, rnd, black_player, white_player, self.next_to_move, list(self.black_men),
                           list(self.white_men), list(self.black_kings), list(self.white_kings), result, orientation,
-                          description, self.moves)
+                          description, self.moves, self.annotations)
 
     def _write_output(self, pdn_stream):
         game = self._game
         PDNWriter.to_stream(pdn_stream, game.event, game.site, game.date, game.round, game.black_player,
                             game.white_player, game.next_to_move, game.black_men, game.white_men, game.black_kings,
-                            game.white_kings, game.result, game.board_orientation, game.description, game.moves)
+                            game.white_kings, game.result, game.board_orientation, game.description, game.moves,
+                            game.annotations)
 
     def _get_game_result(self):
         final_annotation = self.annotations[-1][-1].lower()
