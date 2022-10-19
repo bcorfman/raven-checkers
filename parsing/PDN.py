@@ -63,7 +63,7 @@ class PDNReader:
         self._source = f"in {source}" if source else ""
         self._lineno = 0
         self._games = []
-        self._namelist = []
+        self._game_titles = []
         self._reset_pdn_vars()
 
     @classmethod
@@ -196,6 +196,24 @@ class PDNReader:
                         "Result": self._read_result,
                         "FEN": self._read_fen,
                         "BoardOrientation": self._read_board_orientation}
+
+        num_games = 1
+        if idx < num_games:
+            raise RuntimeError(f"Cannot find game number {idx}")
+
+        num_lines = 0
+        while True:
+            prior_loc = self._stream.tell()
+            line = self._stream.readline()
+            if line == "":
+                raise RuntimeError(f"Cannot find game number {idx}")
+            num_lines += 1
+            if line.lstrip().startswith("[Event"):
+                num_games += 1
+            if idx == num_games:
+                self._stream.seek(prior_loc)
+                break
+
         pdn = _Game.search_string(self._stream.read())
         for game in pdn:
             if game.header:
