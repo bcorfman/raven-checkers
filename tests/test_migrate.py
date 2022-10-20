@@ -298,16 +298,20 @@ def test_glasgow_rcf2pdn_string():
                           "; - from //How to Win At Checkers// by Fred Reinfeld\n" \
                           "1. 11-15 23-19! 2. 8-11 22-17 3. 11-16 {These moves form the opening, which is " \
                           "excellent for inexperienced players to\n" \
-                          "adopt.} 24-20 4. 16-23 27x11 5. 7x16 20x11 6. 3-7 28-24 {The alternative 11-8 " \
+                          "adopt.} 24-20 4. 16x23 27x11 5. 7x16 20x11 6. 3-7 28-24 {The alternative 11-8 " \
                           "is also playable.} 7. 7x16 24-20\n" \
                           "8. 16-19 25-22 9. 4-8 29-25 10. 19-24 {This leads to\n" \
-                          "[[training/Openings/support/Glasgow_Alternate1.rcf|interesting%20complications]].} 17-14 {An interesting though only temporary sacrifice. \n" \
-                          "Instead, White can play safe with 17-13; 9-14, 26-23; etc.} 11. 9x18 22x15 12.10x19 \n" \
-                          "32-28 13. 6-10! {Now if White plays 26-23, Black wins with the \n" \
-                          "[[training/Openings/support/Glasgow_BlackWin.rcf|following%20line]].} 25-22 {If now 8-11, \n" \
-                          "White can draw with the [[training/Openings/support/Glasgow_Draw.rcf|following%20line]].} \n" \
-                          "14. 5-9 22-18 {If now 8-11 White plays 21-17 and holds the position despite the fact that \n" \
-                          'he is temporarily a man down. Black therefore "pitches" a man, and this leads to ' \
-                          'interesting complications.} 15. 9-14 18x9 16. 1-5 9-6 17. 2x9 20-16 18. 9-14 26-23 ' \
-                          "{The safest, at last recovering the sacrificed man.} 19. 19x26 28x19 20. 5-9 31x22 " \
-                          "{Even game.} *\n"
+                          "[[training/Openings/support/Glasgow_Alternate1.rcf|interesting%20complications]].} "\
+                          "17-14 {An interesting though only\n" \
+                          "temporary sacrifice. Instead, White can play safe with 17-13; 9-14, 26-23; etc.} " \
+                          "11. 9x18 22x15 12. 10x19 32-28\n" \
+                          "13. 6-10! {Now if White plays 26-23, Black wins with the\n" \
+                          "[[training/Openings/support/Glasgow_BlackWin.rcf|following%20line]].} " \
+                          "25-22 {If now 8-11, White can draw with the\n" \
+                          "[[training/Openings/support/Glasgow_Draw.rcf|following%20line]].} " \
+                          "14. 5-9 22-18 {If now 8-11 White plays 21-17 and\n" \
+                          "holds the position despite the fact that he is temporarily a man down. Black " \
+                          'therefore "pitches" a man, and this leads\n' \
+                          'to interesting complications.} 15. 9-14 18x9 16. 1-5 9-6 17. 2x9 20-16 18. 9-14 26-23 ' \
+                          "{The safest, at last recovering\n" \
+                          "the sacrificed man.} 19. 19x26 28x19 20. 5-9 31x22 {Even game.} *\n"

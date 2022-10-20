@@ -69,6 +69,9 @@ class RCF2PDN:
         black_player = "Player1"
         white_player = "Player2"
         result = self._get_game_result()
+        # add result as game terminator
+        self.moves.append([result])
+        self.annotations.append([""])
         orientation = "black_on_top" if self.flip_board == 1 else "white_on_top"
         description = ""
         for line in self.description:
@@ -207,7 +210,7 @@ class RCF2PDN:
         if move_pair:
             self.moves.append(move_pair[:])
             self.annotations.append(annotation_pair[:])
-
+            
     def _read_turn(self, line):
         self.next_to_move = line.split("_")[0].lower()
 

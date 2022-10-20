@@ -310,7 +310,7 @@ def _translate_to_fen(next_to_move, black_men, white_men, black_kings, white_kin
     return fen
 
 
-def _translate_to_movetext(moves, annotations):
+def _translate_to_movetext(moves: list, annotations: list, result: str):
     def _translate_to_text(move):
         sq1, sq2 = move[0], move[1]
         sep = '-' if abs(sq1 - sq2) <= 5 else 'x'
@@ -342,8 +342,8 @@ def _translate_to_movetext(moves, annotations):
             movetext += f"{movenum}.`"
             black_move = item.pop()
             comment = anno.pop()
-            if comment and comment in ['!', '?']:
-                tokens = comment.split()
+            if comment and comment[0] in ['!', '?']:
+                tokens = comment.split(maxsplit=1)
                 black_strength = tokens[0]
                 comment = tokens[1] if len(tokens) > 1 else ""
             else:
@@ -357,7 +357,7 @@ def _translate_to_movetext(moves, annotations):
                 white_move = item.pop()
                 comment = anno.pop()
                 if comment and comment[0] in ['!', '?']:
-                    tokens = comment.split()
+                    tokens = comment.split(maxsplit=1)
                     white_strength = tokens[0]
                     comment = tokens[1] if len(tokens) > 1 else ""
                 else:
@@ -365,8 +365,7 @@ def _translate_to_movetext(moves, annotations):
                 movetext += f"{_translate_to_text(white_move)}{white_strength}"
                 if comment:
                     movetext += " {" + f"{comment}" + "}"
-            if moves:
-                movetext += " "
+            movetext += " "
     return movetext
 
 
@@ -400,7 +399,7 @@ class PDNWriter:
         if description:
             for line in description:
                 self.stream.write(line)
-        for line in self._wrapper.wrap(_translate_to_movetext(moves, annotations)):
+        for line in self._wrapper.wrap(_translate_to_movetext(moves, annotations, result)):
             line = line.replace("`", " ")  # NOTE: see _translate_to_movetext function
             self.stream.write(line + '\n')
 
