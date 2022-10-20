@@ -362,7 +362,7 @@ class BoardView(Observer):
         cmd = Command(add=add_lst, remove=rem_lst)
         self._draw_checkers(cmd)
         self.txt.delete('1.0', END)
-        #self.serializer.restore(move.annotation)
+        # self.serializer.restore(move.annotation)
         self.curr_annotation = move.annotation
         if self.txt.get('1.0', 'end').strip() == '':
             start = keymap[move.affected_squares[FIRST][0]]
@@ -371,7 +371,7 @@ class BoardView(Observer):
             self.txt.insert('1.0', move_str)
 
     def get_annotation(self):
-        #return self.serializer.dump()
+        # return self.serializer.dump()
         pass
 
     def erase_checker(self, index):

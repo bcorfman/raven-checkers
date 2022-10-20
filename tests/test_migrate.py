@@ -46,12 +46,12 @@ def test_read_first_position_description_string():
                                    "in its early stages, and take the appropriate action. Aside from the attacker, "
                                    "having the Opposition, here White, the following conditions must also hold:\n",
                                    "# At least one of the defender's pieces is a single man rather than a king.\n",
-                                   "# The attacker has, or can develop, two kings while keeping the defender's " 
-                                   "single man pinned to the right-hand side of the board. Typically, this man " 
-                                   "will initially be placed on square 3, 4 or 12. Of course, if it was placed " 
-                                   "on square 1 or 2, then it would have free access to White's left-hand side, " 
+                                   "# The attacker has, or can develop, two kings while keeping the defender's "
+                                   "single man pinned to the right-hand side of the board. Typically, this man "
+                                   "will initially be placed on square 3, 4 or 12. Of course, if it was placed "
+                                   "on square 1 or 2, then it would have free access to White's left-hand side, "
                                    "and the position would just be a draw.\n",
-                                   "# The defender's other piece, which becomes a king (in the double-corner), is " 
+                                   "# The defender's other piece, which becomes a king (in the double-corner), is "
                                    "unable to reach the sanctuary of the opposite double-corner.\n",
                                    "Broadly speaking, White's winning procedure consists of attacking Black's king, "
                                    "immobilizing it, and forcing Black's single man to advance into trouble. "
@@ -120,9 +120,10 @@ def test_read_first_position_moves_string():
     with StringIO(moves) as rcf:
         cvt = RCF2PDN()
         cvt._read_moves(rcf)
-        assert cvt.moves == [[[23, 27], [28, 32]], [[19, 23], [32, 28]], [[27, 32], [28, 24]], [[23, 18], [24, 28]], [[18, 15], [28, 24]],
-                             [[32, 28], [24, 27]], [[15, 18], [12, 16]], [[28, 32], [27, 24]], [[18, 15], [24, 28]], [[15, 11], [16, 19]],
-                             [[32, 27], [28, 32]], [[27, 31], [19, 23]], [[11, 15], [32, 28]], [[15, 19]]]
+        assert cvt.moves == [[[23, 27], [28, 32]], [[19, 23], [32, 28]], [[27, 32], [28, 24]], [[23, 18], [24, 28]],
+                             [[18, 15], [28, 24]], [[32, 28], [24, 27]], [[15, 18], [12, 16]], [[28, 32], [27, 24]],
+                             [[18, 15], [24, 28]], [[15, 11], [16, 19]], [[32, 27], [28, 32]], [[27, 31], [19, 23]],
+                             [[11, 15], [32, 28]], [[15, 19]]]
         assert cvt.annotations == [['', ''], ['', ''],
                                    ['', 'The early advance with 12-16 '
                                         '[[./Training/KeyEndgames/support/FirstPosition_AlternativeA.rcf|'
@@ -140,7 +141,7 @@ def test_read_first_position_moves_string():
                                    ['', ''], ['', ''],
                                    ["! Don't be tempted by 15-18?, as it "
                                    '[[./Training/KeyEndgames/support/FirstPosition_AlternativeD1.rcf'
-                                   '|leads%20to%20a%20draw]].', ''],
+                                    '|leads%20to%20a%20draw]].', ''],
                                    ['', ''], ['', ''], ['', ''], ['**White wins.**']]
 
 
@@ -200,18 +201,25 @@ def test_read_glasgow_moves_string():
                              [[6, 10], [25, 22]], [[5, 9], [22, 18]], [[9, 14], [18, 9]], [[1, 5], [9, 6]],
                              [[2, 9], [20, 16]], [[9, 14], [26, 23]], [[19, 26], [28, 19]], [[5, 9], [31, 22]]]
         assert cvt.annotations == [["", "!"], ["", ""], 
-                                   ["These moves form the opening, which is excellent for inexperienced players to adopt.", ""], 
-                                   ["", ""], ["", ""], ["", "The alternative 11-8 is also playable."], ["", ""], ["", ""], ["", ""],
-                                   ["This leads to [[training/Openings/support/Glasgow_Alternate1.rcf|interesting%20complications]].",
-                                   "An interesting though only temporary sacrifice. Instead, White can play safe with 17-13; 9-14, 26-23; etc."],
+                                   ["These moves form the opening, which is excellent for inexperienced players to "
+                                    "adopt.", ""],
+                                   ["", ""], ["", ""], ["", "The alternative 11-8 is also playable."], ["", ""],
                                    ["", ""], ["", ""],
-                                   [r"! Now if White plays 26-23, Black wins with the [[training/Openings/support/Glasgow_BlackWin.rcf|following%20line]].",
-                                    r"If now 8-11, White can draw with the [[training/Openings/support/Glasgow_Draw.rcf|following%20line]]."],
+                                   ["This leads to [[training/Openings/support/Glasgow_Alternate1.rcf|"
+                                    "interesting%20complications]].",
+                                   "An interesting though only temporary sacrifice. Instead, White can play safe with "
+                                    "17-13; 9-14, 26-23; etc."],
+                                   ["", ""], ["", ""],
+                                   [r"! Now if White plays 26-23, Black wins with the "
+                                    r"[[training/Openings/support/Glasgow_BlackWin.rcf|following%20line]].",
+                                    r"If now 8-11, White can draw with the "
+                                    r"[[training/Openings/support/Glasgow_Draw.rcf|following%20line]]."],
                                    ["",
-                                   "If now 8-11 White plays 21-17 and holds the position despite the fact that he is "
-                                   'temporarily a man down. Black therefore "pitches" a man, and this leads to '
-                                   "interesting complications."],
-                                   ["", ""], ["", ""], ["", ""], ["", "The safest, at last recovering the sacrificed man."],
+                                    "If now 8-11 White plays 21-17 and holds the position despite the fact that he is "
+                                    'temporarily a man down. Black therefore "pitches" a man, and this leads to '
+                                    "interesting complications."],
+                                   ["", ""], ["", ""], ["", ""],
+                                   ["", "The safest, at last recovering the sacrificed man."],
                                    ["", ""], ["", "Even game."]]
 
 

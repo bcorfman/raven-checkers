@@ -153,7 +153,7 @@ class PDNReader:
         if self._black_player and self._white_player:
             title = f"{self._event}: {self._black_player} vs. {self._white_player}"
         else:
-            title = f"{self._event}"  
+            title = f"{self._event}"
         self._game_titles.append(GameTitle(index=self._game_idx, name=title))
         self._game_idx += 1
 

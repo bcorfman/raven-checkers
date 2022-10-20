@@ -200,7 +200,7 @@ class RCF2PDN:
         annotations.reverse()
         while moves:
             move_pair.append(moves.pop())
-            annotation_pair.append(annotations.pop()) 
+            annotation_pair.append(annotations.pop())
             i += 1
             if i % 2 == 0:
                 self.moves.append(move_pair[:])
@@ -210,7 +210,7 @@ class RCF2PDN:
         if move_pair:
             self.moves.append(move_pair[:])
             self.annotations.append(annotation_pair[:])
-            
+
     def _read_turn(self, line):
         self.next_to_move = line.split("_")[0].lower()
 
