@@ -76,8 +76,17 @@ class PDNReader:
         filename = os.path.basename(filepath)
         with open(filepath, 'rb') as test:
             pdn_encoding = charset_normalizer.detect(test.read())['encoding']
-            with open(filepath, encoding=pdn_encoding) as stream:
-                return cls(stream, filename)
+            stream = open(filepath, encoding=pdn_encoding)
+            return cls(stream, filename)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_t, exc_v, trace):
+        self.close()
+
+    def close(self):
+        self._stream.close()
 
     def _reset_pdn_vars(self):
         self._event = None
@@ -182,22 +191,22 @@ class PDNReader:
                 if line.lstrip().startswith(key):
                     parse_header[key](line)
                     break
+        self._stream.seek(0)
         return self._game_titles
 
     def read_game(self, idx):
         # read up to the requested game index
         if idx > 0:
             num_games = 0
-            prior_loc = self._stream.tell()
             line = self._stream.readline()
             if line == "" or idx < num_games:
-                raise RuntimeError(f"Cannot find game number {idx+1}")
+                raise RuntimeError(f"Cannot find game number {idx}")
 
             while True:
                 prior_loc = self._stream.tell()
                 line = self._stream.readline()
                 if line == "":
-                    raise RuntimeError(f"Cannot find game number {idx+1}")
+                    raise RuntimeError(f"Cannot find game number {idx}")
                 if line.lstrip().startswith("[Event"):
                     num_games += 1
                 if idx == num_games:
@@ -244,12 +253,12 @@ class PDNReader:
                         else:
                             annotations.append("")
                         self._moves.append(moves)
+                        self._annotations.append(annotations)
 
-                self._games.append(Game(self._event, self._site, self._date, self._round, self._black_player,
-                                        self._white_player, self._next_to_move, self._black_men, self._white_men,
-                                        self._black_kings, self._white_kings, self._result, self._flip_board,
-                                        self._description, self._moves))
-                self._reset_pdn_vars()
+                return Game(self._event, self._site, self._date, self._round, self._black_player,
+                            self._white_player, self._next_to_move, self._black_men, self._white_men,
+                            self._black_kings, self._white_kings, self._result, self._flip_board,
+                            self._description, self._moves, self._annotations)
 
     def _get_player_to_move(self, turn):
         turn = turn.upper()
@@ -308,33 +317,54 @@ def _translate_to_movetext(moves, annotations):
         return sep.join([str(n) for n in move])
 
     moves.reverse()
+    if annotations:
+        annotations.reverse()
     movetext = ""
     movenum = 0
     while True:
         if len(moves) == 0:
             break
         item = moves.pop()
+        if annotations:
+            anno = annotations.pop()
+        else:
+            anno = ["", ""]
+
         if len(item) == 1:
             movetext += item.pop()
         else:
             item.reverse()
+            anno.reverse()
             movenum += 1
             # use a pipe as a temporary delimiter so TextWrapper will treat each numbered move
             # as a single item for wrapping. After the wrapping is done, the pipe characters
-            # will be replaced with spaces.  
-            # TODO: handle annotations also. 
-            movetext += f"{movenum}.|"
+            # will be replaced with spaces.
+            movetext += f"{movenum}.`"
             black_move = item.pop()
-            movetext += f"{_translate_to_text(black_move)}"
-            annotation = annotations.pop()
-            if annotation:
-                movetext += " {" + f"{annotation}" + "}"
+            comment = anno.pop()
+            if comment and comment in ['!', '?']:
+                tokens = comment.split()
+                black_strength = tokens[0]
+                comment = tokens[1] if len(tokens) > 1 else ""
+            else:
+                black_strength = ""
+            movetext += f"{_translate_to_text(black_move)}{black_strength}"
+            if comment:
+                movetext += " {" + f"{comment}" + "} "
+            else:
+                movetext += "`"
             if item:
                 white_move = item.pop()
-                movetext += f"|{_translate_to_text(white_move)}"
-            annotation = annotations.pop()
-            if annotation:
-                movetext += " {" + f"{annotation}" + "}"
+                comment = anno.pop()
+                if comment and comment[0] in ['!', '?']:
+                    tokens = comment.split()
+                    white_strength = tokens[0]
+                    comment = tokens[1] if len(tokens) > 1 else ""
+                else:
+                    white_strength = ""
+                movetext += f"{_translate_to_text(white_move)}{white_strength}"
+                if comment:
+                    movetext += " {" + f"{comment}" + "}"
             if moves:
                 movetext += " "
     return movetext
@@ -344,7 +374,7 @@ class PDNWriter:
     def __init__(self, stream, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men,
                  black_kings, white_kings, result, board_orientation, description, moves, annotations):
         self.stream = stream
-        self._wrapper = textwrap.TextWrapper(width=79)
+        self._wrapper = textwrap.TextWrapper(width=119)  # minus one character for line feed
         self._write(event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men, black_kings,
                     white_kings, result, board_orientation, description, moves, annotations)
 
@@ -371,12 +401,12 @@ class PDNWriter:
             for line in description:
                 self.stream.write(line)
         for line in self._wrapper.wrap(_translate_to_movetext(moves, annotations)):
-            line = line.replace("|", " ")  # NOTE: see _translate_to_movetext function
+            line = line.replace("`", " ")  # NOTE: see _translate_to_movetext function
             self.stream.write(line + '\n')
 
     @classmethod
     def to_string(cls, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men,
-                  black_kings, white_kings, result, board_orientation, moves, annotations, description=""):
+                  black_kings, white_kings, result, board_orientation, moves, annotations=None, description=""):
         with StringIO() as stream:
             cls(stream, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men,
                 black_kings, white_kings, result, board_orientation, description, moves, annotations)
@@ -384,13 +414,13 @@ class PDNWriter:
 
     @classmethod
     def to_file(cls, filepath, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men,
-                black_kings, white_kings, result, board_orientation, moves, annotations, description=""):
+                black_kings, white_kings, result, board_orientation, moves, annotations=None, description=""):
         with open(filepath, 'w') as stream:
             cls(stream, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men,
                 black_kings, white_kings, result, board_orientation, description, moves, annotations)
 
     @classmethod
     def to_stream(cls, stream, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men,
-                  black_kings, white_kings, result, board_orientation, moves, annotations, description=""):
+                  black_kings, white_kings, result, board_orientation, moves, annotations=None, description=""):
         cls(stream, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men, black_kings,
             white_kings, result, board_orientation, description, moves, annotations)

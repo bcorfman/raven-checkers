@@ -81,8 +81,8 @@ class RCF2PDN:
         game = self._game
         PDNWriter.to_stream(pdn_stream, game.event, game.site, game.date, game.round, game.black_player,
                             game.white_player, game.next_to_move, game.black_men, game.white_men, game.black_kings,
-                            game.white_kings, game.result, game.board_orientation, game.description, game.moves,
-                            game.annotations)
+                            game.white_kings, game.result, game.board_orientation, game.moves, game.annotations,
+                            game.description)
 
     def _get_game_result(self):
         final_annotation = self.annotations[-1][-1].lower()
@@ -207,8 +207,7 @@ class RCF2PDN:
         if move_pair:
             self.moves.append(move_pair[:])
             self.annotations.append(annotation_pair[:])
-        
-            
+
     def _read_turn(self, line):
         self.next_to_move = line.split("_")[0].lower()
 
