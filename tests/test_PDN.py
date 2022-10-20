@@ -89,7 +89,7 @@ def test_write_PDN_file_success(tmp_path):
     PDNWriter.to_file(pdn_filepath, event, site, date, rnd, black_player, white_player, next_to_move, black_men,
                       white_men, black_kings, white_kings, result, board_orientation, moves)
     with open(pdn_filepath) as f1:
-        with open(os.path.join('training', 'german_open_2004.pdn')) as f2:  
+        with open(os.path.join('training', 'german_open_2004.pdn')) as f2:
             assert f1.readlines() == f2.readlines()
 
 

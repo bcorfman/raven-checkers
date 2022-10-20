@@ -200,7 +200,7 @@ def test_read_glasgow_moves_string():
                              [[4, 8], [29, 25]], [[19, 24], [17, 14]], [[9, 18], [22, 15]], [[10, 19], [32, 28]],
                              [[6, 10], [25, 22]], [[5, 9], [22, 18]], [[9, 14], [18, 9]], [[1, 5], [9, 6]],
                              [[2, 9], [20, 16]], [[9, 14], [26, 23]], [[19, 26], [28, 19]], [[5, 9], [31, 22]]]
-        assert cvt.annotations == [["", "!"], ["", ""], 
+        assert cvt.annotations == [["", "!"], ["", ""],
                                    ["These moves form the opening, which is excellent for inexperienced players to "
                                     "adopt.", ""],
                                    ["", ""], ["", ""], ["", "The alternative 11-8 is also playable."], ["", ""],
