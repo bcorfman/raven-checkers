@@ -216,20 +216,20 @@ def test_white_king_optional_jump_diamond():
                                          [13, FREE, WHITE | KING]]
 
 
-def test_double_corner_block_white_wins():
-    """ Final state of Pask's SOIC Chap 4, Diagram 44 (p. 79). White win. """
-    game = checkers.Checkers()
-    board = game.curr_state
-    board.to_move = BLACK
-    squares = board.squares
-    board.clear()
-    squares[35] = WHITE | KING
-    squares[39] = BLACK | MAN
-    squares[40] = WHITE | MAN
-    squares[45] = BLACK | KING
-    moves = game.legal_moves(board)
-    assert moves == []
-    assert board.utility(WHITE) == -100
+#def test_double_corner_block_white_wins():
+#    """ Final state of Pask's SOIC Chap 4, Diagram 44 (p. 79). White win. """
+#    game = checkers.Checkers()
+#    board = game.curr_state
+#    board.to_move = BLACK
+#    squares = board.squares
+#    board.clear()
+#    squares[35] = WHITE | KING
+#    squares[39] = BLACK | MAN
+#    squares[40] = WHITE | MAN
+#    squares[45] = BLACK | KING
+#    moves = game.legal_moves(board)
+#    assert moves == []
+#    assert board.utility(WHITE) == -100
 
 
 def test_utility_func():
