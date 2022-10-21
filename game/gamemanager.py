@@ -8,6 +8,7 @@ from gui.boardview import BoardView
 from gui.playercontroller import PlayerController
 from gui.alphabetacontroller import AlphaBetaController
 from parsing.gamepersist import SavedGame
+from parsing.
 
 
 class GameManager(object):
@@ -21,6 +22,7 @@ class GameManager(object):
         self.view = BoardView(self._root, model=self.model, parent=self,
                               statusbar=statusbar)
         self.player_color = BLACK
+        self.think_time = self.parent.thinkTime.get()
         self.num_players = 1
         self.controller1 = None
         self.controller2 = None
@@ -29,7 +31,6 @@ class GameManager(object):
         self.filename = None
 
     def set_controllers(self):
-        think_time = self.parent.thinkTime.get()
         if self.num_players == 0:
             self.controller1 = AlphaBetaController(model=self.model,
                                                    view=self.view,
@@ -99,11 +100,13 @@ class GameManager(object):
     def load_game(self, filename):
         self._stop_updates()
         try:
-            saved_game = SavedGame()
-            saved_game.read(filename)
+            reader = PDNReader.from_file(filename)
+            # saved_game = SavedGame()
+            # saved_game.read(filename)
             self.model.curr_state.clear()
             self.model.curr_state.to_move = saved_game.to_move
             self.num_players = saved_game.num_players
+            # this section will work
             squares = self.model.curr_state.squares
             for i in saved_game.black_men:
                 squares[square_map[i]] = BLACK | MAN
@@ -129,7 +132,8 @@ class GameManager(object):
     def open_game(self):
         self._stop_updates()
         self._save_curr_game_if_needed()
-        f = askopenfilename(filetypes=(('Raven Checkers files', '*.rcf'), ('All files', '*.*')),
+        f = askopenfilename(filetypes=(('Portable Draughts Notation files', '*.pdn'),
+                                       ('Raven Checkers files', '*.rcf'), ('All files', '*.*')),
                             initialdir=TRAINING_DIR)
         if not f:
             return
