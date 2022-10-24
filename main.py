@@ -1,6 +1,5 @@
 import os
 from tkinter import IntVar, Menu, Tk
-import tkinter as tk
 from tkinter.messagebox import askyesnocancel
 from multiprocessing import freeze_support
 from util.globalconst import RAVEN_ICON, VERSION, TITLE, BLACK, get_preferences_from_file, write_preferences_to_file
@@ -20,7 +19,7 @@ class MainFrame(CenteredWindow):
         self.root.protocol('WM_DELETE_WINDOW', self._on_close)
         self.thinkTime = IntVar(value=5)
         self.manager = GameManager(root=self.root, parent=self)
-        self.menu_bar = tk.Menu(self.root)
+        self.menu_bar = Menu(self.root)
         self.create_game_menu()
         self.create_options_menu()
         self.create_help_menu()
@@ -42,7 +41,7 @@ class MainFrame(CenteredWindow):
         if not filename:
             self.root.title(TITLE)
         else:
-            self.root.title(TITLE + ' - ' + os.path.basename(filename))
+            self.root.title(TITLE + ' - ' + filename)
 
     def undo_all_moves(self, *args):
         self.stop_processes()

@@ -1,8 +1,9 @@
+import os
 from tkinter import Label, SUNKEN, NW
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 from tkinter.messagebox import askyesnocancel, showerror
 from util.globalconst import BLACK, WHITE, TITLE, VERSION, KING, MAN, PROGRAM_TITLE, TRAINING_DIR
-from util.globalconst import keymap
+from util.globalconst import square_map, keymap
 from game.checkers import Checkers
 from gui.boardview import BoardView
 from gui.filelist import FileList
@@ -29,7 +30,7 @@ class GameManager(object):
         self.controller2 = None
         self.set_controllers()
         self.controller1.start_turn()
-        self.filename = None
+        self.filepath = None
 
     def set_controllers(self):
         if self.num_players == 0:
@@ -72,8 +73,8 @@ class GameManager(object):
     def _save_curr_game_if_needed(self):
         if self.view.is_dirty():
             msg = 'Do you want to save your changes'
-            if self.filename:
-                msg += ' to %s?' % self.filename
+            if self.filepath:
+                msg += ' to %s?' % self.filepath
             else:
                 msg += '?'
             result = askyesnocancel(TITLE, msg)
@@ -86,7 +87,7 @@ class GameManager(object):
     def new_game(self):
         self._stop_updates()
         self._save_curr_game_if_needed()
-        self.filename = None
+        self.filepath = None
         self._root.title('Raven ' + VERSION)
         self.model = Checkers()
         self.player_color = BLACK
@@ -98,39 +99,45 @@ class GameManager(object):
         self.view.curr_annotation = ''
         self.controller1.start_turn()
 
-    def load_game(self, filename):
+    def load_game(self, filepath):
         self._stop_updates()
         try:
-            reader = PDNReader.from_file(filename)
+            reader = PDNReader.from_file(filepath)
             game_list = reader.get_game_list()
+            game = None
             if len(game_list) > 1:
-                FileList(self._root, game_list)
+                dlg = FileList(self._root, game_list)
+                if dlg.result:
+                    game = reader.read_game(dlg.result)
             else:
                 game = reader.read_game(0)
-                print(game)
-            # self.model.curr_state.clear()
-            # self.model.curr_state.to_move = saved_game.to_move
-            # self.num_players = saved_game.num_players
-            # this section will work
-            # squares = self.model.curr_state.squares
-            # for i in saved_game.black_men:
-            #     squares[square_map[i]] = BLACK | MAN
-            # for i in saved_game.black_kings:
-            #     squares[square_map[i]] = BLACK | KING
-            # for i in saved_game.white_men:
-            #     squares[square_map[i]] = WHITE | MAN
-            # for i in saved_game.white_kings:
-            #     squares[square_map[i]] = WHITE | KING
-            # self.model.curr_state.reset_undo()
-            # self.model.curr_state.redo_list = saved_game.moves
-            # self.model.curr_state.update_piece_count()
-            # self.view.reset_view(self.model)
-            # self.view.serializer.restore(saved_game.description)
-            # self.view.curr_annotation = self.view.get_annotation()
-            # self.view.flip_board(saved_game.flip_board)
-            # self.view.update_statusbar()
-            # self.parent.set_title_bar_filename(filename)
-            # self.filename = filename
+            if game is not None:
+                self.model.curr_state.clear()
+                self.model.curr_state.to_move = game.next_to_move
+                self.num_players = 2 
+                if game.black_player.startswith("Computer"):
+                    self.num_players -= 1
+                if game.white_player.startswith("Computer"):
+                    self.num_players -= 1
+                squares = self.model.curr_state.squares
+                for i in game.black_men:
+                    squares[square_map[i]] = BLACK | MAN
+                for i in game.black_kings:
+                    squares[square_map[i]] = BLACK | KING
+                for i in game.white_men:
+                    squares[square_map[i]] = WHITE | MAN
+                for i in game.white_kings:
+                    squares[square_map[i]] = WHITE | KING
+                self.model.curr_state.reset_undo()
+                self.model.curr_state.redo_list = game.moves
+                self.model.curr_state.update_piece_count()
+                self.view.reset_view(self.model)
+                # self.view.serializer.restore(saved_game.description)
+                self.view.curr_annotation = self.view.get_annotation()
+                self.view.flip_board(game.flip_board)
+                self.view.update_statusbar()
+                self.parent.set_title_bar_filename(os.path.basename(filepath))
+                self.filepath = filepath
         except IOError as err:
             showerror(PROGRAM_TITLE, 'Invalid file. ' + str(err))
 
@@ -155,8 +162,8 @@ class GameManager(object):
 
     def save_game(self):
         self._stop_updates()
-        filename = self.filename
-        if not self.filename:
+        filename = self.filepath
+        if not self.filepath:
             filename = asksaveasfilename(filetypes=(('Portable Draughts Notation files', '*.pdn'),
                                                     ('All files', '*.*')),
                                          initialdir=TRAINING_DIR,
@@ -200,7 +207,7 @@ class GameManager(object):
                 self.model.curr_state.redo_move(None, annotation)
             # record current filename in title bar
             self.parent.set_title_bar_filename(filename)
-            self.filename = filename
+            self.filepath = filename
         except IOError:
             showerror(PROGRAM_TITLE, 'Could not save file.')
 
