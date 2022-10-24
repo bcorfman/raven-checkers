@@ -61,9 +61,15 @@ def test_parse_PDN_string_success():
 def test_parse_PDN_file_success():
     pdn_file = os.path.join('training', 'OCA_2.0.pdn')
     with PDNReader.from_file(pdn_file) as reader:
-        assert len(reader.get_game_list()) == 22621
+        game_list = reader.get_game_list()
+        assert len(game_list) == 22621
+        assert game_list[5].name == "Edinburgh 1847, game 2: Anderson, A. vs. Wyllie, J."
         game = reader.read_game(22620)
         assert game.event == "German Open 2004"
+        game = reader.read_game(5)
+        assert game.event == "Edinburgh 1847, game 2"
+        game = reader.read_game(0)
+        assert game.event == "Manchester 1841"
 
 
 def test_write_PDN_file_success(tmp_path):

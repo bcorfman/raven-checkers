@@ -61,9 +61,12 @@ class PDNReader:
     def __init__(self, stream, source=""):
         self._stream = stream
         self._source = f"in {source}" if source else ""
+        self._stream_pos = 0
         self._lineno = 0
         self._games = []
         self._game_titles = []
+        self._game_indexes = []
+        self._game_ctr = 0
         self._reset_pdn_vars()
 
     @classmethod
@@ -74,8 +77,10 @@ class PDNReader:
     @classmethod
     def from_file(cls, filepath):
         filename = os.path.basename(filepath)
+        # sample a small chunk of the file to determine encoding
+        chunk_size = min(os.path.getsize(filepath), 10000)
         with open(filepath, 'rb') as test:
-            pdn_encoding = charset_normalizer.detect(test.read())['encoding']
+            pdn_encoding = charset_normalizer.detect(test.read(chunk_size))['encoding']
             stream = open(filepath, encoding=pdn_encoding)
             return cls(stream, filename)
 
@@ -108,8 +113,6 @@ class PDNReader:
         self._description = ""
         self._moves = []
         self._annotations = []
-        self._game_idx = 0
-        self._game_titles = []
 
     def _read_event(self, value):
         self._event = value
@@ -154,8 +157,8 @@ class PDNReader:
             title = f"{self._event}: {self._black_player} vs. {self._white_player}"
         else:
             title = f"{self._event}"
-        self._game_titles.append(GameTitle(index=self._game_idx, name=title))
-        self._game_idx += 1
+        self._game_titles.append(GameTitle(index=self._game_ctr, name=title))
+        self._game_ctr += 1
 
     def _read_fen(self, value):
         turn, first_squares, second_squares = value.split(":")
@@ -175,43 +178,63 @@ class PDNReader:
         else:
             raise SyntaxError("Unknown player type {player} in second set of FEN squares")
 
+    def _add_game_index(self, value):
+        self._event = value
+        self._game_indexes.append(self._stream_pos)
+
     def get_game_list(self):
-        parse_header = {"[Event": self._read_event,
+        self._game_ctr = 0
+        self._stream.seek(0)
+        parse_header = {"[Event": self._add_game_index,
                         "[White": self._read_white_player,
                         "[Black": self._read_black_player,
                         "1.": self._start_move_list,
                         }
 
         self._game_titles = []
+        self._game_indexes = []
         while True:
+            self._stream_pos = self._stream.tell()
             line = self._stream.readline()
             if line == "":
+                self._game_indexes.append(self._stream.tell())
                 break
             for key in parse_header:
-                if line.lstrip().startswith(key):
-                    parse_header[key](line)
+                if line.startswith(key):
+                    line = line.lstrip()
+                    value = line.split('"')[1] if line.startswith("[") else line
+                    parse_header[key](value)
                     break
-        self._stream.seek(0)
         return self._game_titles
 
     def read_game(self, idx):
-        # read up to the requested game index
-        if idx > 0:
-            num_games = 0
-            line = self._stream.readline()
-            if line == "" or idx < num_games:
-                raise RuntimeError(f"Cannot find game number {idx}")
-
-            while True:
-                prior_loc = self._stream.tell()
+        prior_game = 0
+        next_event = None
+        if not self._game_indexes:
+            prior_game = self._stream.seek(0)
+            # read up to the requested game index
+            if idx > 0:
+                num_games = 0
                 line = self._stream.readline()
-                if line == "":
+                if line == "" or idx < num_games:
                     raise RuntimeError(f"Cannot find game number {idx}")
-                if line.lstrip().startswith("[Event"):
-                    num_games += 1
-                if idx == num_games:
-                    self._stream.seek(prior_loc)
-                    break
+
+                while True:
+                    line = self._stream.readline()
+                    if line == "":
+                        if num_games == idx:
+                            self._stream.seek(prior_game)
+                        else:
+                            raise RuntimeError(f"Cannot find game number {idx}")
+                    if line.startswith("[Event"):
+                        num_games += 1
+                    if idx + 1 == num_games:
+                        prior_game = self._stream_pos
+                        self._stream.seek(prior_game)
+                        break
+
+            # TODO: find [Event index of next game to create game chunk (size)
+            next_event = 14352495435
 
         # parse the game at the requested index
         parse_header = {"Event": self._read_event,
@@ -226,7 +249,12 @@ class PDNReader:
                         "FEN": self._read_fen,
                         "BoardOrientation": self._read_board_orientation}
 
-        pdn = _Game.search_string(self._stream.read())
+        if self._game_indexes:
+            self._stream.seek(self._game_indexes[idx])
+            game_chunk = self._game_indexes[idx+1] - self._game_indexes[idx]
+        else:
+            game_chunk = next_event - prior_game
+        pdn = _Game.search_string(self._stream.read(game_chunk))
         for game in pdn:
             if game.header:
                 for tag in game.header:
@@ -254,7 +282,6 @@ class PDNReader:
                             annotations.append("")
                         self._moves.append(moves)
                         self._annotations.append(annotations)
-
                 return Game(self._event, self._site, self._date, self._round, self._black_player,
                             self._white_player, self._next_to_move, self._black_men, self._white_men,
                             self._black_kings, self._white_kings, self._result, self._flip_board,
@@ -310,7 +337,7 @@ def _translate_to_fen(next_to_move, black_men, white_men, black_kings, white_kin
     return fen
 
 
-def _translate_to_movetext(moves: list, annotations: list, result: str):
+def _translate_to_movetext(moves: list, annotations: list):
     def _translate_to_text(move):
         sq1, sq2 = move[0], move[1]
         sep = '-' if abs(sq1 - sq2) <= 5 else 'x'
@@ -399,7 +426,7 @@ class PDNWriter:
         if description:
             for line in description:
                 self.stream.write(line)
-        for line in self._wrapper.wrap(_translate_to_movetext(moves, annotations, result)):
+        for line in self._wrapper.wrap(_translate_to_movetext(moves, annotations)):
             line = line.replace("`", " ")  # NOTE: see _translate_to_movetext function
             self.stream.write(line + '\n')
 

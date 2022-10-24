@@ -95,7 +95,7 @@ class MainFrame(CenteredWindow):
         game.add_separator()
         game.add_command(label='Exit', underline=0,
                          command=self._on_close)
-        self.menu_bar.add_cascade(label='_Game', menu=game)
+        self.menu_bar.add_cascade(label='Game', menu=game)
 
     def create_options_menu(self):
         options = Menu(self.menu_bar, tearoff=0)

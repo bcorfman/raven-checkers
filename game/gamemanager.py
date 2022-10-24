@@ -2,13 +2,14 @@ from tkinter import Label, SUNKEN, NW
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 from tkinter.messagebox import askyesnocancel, showerror
 from util.globalconst import BLACK, WHITE, TITLE, VERSION, KING, MAN, PROGRAM_TITLE, TRAINING_DIR
-from util.globalconst import square_map, keymap
+from util.globalconst import keymap
 from game.checkers import Checkers
 from gui.boardview import BoardView
+from gui.filelist import FileList
 from gui.playercontroller import PlayerController
 from gui.alphabetacontroller import AlphaBetaController
 from parsing.gamepersist import SavedGame
-from parsing.
+from parsing.PDN import PDNReader
 
 
 class GameManager(object):
@@ -34,11 +35,11 @@ class GameManager(object):
         if self.num_players == 0:
             self.controller1 = AlphaBetaController(model=self.model,
                                                    view=self.view,
-                                                   searchtime=think_time,
+                                                   searchtime=self.think_time,
                                                    end_turn_event=self.turn_finished)
             self.controller2 = AlphaBetaController(model=self.model,
                                                    view=self.view,
-                                                   searchtime=think_time,
+                                                   searchtime=self.think_time,
                                                    end_turn_event=self.turn_finished)
         elif self.num_players == 1:
             # assumption here is that Black is the player
@@ -47,7 +48,7 @@ class GameManager(object):
                                                 end_turn_event=self.turn_finished)
             self.controller2 = AlphaBetaController(model=self.model,
                                                    view=self.view,
-                                                   searchtime=think_time,
+                                                   searchtime=self.think_time,
                                                    end_turn_event=self.turn_finished)
             # swap controllers if White is selected as the player
             if self.player_color == WHITE:
@@ -101,31 +102,35 @@ class GameManager(object):
         self._stop_updates()
         try:
             reader = PDNReader.from_file(filename)
-            # saved_game = SavedGame()
-            # saved_game.read(filename)
-            self.model.curr_state.clear()
-            self.model.curr_state.to_move = saved_game.to_move
-            self.num_players = saved_game.num_players
+            game_list = reader.get_game_list()
+            if len(game_list) > 1:
+                FileList(self._root, game_list)
+            else:
+                game = reader.read_game(0)
+                print(game)
+            # self.model.curr_state.clear()
+            # self.model.curr_state.to_move = saved_game.to_move
+            # self.num_players = saved_game.num_players
             # this section will work
-            squares = self.model.curr_state.squares
-            for i in saved_game.black_men:
-                squares[square_map[i]] = BLACK | MAN
-            for i in saved_game.black_kings:
-                squares[square_map[i]] = BLACK | KING
-            for i in saved_game.white_men:
-                squares[square_map[i]] = WHITE | MAN
-            for i in saved_game.white_kings:
-                squares[square_map[i]] = WHITE | KING
-            self.model.curr_state.reset_undo()
-            self.model.curr_state.redo_list = saved_game.moves
-            self.model.curr_state.update_piece_count()
-            self.view.reset_view(self.model)
-            self.view.serializer.restore(saved_game.description)
-            self.view.curr_annotation = self.view.get_annotation()
-            self.view.flip_board(saved_game.flip_board)
-            self.view.update_statusbar()
-            self.parent.set_title_bar_filename(filename)
-            self.filename = filename
+            # squares = self.model.curr_state.squares
+            # for i in saved_game.black_men:
+            #     squares[square_map[i]] = BLACK | MAN
+            # for i in saved_game.black_kings:
+            #     squares[square_map[i]] = BLACK | KING
+            # for i in saved_game.white_men:
+            #     squares[square_map[i]] = WHITE | MAN
+            # for i in saved_game.white_kings:
+            #     squares[square_map[i]] = WHITE | KING
+            # self.model.curr_state.reset_undo()
+            # self.model.curr_state.redo_list = saved_game.moves
+            # self.model.curr_state.update_piece_count()
+            # self.view.reset_view(self.model)
+            # self.view.serializer.restore(saved_game.description)
+            # self.view.curr_annotation = self.view.get_annotation()
+            # self.view.flip_board(saved_game.flip_board)
+            # self.view.update_statusbar()
+            # self.parent.set_title_bar_filename(filename)
+            # self.filename = filename
         except IOError as err:
             showerror(PROGRAM_TITLE, 'Invalid file. ' + str(err))
 
@@ -185,7 +190,7 @@ class GameManager(object):
                     saved_game.white_men.append(keymap[i])
                 elif sq == WHITE | KING:
                     saved_game.white_kings.append(keymap[i])
-            saved_game.description = self.view.serializer.dump()
+            # saved_game.description = self.view.serializer.dump()
             saved_game.moves = self.model.curr_state.redo_list
             saved_game.flip_board = self.view.flip_view
             saved_game.write(filename)

@@ -1,3 +1,7 @@
 [flake8]
 exclude =
     __pypackages__
+    .pytest_cache
+    .github
+    .venv
+    .vscode

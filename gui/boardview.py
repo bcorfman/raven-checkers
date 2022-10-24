@@ -372,7 +372,7 @@ class BoardView(Observer):
 
     def get_annotation(self):
         # return self.serializer.dump()
-        pass
+        return ""
 
     def erase_checker(self, index):
         self.canvas.delete('c'+str(index))
