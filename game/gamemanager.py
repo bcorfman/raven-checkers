@@ -134,7 +134,7 @@ class GameManager(object):
                 self.view.reset_view(self.model)
                 # self.view.serializer.restore(saved_game.description)
                 self.view.curr_annotation = self.view.get_annotation()
-                self.view.flip_board(game.flip_board)
+                self.view.flip_view(game.board_orientation == "white_on_top")
                 self.view.update_statusbar()
                 self.parent.set_title_bar_filename(os.path.basename(filepath))
                 self.filepath = filepath
@@ -179,8 +179,7 @@ class GameManager(object):
             undo_steps = 0
             while self.model.curr_state.undo_list:
                 undo_steps += 1
-                self.model.curr_state.undo_move(None, True, True,
-                                                self.view.get_annotation())
+                self.model.curr_state.undo_move(None, True, True, self.view.get_annotation())
             # save the state of the board
             saved_game.to_move = self.model.curr_state.to_move
             saved_game.num_players = self.num_players

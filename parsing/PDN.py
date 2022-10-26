@@ -11,15 +11,11 @@ def _removeLineFeed(s):
     return s[0].replace('\n', ' ')
 
 
-def _join(result):
-    return ''.join(result)
-
-
 Game = NamedTuple("Game", [("event", str), ("site", str), ("date", str),
                            ("round", str), ("black_player", str), ("white_player", str),
                            ("next_to_move", str), ("black_men", list), ("white_men", list),
                            ("black_kings", list), ("white_kings", list),
-                           ("result", str), ("board_orientation", int),
+                           ("result", str), ("board_orientation", str),
                            ("description", str), ("moves", list), ("annotations", list)])
 
 GameTitle = NamedTuple("GameTitle", [("index", int), ("name", str)])
@@ -145,10 +141,8 @@ class PDNReader:
         self._result = value
 
     def _read_board_orientation(self, value):
-        if value == "white_on_top":
-            self._flip_board = 0
-        elif value == "black_on_top":
-            self._flip_board = 1
+        if value == "white_on_top" or value == "black_on_top":
+            self._flip_board = "white_on_top" == True
         else:
             raise SyntaxError(f"Unknown {value} used in board_orientation tag.")
 
@@ -183,6 +177,8 @@ class PDNReader:
         self._game_indexes.append(self._stream_pos)
 
     def _set_board_defaults_if_needed(self):
+        if self._flip_board is None:
+            self._flip_board = "white_on_top"
         if self._next_to_move is None:
             self._next_to_move = "black"
         if self._black_men is None:
