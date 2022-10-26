@@ -182,6 +182,16 @@ class PDNReader:
         self._event = value
         self._game_indexes.append(self._stream_pos)
 
+    def _set_board_defaults_if_needed(self):
+        if self._next_to_move is None:
+            self._next_to_move = "black"
+        if self._black_men is None:
+            self._black_men = list(range(1, 13))
+            self._black_kings = []
+        if self._white_men is None:
+            self._white_men = list(range(21, 33))
+            self._white_kings = []
+
     def get_game_list(self):
         self._game_ctr = 0
         self._stream.seek(0)
@@ -214,21 +224,21 @@ class PDNReader:
             prior_game = self._stream.seek(0)
             # read up to the requested game index
             if idx > 0:
-                num_games = 0
+                games_read = 0
                 line = self._stream.readline()
-                if line == "" or idx < num_games:
+                if line == "" or games_read > idx:
                     raise RuntimeError(f"Cannot find game number {idx}")
 
                 while True:
                     line = self._stream.readline()
                     if line == "":
-                        if num_games == idx:
+                        if games_read == idx:
                             self._stream.seek(prior_game)
                         else:
                             raise RuntimeError(f"Cannot find game number {idx}")
                     if line.startswith("[Event"):
-                        num_games += 1
-                    if idx + 1 == num_games:
+                        games_read += 1
+                    if idx + 1 == games_read:
                         prior_game = self._stream_pos
                         self._stream.seek(prior_game)
                         break
@@ -263,6 +273,7 @@ class PDNReader:
             if game.comment:
                 self._description += game.comment
             if game.body:
+                self._set_board_defaults_if_needed()
                 for item in game.body:
                     if len(item) > 1:
                         idx = 1

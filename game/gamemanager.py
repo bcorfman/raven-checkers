@@ -114,7 +114,7 @@ class GameManager(object):
             if game is not None:
                 self.model.curr_state.clear()
                 self.model.curr_state.to_move = game.next_to_move
-                self.num_players = 2 
+                self.num_players = 2
                 if game.black_player.startswith("Computer"):
                     self.num_players -= 1
                 if game.white_player.startswith("Computer"):

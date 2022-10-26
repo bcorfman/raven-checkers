@@ -1,4 +1,3 @@
-import os
 from tkinter import IntVar, Menu, Tk
 from tkinter.messagebox import askyesnocancel
 from multiprocessing import freeze_support

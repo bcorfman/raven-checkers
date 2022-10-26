@@ -19,7 +19,8 @@ class FileList(Dialog):
         panel = Frame(self, borderwidth=1, relief='sunken')
         self.scrollbar = AutoScrollbar(self, container=panel,
                                        row=1, column=1, sticky='ns')
-        self.filelist = Listbox(self, width=60, height=20, listvariable=var, yscrollcommand=self.scrollbar.set)
+        self.filelist = Listbox(self, width=60, height=20, listvariable=var, yscrollcommand=self.scrollbar.set,
+                                selectmode=SINGLE)
         self.filelist.pack(side=TOP)
         self.scrollbar.config(command=self.filelist.yview)
         panel.pack(side='top', fill='both', expand=True)
@@ -28,10 +29,9 @@ class FileList(Dialog):
         panel.grid_columnconfigure(0, weight=1)
 
     def apply(self):
-        self.result = True
+        self.result = self.filelist.curselection()[0] if self.filelist.curselection() else None
 
     def cancel(self, _=None):
         if self._master is not None:
             self._master.focus_set()
         self.destroy()
-
