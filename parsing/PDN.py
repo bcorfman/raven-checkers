@@ -5,6 +5,7 @@ from io import StringIO
 from pyparsing import Combine, Forward, Group, LineStart, LineEnd, Literal, OneOrMore, Optional, \
     QuotedString, Suppress, Word, WordEnd, WordStart, nums, one_of, rest_of_line, srange
 from typing import NamedTuple
+from base.move import Move
 
 
 def _removeLineFeed(s):
@@ -16,7 +17,7 @@ Game = NamedTuple("Game", [("event", str), ("site", str), ("date", str),
                            ("next_to_move", str), ("black_men", list), ("white_men", list),
                            ("black_kings", list), ("white_kings", list),
                            ("result", str), ("board_orientation", str),
-                           ("description", str), ("moves", list), ("annotations", list)])
+                           ("description", str), ("moves", list)])
 
 GameTitle = NamedTuple("GameTitle", [("index", int), ("name", str)])
 
@@ -214,34 +215,6 @@ class PDNReader:
         return self._game_titles
 
     def read_game(self, idx):
-        prior_game = 0
-        next_event = None
-        if not self._game_indexes:
-            prior_game = self._stream.seek(0)
-            # read up to the requested game index
-            if idx > 0:
-                games_read = 0
-                line = self._stream.readline()
-                if line == "" or games_read > idx:
-                    raise RuntimeError(f"Cannot find game number {idx}")
-
-                while True:
-                    line = self._stream.readline()
-                    if line == "":
-                        if games_read == idx:
-                            self._stream.seek(prior_game)
-                        else:
-                            raise RuntimeError(f"Cannot find game number {idx}")
-                    if line.startswith("[Event"):
-                        games_read += 1
-                    if idx + 1 == games_read:
-                        prior_game = self._stream_pos
-                        self._stream.seek(prior_game)
-                        break
-
-            # TODO: find [Event index of next game to create game chunk (size)
-            next_event = 14352495435
-
         # parse the game at the requested index
         parse_header = {"Event": self._read_event,
                         "Site": self._read_site,
@@ -255,11 +228,10 @@ class PDNReader:
                         "FEN": self._read_fen,
                         "BoardOrientation": self._read_board_orientation}
 
-        if self._game_indexes:
-            self._stream.seek(self._game_indexes[idx])
-            game_chunk = self._game_indexes[idx+1] - self._game_indexes[idx]
-        else:
-            game_chunk = next_event - prior_game
+        if not self._game_indexes:
+            self.get_game_list()
+        self._stream.seek(self._game_indexes[idx])
+        game_chunk = self._game_indexes[idx+1] - self._game_indexes[idx]
         pdn = _Game.search_string(self._stream.read(game_chunk))
         for game in pdn:
             if game.header:
@@ -273,26 +245,27 @@ class PDNReader:
                 for item in game.body:
                     if len(item) > 1:
                         idx = 1
-                        moves = [list(item[idx])]
-                        annotations = []
+                        move_list = [list(item[idx])]
                         if item.comment1:
                             idx += 1
-                            annotations.append(list(item[idx]))
+                            annotation = item[idx]
                         else:
-                            annotations.append("")
+                            annotation = ""
+                        self._moves.append(Move(move_list, annotation))
                         idx += 1
-                        moves.append(list(item[idx]))
+                        move_list = list(item[idx])
                         if item.comment2:
                             idx += 1
-                            annotations.append(item[idx])
+                            annotation = item[idx]
                         else:
-                            annotations.append("")
-                        self._moves.append(moves)
-                        self._annotations.append(annotations)
+                            annotation = ""
+                        self._moves.append(Move(move_list, annotation))
+                    else:
+                        raise RuntimeError(f"Cannot interpret item {item} in game.body")
                 return Game(self._event, self._site, self._date, self._round, self._black_player,
                             self._white_player, self._next_to_move, self._black_men, self._white_men,
                             self._black_kings, self._white_kings, self._result, self._flip_board,
-                            self._description, self._moves, self._annotations)
+                            self._description, self._moves)
 
     def _get_player_to_move(self, turn):
         turn = turn.upper()

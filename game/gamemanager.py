@@ -5,6 +5,7 @@ from tkinter.messagebox import askyesnocancel, showerror
 from util.globalconst import BLACK, WHITE, TITLE, VERSION, KING, MAN, PROGRAM_TITLE, TRAINING_DIR
 from util.globalconst import square_map, keymap
 from game.checkers import Checkers
+from base.move import Move
 from gui.boardview import BoardView
 from gui.filelist import FileList
 from gui.playercontroller import PlayerController

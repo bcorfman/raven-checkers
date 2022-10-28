@@ -54,7 +54,7 @@ OCCUPIED_CHAR = '-'
 
 INFINITY = 9999999
 MAX_DEPTH = 10
-VERSION = '0.4'
+VERSION = '0.5'
 TITLE = 'Raven ' + VERSION
 PROGRAM_TITLE = 'Raven Checkers'
 CUR_DIR = sys.path[0]
