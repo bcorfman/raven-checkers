@@ -24,21 +24,19 @@ class SavedGame(object):
     def _is_move(self, delta):
         return delta in KING_IDX
 
-    def _try_move(self, move: Move, state_copy: Checkerboard):
+    def _try_move(self, squares: list, annotation: str, state_copy: Checkerboard):
         legal_moves = self._model.legal_moves(state_copy)
-        # match move from file with available moves on checkerboard
-        found = False
-        start, dest = move.affected_squares[FIRST], move.affected_squares[LAST]
+        # try to match squares with available moves on checkerboard
         for move in legal_moves:
-            if start == move.affected_squares[FIRST] and dest == move.affected_squares[LAST]:
+            if all(sq == move.affected_squares[i] for i, sq in enumerate(squares)):
+                move.annotation = annotation
                 self._model.make_move(move, state_copy, False, False)
-                self.moves.append(move)
-                found = True
-                break
-        if not found:
-            raise RuntimeError(f"Illegal move {move} found")
+                self.moves.append(move)  #TODO: why do we need this in self.moves instead of returning it? 
+                return True
+        else:
+            raise RuntimeError(f"Illegal move {squares} found")
 
-    def _try_jump(self, pdn_move: Move, state_copy: Checkerboard):
+    def _try_jump(self, squares: list, annotation: str, state_copy: Checkerboard):
         if not self._model.captures_available(state_copy):
             return False
         legal_moves = self._model.legal_moves(state_copy)
@@ -58,22 +56,23 @@ class SavedGame(object):
                     break
         return found
 
-    def _translate_moves_to_board(self, moves: list[Move]):
+    def _translate_moves_to_board(self, moves: list):
         """ Each move in the file lists the beginning and ending square, along
         with an optional annotation string (in Creole fmt) that describes it.
         I make sure that each move works on a copy of the model before I commit
         to using it inside the code. """
         state_copy = copy.deepcopy(self._model.curr_state)
 
-        # analyze affected squares to perform a move or jump.
+        # analyze squares to perform a move or jump.
         idx = 0
         moves_len = len(moves)
         while idx < moves_len:
-            delta = abs(moves[idx].affected_squares[0] - moves[idx].affected_squares[1])
+            squares, annotation = moves[idx]
+            delta = abs(squares[0] - squares[1])
             if self._is_move(delta):
-                self._try_move(moves[idx], state_copy)
+                self._try_move(squares, annotation, state_copy)
             else:
-                jumped = self._try_jump(moves[idx], state_copy)
+                jumped = self._try_jump(squares, annotation, state_copy)
                 if not jumped:
                     raise RuntimeError(f"Bad move at index {idx}")
         moves.reverse()  # TODO: is this still needed?

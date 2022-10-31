@@ -5,7 +5,6 @@ from io import StringIO
 from pyparsing import Combine, Forward, Group, LineStart, LineEnd, Literal, OneOrMore, Optional, \
     QuotedString, Suppress, Word, WordEnd, WordStart, nums, one_of, rest_of_line, srange
 from typing import NamedTuple
-from base.move import Move
 
 
 def _removeLineFeed(s):
@@ -251,7 +250,7 @@ class PDNReader:
                             annotation = item[idx]
                         else:
                             annotation = ""
-                        self._moves.append(Move(move_list, annotation))
+                        self._moves.append([move_list, annotation])
                         idx += 1
                         move_list = list(item[idx])
                         if item.comment2:
@@ -259,7 +258,7 @@ class PDNReader:
                             annotation = item[idx]
                         else:
                             annotation = ""
-                        self._moves.append(Move(move_list, annotation))
+                        self._moves.append([move_list, annotation])
                     else:
                         raise RuntimeError(f"Cannot interpret item {item} in game.body")
                 return Game(self._event, self._site, self._date, self._round, self._black_player,
