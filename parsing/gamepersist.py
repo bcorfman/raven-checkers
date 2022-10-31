@@ -1,8 +1,7 @@
 import copy
-import textwrap
-from util.globalconst import FIRST, LAST, WHITE, BLACK, MAN, KING, KING_IDX
-from util.globalconst import keymap, square_map
-from game.checkers import Checkers
+from util.globalconst import FIRST, KING_IDX, LAST, square_map
+from game.checkers import Checkers, Checkerboard
+from base.move import Move
 
 
 class SavedGame(object):
@@ -25,88 +24,57 @@ class SavedGame(object):
     def _is_move(self, delta):
         return delta in KING_IDX
 
-    def _is_jump(self, delta):
-        return delta not in KING_IDX
-
-    def _try_move(self, idx, start, dest, state_copy, annotation):
+    def _try_move(self, move: Move, state_copy: Checkerboard):
         legal_moves = self._model.legal_moves(state_copy)
         # match move from file with available moves on checkerboard
         found = False
-        startsq, destsq = square_map[start], square_map[dest]
+        start, dest = move.affected_squares[FIRST], move.affected_squares[LAST]
         for move in legal_moves:
-            if startsq == move.affected_squares[FIRST][0] and \
-               destsq == move.affected_squares[LAST][0]:
+            if start == move.affected_squares[FIRST] and dest == move.affected_squares[LAST]:
                 self._model.make_move(move, state_copy, False, False)
-                move.annotation = annotation
                 self.moves.append(move)
                 found = True
                 break
         if not found:
-            raise IOError('Illegal move found in file, line %d' % (idx+1))
+            raise RuntimeError(f"Illegal move {move} found")
 
-    def _try_jump(self, idx, start, dest, state_copy, annotation):
+    def _try_jump(self, pdn_move: Move, state_copy: Checkerboard):
         if not self._model.captures_available(state_copy):
             return False
         legal_moves = self._model.legal_moves(state_copy)
-        # match jump from file with available jumps on checkerboard
-        start_square, dest_square = square_map[start], square_map[dest]
-        _, _ = min(start_square, dest_square), max(start_square, dest_square)
-        # small, large = min(start_square, dest_square), max(start_square,
-        # dest_square)
+        # PDN move follows format [first, mid1, mid2, ..., last]
         found = False
-        for move in legal_moves:
+        valid_moves = []
+        for mv in legal_moves:
             # a valid jump may either have a single jump in it, or
             # multiple jumps. In the multiple jump case, start_square is the
             # source of the first jump, and dest_square is the endpoint of the
             # last jump.
-            if start_square == move.affected_squares[FIRST][0] and \
-               dest_square == move.affected_squares[LAST][0]:
-                self._model.make_move(move, state_copy, False, False)
-                move.annotation = annotation
-                self.moves.append(move)
-                found = True
-                break
+            for sq in mv.affected_squares:
+                if start == mv.affected_squares[FIRST][0] and dest == mv.affected_squares[LAST]:
+                    self._model.make_move(mv, state_copy, False, False)
+                    valid_moves.append(mv)
+                    found = True
+                    break
         return found
 
-    def _parse_moves(self, lines, idx, linelen):
+    def _translate_moves_to_board(self, moves: list[Move]):
         """ Each move in the file lists the beginning and ending square, along
         with an optional annotation string (in Creole fmt) that describes it.
-        Since the move listing in the file contains less information than
-        we need inside our Checkerboard model, I make sure that each move works
-        on a copy of the model before I commit to using it inside the code. """
+        I make sure that each move works on a copy of the model before I commit
+        to using it inside the code. """
         state_copy = copy.deepcopy(self._model.curr_state)
-        idx += 1
-        while idx < linelen:
-            line = lines[idx].strip()
-            if line == "":
-                idx += 1
-                continue  # ignore blank lines
 
-            try:
-                movestr, annotation = line.split(';', 1)
-            except ValueError:
-                raise IOError('Unrecognized section in file, line %d' %
-                              (idx+1))
-
-            # move is always part of the annotation; I just don't want to
-            # have to repeat it explicitly in the file.
-            annotation = movestr + annotation
-
-            # analyze affected squares to perform a move or jump.
-            start = None
-            dest = None
-            try:
-                start, dest = [int(x) for x in movestr.split('-')]
-                delta = square_map[start] - square_map[dest]
-            except ValueError:
-                raise IOError('Bad move fmt in file, line %d' % idx)
+        # analyze affected squares to perform a move or jump.
+        idx = 0
+        moves_len = len(moves)
+        while idx < moves_len:
+            delta = abs(moves[idx].affected_squares[0] - moves[idx].affected_squares[1])
             if self._is_move(delta):
-                self._try_move(idx, start, dest, state_copy, annotation)
+                self._try_move(moves[idx], state_copy)
             else:
-                jumped = self._try_jump(idx, start, dest, state_copy,
-                                        annotation)
+                jumped = self._try_jump(moves[idx], state_copy)
                 if not jumped:
-                    raise IOError('Bad move fmt in file, line %d' % idx)
-            idx += 1
-        self.moves.reverse()
-        return idx
+                    raise RuntimeError(f"Bad move at index {idx}")
+        moves.reverse()  # TODO: is this still needed?
+        return moves
