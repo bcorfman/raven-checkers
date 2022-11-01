@@ -1,5 +1,5 @@
 class Move(object):
-    def __init__(self, squares, annotation=''):
+    def __init__(self, squares, annotation=""):
         self.affected_squares = squares
         self.annotation = annotation
 

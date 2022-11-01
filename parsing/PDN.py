@@ -1,6 +1,7 @@
 import charset_normalizer
 import os
 import textwrap
+from parsing.gamepersist import SavedGame
 from io import StringIO
 from pyparsing import Combine, Forward, Group, LineStart, LineEnd, Literal, OneOrMore, Optional, \
     QuotedString, Suppress, Word, WordEnd, WordStart, nums, one_of, rest_of_line, srange
@@ -142,7 +143,7 @@ class PDNReader:
 
     def _read_board_orientation(self, value):
         if value == "white_on_top" or value == "black_on_top":
-            self._flip_board = "white_on_top" == True
+            self._flip_board = value == "white_on_top"
         else:
             raise SyntaxError(f"Unknown {value} used in board_orientation tag.")
 
@@ -244,7 +245,7 @@ class PDNReader:
                 for item in game.body:
                     if len(item) > 1:
                         idx = 1
-                        move_list = [list(item[idx])]
+                        move_list = list(item[idx])
                         if item.comment1:
                             idx += 1
                             annotation = item[idx]
@@ -261,10 +262,11 @@ class PDNReader:
                         self._moves.append([move_list, annotation])
                     else:
                         raise RuntimeError(f"Cannot interpret item {item} in game.body")
+                sg = SavedGame()
                 return Game(self._event, self._site, self._date, self._round, self._black_player,
                             self._white_player, self._next_to_move, self._black_men, self._white_men,
                             self._black_kings, self._white_kings, self._result, self._flip_board,
-                            self._description, self._moves)
+                            self._description, sg.translate_moves_to_board(self._moves))
 
     def _get_player_to_move(self, turn):
         turn = turn.upper()
