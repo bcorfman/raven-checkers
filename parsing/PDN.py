@@ -1,11 +1,17 @@
 import charset_normalizer
+import copy
 import os
 import textwrap
-from parsing.gamepersist import SavedGame
 from io import StringIO
 from pyparsing import Combine, Forward, Group, LineStart, LineEnd, Literal, OneOrMore, Optional, \
     QuotedString, Suppress, Word, WordEnd, WordStart, nums, one_of, rest_of_line, srange
 from typing import NamedTuple
+from game.checkers import Checkers
+from util.globalconst import BLACK_IDX, WHITE_IDX, square_map
+
+
+def _is_move(delta):
+    return delta in [3, 4, 5, -3, -4, -5]
 
 
 def _removeLineFeed(s):
@@ -57,6 +63,7 @@ _Game = (_GameHeader('header') + Optional(_GameBody)) | _GameBody
 class PDNReader:
     def __init__(self, stream, source=""):
         self._stream = stream
+        self._model = Checkers()
         self._source = f"in {source}" if source else ""
         self._stream_pos = 0
         self._lineno = 0
@@ -262,11 +269,10 @@ class PDNReader:
                         self._moves.append([move_list, annotation])
                     else:
                         raise RuntimeError(f"Cannot interpret item {item} in game.body")
-                sg = SavedGame()
                 return Game(self._event, self._site, self._date, self._round, self._black_player,
                             self._white_player, self._next_to_move, self._black_men, self._white_men,
                             self._black_kings, self._white_kings, self._result, self._flip_board,
-                            self._description, sg.translate_moves_to_board(self._moves))
+                            self._description, self._translate_moves_to_board(self._moves))
 
     def _get_player_to_move(self, turn):
         turn = turn.upper()
@@ -289,6 +295,59 @@ class PDNReader:
             else:
                 men.append(int(sq))
         return men, kings
+
+    def _try_move(self, squares: list, annotation: str, state_copy: Checkers):
+        board_squares = [square_map[sq] for sq in squares]
+        legal_moves = self._model.legal_moves(state_copy)
+        # try to match squares with available moves on checkerboard
+        sq_len = len(squares)
+        for move in legal_moves:
+            if sq_len == len(move.affected_squares) and \
+                    all(sq == move.affected_squares[i][0] for i, sq in enumerate(board_squares)):
+                move.annotation = annotation
+                self._model.make_move(move, state_copy, False, False)
+                return move
+
+    def _try_jump(self, squares: list, annotation: str, state_copy: Checkers):
+        board_squares = [square_map[sq] for sq in squares]
+        if self._model.captures_available(state_copy):
+            legal_moves = self._model.legal_moves(state_copy)
+            sq_len = len(squares)
+            for move in legal_moves:
+                if all(sq == move.affected_squares[i*2][0] for i, sq in enumerate(board_squares)):
+                    move.annotation = annotation
+                    self._model.make_move(move, state_copy, False, False)
+                    return move
+
+    def _translate_moves_to_board(self, moves: list):
+        """ Each move in the file lists the beginning and ending square, along
+        with an optional annotation string (in Creole fmt) that describes it.
+        I make sure that each move works on a copy of the model before I commit
+        to using it inside the code. """
+        state_copy = copy.deepcopy(self._model.curr_state)
+
+        # analyze squares to perform a move or jump.
+        idx = 0
+        moves_len = len(moves)
+        translated_moves = []
+        while idx < moves_len:
+            squares, annotation = moves[idx]
+            delta = squares[0] - squares[1]
+            if _is_move(delta):
+                move = self._try_move(squares, annotation, state_copy)
+                if move:
+                    translated_moves.append(move)
+                else:
+                    raise RuntimeError(f"Illegal move {squares} found")
+            else:
+                jump = self._try_jump(squares, annotation, state_copy)
+                if jump:
+                    translated_moves.append(jump)
+                else:
+                    raise RuntimeError(f"Illegal jump {squares} found")
+            idx += 1
+        translated_moves.reverse()
+        return translated_moves
 
 
 def _translate_to_fen(next_to_move, black_men, white_men, black_kings, white_kings):

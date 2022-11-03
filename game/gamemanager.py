@@ -9,7 +9,6 @@ from gui.boardview import BoardView
 from gui.filelist import FileList
 from gui.playercontroller import PlayerController
 from gui.alphabetacontroller import AlphaBetaController
-from parsing.gamepersist import SavedGame
 from parsing.PDN import PDNReader
 
 
@@ -29,6 +28,7 @@ class GameManager(object):
         self.controller1 = None
         self.controller2 = None
         self.set_controllers()
+        # noinspection PyUnresolvedReferences
         self.controller1.start_turn()
         self.filepath = None
 
@@ -112,7 +112,6 @@ class GameManager(object):
             else:
                 game = reader.read_game(0)
             if game is not None:
-                sg = SavedGame()
                 self.model.curr_state.clear()
                 self.model.curr_state.to_move = game.next_to_move
                 self.num_players = 2
@@ -130,12 +129,12 @@ class GameManager(object):
                 for i in game.white_kings:
                     squares[square_map[i]] = WHITE | KING
                 self.model.curr_state.reset_undo()
-                self.model.curr_state.redo_list = sg.moves
+                self.model.curr_state.redo_list = game.moves
                 self.model.curr_state.update_piece_count()
                 self.view.reset_view(self.model)
                 self.view.serializer.restore(game.description)
                 self.view.curr_annotation = self.view.get_annotation()
-                self.view.flip_view(game.board_orientation == "white_on_top")
+                self.view.flip_board(game.board_orientation == "white_on_top")
                 self.view.update_statusbar()
                 self.parent.set_title_bar_filename(os.path.basename(filepath))
                 self.filepath = filepath

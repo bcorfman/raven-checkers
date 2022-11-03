@@ -8,3 +8,4 @@ mainframe.dist/
 raven.ini
 *.pyc
 pdm.lock
+.python-version
