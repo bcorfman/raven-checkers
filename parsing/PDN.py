@@ -58,7 +58,6 @@ _Variation = Forward()
 _GameBody = OneOrMore(_SingleGameMove | _DoubleGameMove | _Variation | _LineComment)('body')
 _Variation <<= Combine('(' + _GameBody + ')')
 _Game = (_GameHeader('header') + Optional(_GameBody)) | _GameBody
-# _PDNStream = _Game + Suppress(ZeroOrMore(_Result + _Game)) + Suppress(_Result[0, 1])
 
 
 class PDNReader:
@@ -249,6 +248,12 @@ class PDNReader:
                         parse_header[tag.key](tag.value)
             if game.comment:
                 self._description += game.comment
+            else:
+                if self._black_player and self._white_player:
+                    self._description += f"{self._event}: {self._black_player} vs. {self._white_player}"
+                else:
+                    self._description += f"{self._event}"
+                self._description += "\n\nUse the arrow keys in the toolbar above to progress through the game moves."
             if game.body:
                 self._set_board_defaults_if_needed()
                 for item in game.body:
