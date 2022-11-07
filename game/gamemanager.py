@@ -1,7 +1,7 @@
 import os
 from tkinter import Label, SUNKEN, NW
 from tkinter.filedialog import askopenfilename, asksaveasfilename
-from tkinter.messagebox import askyesnocancel, showerror
+from tkinter.messagebox import askyesnocancel, showerror, showinfo
 from datetime import datetime
 from game.checkers import Checkers
 from gui.boardview import BoardView
@@ -9,6 +9,7 @@ from gui.filelist import FileList
 from gui.playercontroller import PlayerController
 from gui.alphabetacontroller import AlphaBetaController
 from parsing.PDN import PDNReader, PDNWriter
+from parsing.migrate import RCF2PDN
 from util.globalconst import BLACK, WHITE, TITLE, VERSION, KING, MAN, PROGRAM_TITLE, TRAINING_DIR
 from util.globalconst import square_map, keymap
 
@@ -145,12 +146,24 @@ class GameManager(object):
     def open_game(self):
         self._stop_updates()
         self._save_curr_game_if_needed()
-        f = askopenfilename(filetypes=(('Portable Draughts Notation files', '*.pdn'),
-                                       ('Raven Checkers files', '*.rcf'), ('All files', '*.*')),
-                            initialdir=TRAINING_DIR)
-        if not f:
+        in_path = askopenfilename(filetypes=(('Portable Draughts Notation files', '*.pdn'),
+                                             ('Raven Checkers files', '*.rcf'), ('All files', '*.*')),
+                                  initialdir=TRAINING_DIR)
+        if not in_path:
             return
-        self.load_game(f)
+        root, ext = os.path.splitext(in_path)
+        if ext == '.rcf':
+            showinfo("Migrate RCF file", "RCF files use the legacy Raven Checkers format and must be converted to "
+                     "PDN format. Choose a PDN save file to perform the conversion.")
+            out_path = asksaveasfilename(filetypes=(('Portable Draughts Notation files', '*.pdn'), ('All files', '*.*')),
+                                         initialdir=TRAINING_DIR,
+                                         initialfile=os.path.basename(root) + '.pdn',
+                                         defaultextension='.pdn')
+            if not out_path:
+                return
+            RCF2PDN.with_file(in_path, out_path)
+        else:
+            self.load_game(in_path)
 
     def save_game_as(self):
         self._stop_updates()
@@ -159,6 +172,7 @@ class GameManager(object):
                                      defaultextension='.rcf')
         if filename == '':
             return
+
         self._write_file(filename)
 
     def save_game(self):
