@@ -1,8 +1,9 @@
 import os.path
-from pathlib import Path
 from datetime import datetime, timezone
+from util.globalconst import BLACK, WHITE
 from io import StringIO
 from parsing.PDN import Game, PDNWriter
+from pathlib import Path
 
 
 class RCF2PDN:
@@ -44,6 +45,8 @@ class RCF2PDN:
         if self._validate_input():
             self._transform_input()
             self._write_output(pdn_stream)
+        else:
+            raise RuntimeError("RCF input not valid")
 
     def _read_input(self, rcf_stream):
         rcf_tags = {'<description>': self._read_description,
@@ -66,6 +69,7 @@ class RCF2PDN:
         site = "*"
         date = self.file_mod_time or datetime.now().strftime("%d/%m/%Y")
         rnd = "*"
+        next_to_move = BLACK if self.next_to_move == 'black' else WHITE
         black_player = "Player1"
         white_player = "Player2"
         result = self._get_game_result()
@@ -76,15 +80,15 @@ class RCF2PDN:
         description = ""
         for line in self.description:
             description += f"; {line}"
-        self._game = Game(event, site, date, rnd, black_player, white_player, self.next_to_move, list(self.black_men),
-                          list(self.white_men), list(self.black_kings), list(self.white_kings), result, orientation,
-                          description, self.moves, self.annotations)
+        self._game = Game(event, site, date, rnd, black_player, white_player, next_to_move, list(self.black_men),
+                          list(self.white_men), list(self.black_kings), list(self.white_kings), result,
+                          orientation, description, self.moves)
 
     def _write_output(self, pdn_stream):
         game = self._game
         PDNWriter.to_stream(pdn_stream, game.event, game.site, game.date, game.round, game.black_player,
                             game.white_player, game.next_to_move, game.black_men, game.white_men, game.black_kings,
-                            game.white_kings, game.result, game.board_orientation, game.moves, game.annotations,
+                            game.white_kings, game.result, game.board_orientation, game.moves, self.annotations,
                             game.description)
 
     def _get_game_result(self):
@@ -106,10 +110,10 @@ class RCF2PDN:
                 start, dest = move.split("-")
                 strength = self._get_move_strength(i)
                 if i == 0:
-                    movetext += f"{i+1}."
+                    movetext += f"{i + 1}."
                 elif i % 2 == 0:
-                    movetext += f"  {i+1}."
-                if abs(int(start)-int(dest)) <= 5:
+                    movetext += f"  {i + 1}."
+                if abs(int(start) - int(dest)) <= 5:
                     movetext += f" {start}-{dest}{strength}"  # regular move
                 else:
                     movetext += f" {start}x{dest}{strength}"  # jump
@@ -234,6 +238,6 @@ class RCF2PDN:
         self.white_kings = [int(i) for i in line.split()[1:]]
 
     def _validate_input(self):
-        return (self.num_players in range(3) and self.next_to_move in ['black', 'white'] and
+        return (self.num_players in range(3) and self.next_to_move in ["black", "white"] and
                 self.flip_board in range(2) and self.moves and
                 (self.black_men or self.black_kings or self.white_men or self.white_kings))

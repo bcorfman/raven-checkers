@@ -6,8 +6,9 @@ from io import StringIO
 from pyparsing import Combine, Forward, Group, LineStart, LineEnd, Literal, OneOrMore, Optional, \
     QuotedString, Suppress, Word, WordEnd, WordStart, nums, one_of, rest_of_line, srange
 from typing import NamedTuple
+from base.move import Move
 from game.checkers import Checkers
-from util.globalconst import BLACK_IDX, WHITE_IDX, square_map
+from util.globalconst import keymap, square_map, WHITE, BLACK
 
 
 def _is_move(delta):
@@ -20,7 +21,7 @@ def _removeLineFeed(s):
 
 Game = NamedTuple("Game", [("event", str), ("site", str), ("date", str),
                            ("round", str), ("black_player", str), ("white_player", str),
-                           ("next_to_move", str), ("black_men", list), ("white_men", list),
+                           ("next_to_move", int), ("black_men", list), ("white_men", list),
                            ("black_kings", list), ("white_kings", list),
                            ("result", str), ("board_orientation", str),
                            ("description", str), ("moves", list)])
@@ -188,7 +189,7 @@ class PDNReader:
         if self._flip_board is None:
             self._flip_board = "white_on_top"
         if self._next_to_move is None:
-            self._next_to_move = "black"
+            self._next_to_move = BLACK
         if self._black_men is None:
             self._black_men = list(range(1, 13))
             self._black_kings = []
@@ -235,6 +236,7 @@ class PDNReader:
                         "FEN": self._read_fen,
                         "BoardOrientation": self._read_board_orientation}
 
+        self._reset_pdn_vars()
         if not self._game_indexes:
             self.get_game_list()
         self._stream.seek(self._game_indexes[idx])
@@ -272,14 +274,14 @@ class PDNReader:
                 return Game(self._event, self._site, self._date, self._round, self._black_player,
                             self._white_player, self._next_to_move, self._black_men, self._white_men,
                             self._black_kings, self._white_kings, self._result, self._flip_board,
-                            self._description, self._translate_moves_to_board(self._moves))
+                            self._description, self._PDN_to_board(self._moves))
 
     def _get_player_to_move(self, turn):
         turn = turn.upper()
         if turn == "B":
-            result = "black"
+            result = BLACK
         elif turn == "W":
-            result = "white"
+            result = WHITE
         else:
             raise SyntaxError("Unknown turn type {turn} in FEN")
         return result
@@ -312,26 +314,29 @@ class PDNReader:
         board_squares = [square_map[sq] for sq in squares]
         if self._model.captures_available(state_copy):
             legal_moves = self._model.legal_moves(state_copy)
-            sq_len = len(squares)
             for move in legal_moves:
                 if all(sq == move.affected_squares[i*2][0] for i, sq in enumerate(board_squares)):
                     move.annotation = annotation
                     self._model.make_move(move, state_copy, False, False)
                     return move
 
-    def _translate_moves_to_board(self, moves: list):
+    def _PDN_to_board(self, pdn_moves: list):
         """ Each move in the file lists the beginning and ending square, along
         with an optional annotation string (in Creole fmt) that describes it.
         I make sure that each move works on a copy of the model before I commit
         to using it inside the code. """
         state_copy = copy.deepcopy(self._model.curr_state)
-
+        # remove last item in list before processing if it's a single element
+        # (i.e., game separator)
+        last_move, last_annotation = pdn_moves[-1]
+        if len(last_move) == 1:
+            pdn_moves.pop()
         # analyze squares to perform a move or jump.
         idx = 0
-        moves_len = len(moves)
+        moves_len = len(pdn_moves)
         translated_moves = []
         while idx < moves_len:
-            squares, annotation = moves[idx]
+            squares, annotation = pdn_moves[idx]
             delta = squares[0] - squares[1]
             if _is_move(delta):
                 move = self._try_move(squares, annotation, state_copy)
@@ -350,10 +355,10 @@ class PDNReader:
         return translated_moves
 
 
-def _translate_to_fen(next_to_move, black_men, white_men, black_kings, white_kings):
-    if next_to_move.lower() == "black":
+def translate_to_fen(next_to_move, black_men, white_men, black_kings, white_kings):
+    if next_to_move == 'black':
         fen = "B:"
-    elif next_to_move.lower() == "white":
+    elif next_to_move == 'white':
         fen = "W:"
     else:
         raise RuntimeError(f"Unknown player {next_to_move} in next_to_move variable")
@@ -384,18 +389,14 @@ def _translate_to_movetext(moves: list, annotations: list):
         return sep.join([str(n) for n in move])
 
     moves.reverse()
-    if annotations:
-        annotations.reverse()
+    annotations.reverse()
     movetext = ""
     movenum = 0
     while True:
         if len(moves) == 0:
             break
         item = moves.pop()
-        if annotations:
-            anno = annotations.pop()
-        else:
-            anno = ["", ""]
+        anno = annotations.pop()
 
         if len(item) == 1:
             movetext += item.pop()
@@ -408,30 +409,30 @@ def _translate_to_movetext(moves: list, annotations: list):
             # will be replaced with spaces.
             movetext += f"{movenum}.`"
             black_move = item.pop()
-            comment = anno.pop()
-            if comment and comment[0] in ['!', '?']:
-                tokens = comment.split(maxsplit=1)
+            black_comment = anno.pop()
+            if black_comment and black_comment[0] in ['!', '?']:
+                tokens = black_comment.split(maxsplit=1)
                 black_strength = tokens[0]
-                comment = tokens[1] if len(tokens) > 1 else ""
+                black_comment = tokens[1] if len(tokens) > 1 else ""
             else:
                 black_strength = ""
             movetext += f"{_translate_to_text(black_move)}{black_strength}"
-            if comment:
-                movetext += " {" + f"{comment}" + "} "
+            if black_comment:
+                movetext += " {" + f"{black_comment}" + "} "
             else:
                 movetext += "`"
             if item:
                 white_move = item.pop()
-                comment = anno.pop()
-                if comment and comment[0] in ['!', '?']:
-                    tokens = comment.split(maxsplit=1)
+                white_comment = anno.pop()
+                if white_comment and white_comment[0] in ['!', '?']:
+                    tokens = white_comment.split(maxsplit=1)
                     white_strength = tokens[0]
-                    comment = tokens[1] if len(tokens) > 1 else ""
+                    white_comment = tokens[1] if len(tokens) > 1 else ""
                 else:
                     white_strength = ""
                 movetext += f"{_translate_to_text(white_move)}{white_strength}"
-                if comment:
-                    movetext += " {" + f"{comment}" + "}"
+                if white_comment:
+                    movetext += " {" + f"{white_comment}" + "}"
             movetext += " "
     return movetext
 
@@ -459,13 +460,15 @@ class PDNWriter:
                 frozenset(white_men) != frozenset(range(21, 33))):
             self.stream.write('[SetUp "1"]')
             self.stream.write(f'[FEN "{result}"]\n')
-            for line in self._wrapper.wrap(_translate_to_fen(next_to_move, black_men, white_men, black_kings,
-                                                             white_kings)):
+            for line in self._wrapper.wrap(translate_to_fen(next_to_move, black_men, white_men, black_kings,
+                                                            white_kings)):
                 self.stream.write(line + '\n')
         self.stream.write(f'[BoardOrientation "{board_orientation}"]\n')
         if description:
             for line in description:
                 self.stream.write(line)
+        if annotations is None:
+            annotations = [["", ""] for _ in moves]
         for line in self._wrapper.wrap(_translate_to_movetext(moves, annotations)):
             line = line.replace("`", " ")  # NOTE: see _translate_to_movetext function
             self.stream.write(line + '\n')
@@ -490,3 +493,32 @@ class PDNWriter:
                   black_kings, white_kings, result, board_orientation, moves, annotations=None, description=""):
         cls(stream, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men, black_kings,
             white_kings, result, board_orientation, description, moves, annotations)
+
+
+def board_to_PDN(board_moves: list[Move]):
+    pdn_moves = ""
+    move_count = 1
+    for idx, move in enumerate(board_moves):
+        num_squares = len(move.affected_squares)
+        if idx % 2 == 0:
+            pdn_moves += f"{move_count}. "
+            move_count += 1
+        if num_squares == 2:  # move
+            sq1 = keymap[move.affected_squares[0][0]]
+            sq2 = keymap[move.affected_squares[1][0]]
+            pdn_moves += f"{sq1}-{sq2}"
+        elif num_squares >= 3:  # jump
+            for i in range(0, num_squares-2, 2):
+                sq = keymap[move.affected_squares[i][0]]
+                pdn_moves += f"{sq}x"
+            sq = keymap[move.affected_squares[-1][0]]
+            pdn_moves += f"{sq}"
+        else:
+            raise RuntimeError("unknown number of affected_squares")
+        if move.annotation:
+            pdn_moves += " {" + f"{move.annotation}" + "}"
+        if idx % 2 == 1:
+            pdn_moves += "  "
+        else:
+            pdn_moves += " "
+    return pdn_moves.rstrip()

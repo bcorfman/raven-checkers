@@ -280,7 +280,7 @@ class Checkerboard(object):
         player = self.to_move
         enemy = self.enemy
         squares = self.squares
-        valid_indices = WHITE_IDX if player == 'white' else BLACK_IDX
+        valid_indices = WHITE_IDX if player == WHITE else BLACK_IDX
         all_captures = []
         for i in self.valid_squares:
             if squares[i] & player and squares[i] & MAN:

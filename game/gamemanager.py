@@ -2,14 +2,15 @@ import os
 from tkinter import Label, SUNKEN, NW
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 from tkinter.messagebox import askyesnocancel, showerror
-from util.globalconst import BLACK, WHITE, TITLE, VERSION, KING, MAN, PROGRAM_TITLE, TRAINING_DIR
-from util.globalconst import square_map, keymap
+from datetime import datetime
 from game.checkers import Checkers
 from gui.boardview import BoardView
 from gui.filelist import FileList
 from gui.playercontroller import PlayerController
 from gui.alphabetacontroller import AlphaBetaController
-from parsing.PDN import PDNReader
+from parsing.PDN import PDNReader, PDNWriter
+from util.globalconst import BLACK, WHITE, TITLE, VERSION, KING, MAN, PROGRAM_TITLE, TRAINING_DIR
+from util.globalconst import square_map, keymap
 
 
 class GameManager(object):
@@ -174,32 +175,51 @@ class GameManager(object):
 
     def _write_file(self, filename):
         try:
-            saved_game = SavedGame()
+            # redo moves up to the end of play, if possible
+            to_move = self.model.curr_state.to_move
+            scoring = self.model.utility(to_move, self.model.curr_state)
+            if scoring == -4000:
+                if to_move == WHITE:
+                    result = "1-0"
+                else:
+                    result = "0-1"
+            elif scoring == 4000:
+                if to_move == WHITE:
+                    result = "0-1"
+                else:
+                    result = "1-0"
+            else:
+                result = "*"
             # undo moves back to the beginning of play
             undo_steps = 0
             while self.model.curr_state.undo_list:
                 undo_steps += 1
                 self.model.curr_state.undo_move(None, True, True, self.view.get_annotation())
             # save the state of the board
-            saved_game.to_move = self.model.curr_state.to_move
-            saved_game.num_players = self.num_players
-            saved_game.black_men = []
-            saved_game.black_kings = []
-            saved_game.white_men = []
-            saved_game.white_kings = []
+            to_move = self.model.curr_state.to_move
+            black_men = []
+            black_kings = []
+            white_men = []
+            white_kings = []
             for i, sq in enumerate(self.model.curr_state.squares):
                 if sq == BLACK | MAN:
-                    saved_game.black_men.append(keymap[i])
+                    black_men.append(keymap[i])
                 elif sq == BLACK | KING:
-                    saved_game.black_kings.append(keymap[i])
+                    black_kings.append(keymap[i])
                 elif sq == WHITE | MAN:
-                    saved_game.white_men.append(keymap[i])
+                    white_men.append(keymap[i])
                 elif sq == WHITE | KING:
-                    saved_game.white_kings.append(keymap[i])
-            # saved_game.description = self.view.serializer.dump()
-            saved_game.moves = self.model.curr_state.redo_list
-            saved_game.flip_board = self.view.flip_view
-            saved_game.write(filename)
+                    white_kings.append(keymap[i])
+            description = self.view.serializer.dump()
+            moves = self.model.curr_state.redo_list
+            annotations = []
+            board_orientation = "white_on_top" if self.view.flip_view is False else "black_on_top"
+            black_player = "Player1"
+            white_player = "Player2"
+            PDNWriter.to_file(filename, '*', '*', datetime.now().strftime("%d/%m/%Y"), '*', black_player, white_player,
+                              to_move, black_men, white_men, black_kings, white_kings, result, board_orientation,
+                              description, moves, annotations)
+
             # redo moves forward to the previous state
             for i in range(undo_steps):
                 annotation = self.view.get_annotation()
