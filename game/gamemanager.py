@@ -162,6 +162,7 @@ class GameManager(object):
             if not out_path:
                 return
             RCF2PDN.with_file(in_path, out_path)
+            self.load_game(out_path)
         else:
             self.load_game(in_path)
 
@@ -210,7 +211,7 @@ class GameManager(object):
                 undo_steps += 1
                 self.model.curr_state.undo_move(None, True, True, self.view.get_annotation())
             # save the state of the board
-            to_move = self.model.curr_state.to_move
+            to_move = 'black' if self.model.curr_state.to_move == BLACK else 'white'
             black_men = []
             black_kings = []
             white_men = []

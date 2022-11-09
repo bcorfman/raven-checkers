@@ -11,6 +11,10 @@ from game.checkers import Checkers
 from util.globalconst import keymap, square_map, WHITE, BLACK
 
 
+def is_game_terminator(item):
+    return item in ["0-1", "1-0", "1/2-1/2", "*"]
+
+
 def _is_move(delta):
     return delta in [3, 4, 5, -3, -4, -5]
 
@@ -279,7 +283,7 @@ class PDNReader:
                 return Game(self._event, self._site, self._date, self._round, self._black_player,
                             self._white_player, self._next_to_move, self._black_men, self._white_men,
                             self._black_kings, self._white_kings, self._result, self._flip_board,
-                            self._description, self._PDN_to_board(self._moves))
+                            self._description, self._PDN_to_board(self._next_to_move, self._moves))
 
     def _get_player_to_move(self, turn):
         turn = turn.upper()
@@ -325,23 +329,22 @@ class PDNReader:
                     self._model.make_move(move, state_copy, False, False)
                     return move
 
-    def _PDN_to_board(self, pdn_moves: list):
+    def _PDN_to_board(self, next_to_move: int, pdn_moves: list):
         """ Each move in the file lists the beginning and ending square, along
         with an optional annotation string (in Creole fmt) that describes it.
         I make sure that each move works on a copy of the model before I commit
         to using it inside the code. """
         state_copy = copy.deepcopy(self._model.curr_state)
-        # remove last item in list before processing if it's a single element
-        # (i.e., game separator)
-        last_move, last_annotation = pdn_moves[-1]
-        if len(last_move) == 1:
-            pdn_moves.pop()
+        state_copy.to_move = next_to_move
+
         # analyze squares to perform a move or jump.
         idx = 0
         moves_len = len(pdn_moves)
         translated_moves = []
         while idx < moves_len:
             squares, annotation = pdn_moves[idx]
+            if is_game_terminator(squares[0]):
+                break
             delta = squares[0] - squares[1]
             if _is_move(delta):
                 move = self._try_move(squares, annotation, state_copy)
@@ -381,7 +384,7 @@ def translate_to_fen(next_to_move, black_men, white_men, black_kings, white_king
         if black_men:
             fen += ",".join([str(n) for n in black_men])
         if black_kings:
-            if white_men:
+            if black_men:
                 fen += ','
             fen += ",".join([f"K{n}" for n in black_kings])
     return fen
@@ -403,42 +406,45 @@ def _translate_to_movetext(moves: list, annotations: list):
         item = moves.pop()
         anno = annotations.pop()
 
-        if len(item) == 1:
-            movetext += item.pop()
+        item.reverse()
+        anno.reverse()
+        movenum += 1
+        # use a pipe as a temporary delimiter so TextWrapper will treat each numbered move
+        # as a single item for wrapping. After the wrapping is done, the pipe characters
+        # will be replaced with spaces.
+        move1 = item.pop()
+        if is_game_terminator(move1):
+            movetext += move1
+            break
+        movetext += f"{movenum}.`"
+        comment1 = anno.pop()
+        if comment1 and comment1[0] in ['!', '?']:
+            tokens = comment1.split(maxsplit=1)
+            strength1 = tokens[0]
+            comment1 = tokens[1] if len(tokens) > 1 else ""
         else:
-            item.reverse()
-            anno.reverse()
-            movenum += 1
-            # use a pipe as a temporary delimiter so TextWrapper will treat each numbered move
-            # as a single item for wrapping. After the wrapping is done, the pipe characters
-            # will be replaced with spaces.
-            movetext += f"{movenum}.`"
-            black_move = item.pop()
-            black_comment = anno.pop()
-            if black_comment and black_comment[0] in ['!', '?']:
-                tokens = black_comment.split(maxsplit=1)
-                black_strength = tokens[0]
-                black_comment = tokens[1] if len(tokens) > 1 else ""
+            strength1 = ""
+        movetext += f"{_translate_to_text(move1)}{strength1}"
+        if comment1:
+            movetext += " {" + f"{comment1}" + "} "
+        else:
+            movetext += "`"
+        if item:
+            move2 = item.pop()
+            if is_game_terminator(move2):
+                movetext += move2
+                break
+            comment2 = anno.pop()
+            if comment2 and comment2[0] in ['!', '?']:
+                tokens = comment2.split(maxsplit=1)
+                strength2 = tokens[0]
+                comment2 = tokens[1] if len(tokens) > 1 else ""
             else:
-                black_strength = ""
-            movetext += f"{_translate_to_text(black_move)}{black_strength}"
-            if black_comment:
-                movetext += " {" + f"{black_comment}" + "} "
-            else:
-                movetext += "`"
-            if item:
-                white_move = item.pop()
-                white_comment = anno.pop()
-                if white_comment and white_comment[0] in ['!', '?']:
-                    tokens = white_comment.split(maxsplit=1)
-                    white_strength = tokens[0]
-                    white_comment = tokens[1] if len(tokens) > 1 else ""
-                else:
-                    white_strength = ""
-                movetext += f"{_translate_to_text(white_move)}{white_strength}"
-                if white_comment:
-                    movetext += " {" + f"{white_comment}" + "}"
-            movetext += " "
+                strength2 = ""
+            movetext += f"{_translate_to_text(move2)}{strength2}"
+            if comment2:
+                movetext += " {" + f"{comment2}" + "}"
+        movetext += " "
     return movetext
 
 
@@ -461,13 +467,11 @@ class PDNWriter:
         self.stream.write(f'[White "{white_player}"]\n')
         self.stream.write(f'[Site "{site}"]\n')
         self.stream.write(f'[Result "{result}"]\n')
-        if (black_kings or white_kings or frozenset(black_men) != frozenset(range(1, 13)) or
+        if (next_to_move == "white" or black_kings or white_kings or frozenset(black_men) != frozenset(range(1, 13)) or
                 frozenset(white_men) != frozenset(range(21, 33))):
-            self.stream.write('[SetUp "1"]')
-            self.stream.write(f'[FEN "{result}"]\n')
-            for line in self._wrapper.wrap(translate_to_fen(next_to_move, black_men, white_men, black_kings,
-                                                            white_kings)):
-                self.stream.write(line + '\n')
+            self.stream.write('[SetUp "1"]\n')
+            fen = translate_to_fen(next_to_move, black_men, white_men, black_kings, white_kings)
+            self.stream.write(f'[FEN "{fen}"]\n')
         self.stream.write(f'[BoardOrientation "{board_orientation}"]\n')
         if description:
             for line in description:

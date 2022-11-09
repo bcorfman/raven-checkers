@@ -1,6 +1,8 @@
+import os
 from datetime import datetime
 from io import StringIO
 from parsing.migrate import RCF2PDN
+from parsing.PDN import PDNReader
 
 
 def test_read_first_position_description_string():
@@ -82,6 +84,15 @@ def test_read_first_position_setup_string():
         assert cvt.white_kings == [19, 23]
 
 
+def test_first_position_file_migration():
+    input_filename = os.path.join("training", "KeyEndgames", "FirstPosition.rcf")
+    output_filename = os.path.join("training", "FirstPosition.pdn")
+    RCF2PDN.with_file(input_filename, output_filename)
+    reader = PDNReader.from_file(output_filename)
+    game = reader.read_game(0)
+    assert game is not None
+
+
 def test_read_first_position_moves_string():
     moves = "23-27;\n" + \
             "28-32;\n" + \
@@ -123,7 +134,7 @@ def test_read_first_position_moves_string():
         assert cvt.moves == [[[23, 27], [28, 32]], [[19, 23], [32, 28]], [[27, 32], [28, 24]], [[23, 18], [24, 28]],
                              [[18, 15], [28, 24]], [[32, 28], [24, 27]], [[15, 18], [12, 16]], [[28, 32], [27, 24]],
                              [[18, 15], [24, 28]], [[15, 11], [16, 19]], [[32, 27], [28, 32]], [[27, 31], [19, 23]],
-                             [[11, 15], [32, 28]], [[15, 19]]]
+                             [[11, 15], [32, 28]], [[15, 19], '1-0']]
         assert cvt.annotations == [['', ''], ['', ''],
                                    ['', 'The early advance with 12-16 '
                                         '[[./Training/KeyEndgames/support/FirstPosition_AlternativeA.rcf|'
@@ -142,7 +153,7 @@ def test_read_first_position_moves_string():
                                    ["! Don't be tempted by 15-18?, as it "
                                    '[[./Training/KeyEndgames/support/FirstPosition_AlternativeD1.rcf'
                                     '|leads%20to%20a%20draw]].', ''],
-                                   ['', ''], ['', ''], ['', ''], ['**White wins.**']]
+                                   ['', ''], ['', ''], ['', ''], ['**White wins.**', '']]
 
 
 def test_read_glasgow_moves_string():
@@ -199,7 +210,8 @@ def test_read_glasgow_moves_string():
                              [[7, 16], [20, 11]], [[3, 7], [28, 24]], [[7, 16], [24, 20]], [[16, 19], [25, 22]],
                              [[4, 8], [29, 25]], [[19, 24], [17, 14]], [[9, 18], [22, 15]], [[10, 19], [32, 28]],
                              [[6, 10], [25, 22]], [[5, 9], [22, 18]], [[9, 14], [18, 9]], [[1, 5], [9, 6]],
-                             [[2, 9], [20, 16]], [[9, 14], [26, 23]], [[19, 26], [28, 19]], [[5, 9], [31, 22]]]
+                             [[2, 9], [20, 16]], [[9, 14], [26, 23]], [[19, 26], [28, 19]], [[5, 9], [31, 22]],
+                             ['*']]
         assert cvt.annotations == [["", "!"], ["", ""],
                                    ["These moves form the opening, which is excellent for inexperienced players to "
                                     "adopt.", ""],
@@ -220,7 +232,7 @@ def test_read_glasgow_moves_string():
                                     "interesting complications."],
                                    ["", ""], ["", ""], ["", ""],
                                    ["", "The safest, at last recovering the sacrificed man."],
-                                   ["", ""], ["", "Even game."]]
+                                   ["", ""], ["", "Even game."], [""]]
 
 
 def test_glasgow_rcf2pdn_string():

@@ -1,9 +1,21 @@
 import os.path
 from datetime import datetime, timezone
-from util.globalconst import BLACK, WHITE
 from io import StringIO
 from parsing.PDN import Game, PDNWriter
 from pathlib import Path
+
+
+def _get_game_result(_anno):
+    final_annotation = _anno.lower()
+    if "white wins" in final_annotation:
+        game_result = "1-0"
+    elif "black wins" in final_annotation:
+        game_result = "0-1"
+    elif "draw" in final_annotation:
+        game_result = "1/2-1/2"
+    else:
+        game_result = "*"  # ongoing game
+    return game_result
 
 
 class RCF2PDN:
@@ -69,18 +81,14 @@ class RCF2PDN:
         site = "*"
         date = self.file_mod_time or datetime.now().strftime("%d/%m/%Y")
         rnd = "*"
-        next_to_move = BLACK if self.next_to_move == 'black' else WHITE
         black_player = "Player1"
         white_player = "Player2"
-        result = self._get_game_result()
-        # add result as game terminator
-        self.moves.append([result])
-        self.annotations.append([""])
+        result = _get_game_result(self.moves[-1][-1])
         orientation = "black_on_top" if self.flip_board == 1 else "white_on_top"
         description = ""
         for line in self.description:
             description += f"; {line}"
-        self._game = Game(event, site, date, rnd, black_player, white_player, next_to_move, list(self.black_men),
+        self._game = Game(event, site, date, rnd, black_player, white_player, self.next_to_move, list(self.black_men),
                           list(self.white_men), list(self.black_kings), list(self.white_kings), result,
                           orientation, description, self.moves)
 
@@ -90,42 +98,6 @@ class RCF2PDN:
                             game.white_player, game.next_to_move, game.black_men, game.white_men, game.black_kings,
                             game.white_kings, game.result, game.board_orientation, game.moves, self.annotations,
                             game.description)
-
-    def _get_game_result(self):
-        final_annotation = self.annotations[-1][-1].lower()
-        if "white wins" in final_annotation:
-            result = "1-0"
-        elif "black wins" in final_annotation:
-            result = "0-1"
-        elif "draw" in final_annotation:
-            result = "1/2-1/2"
-        else:
-            result = "*"  # ongoing game
-        return result
-
-    def _get_game_moves(self):
-        movetext = ""
-        if self.moves:
-            for i, move in enumerate(self.moves):
-                start, dest = move.split("-")
-                strength = self._get_move_strength(i)
-                if i == 0:
-                    movetext += f"{i + 1}."
-                elif i % 2 == 0:
-                    movetext += f"  {i + 1}."
-                if abs(int(start) - int(dest)) <= 5:
-                    movetext += f" {start}-{dest}{strength}"  # regular move
-                else:
-                    movetext += f" {start}x{dest}{strength}"  # jump
-            movetext += " *"  # end of moves marked with asterisk
-        return movetext
-
-    def _get_move_strength(self, idx):
-        if self.annotations[idx] and self.annotations[idx][0] in ['?', '!']:
-            move_strength = self.annotations[idx][0]
-        else:
-            move_strength = ""
-        return move_strength
 
     def _read_event_name(self, line):
         tokens = line.split('**')
@@ -202,15 +174,22 @@ class RCF2PDN:
         i = 0
         moves.reverse()
         annotations.reverse()
+        result = None
         while moves:
-            move_pair.append(moves.pop())
-            annotation_pair.append(annotations.pop())
+            move = moves.pop()
+            anno = annotations.pop()
+            result = _get_game_result(anno)
+            move_pair.append(move)
+            annotation_pair.append(anno)
             i += 1
             if i % 2 == 0:
                 self.moves.append(move_pair[:])
                 self.annotations.append(annotation_pair[:])
                 move_pair = []
                 annotation_pair = []
+        if result:
+            move_pair.append(result)
+            annotation_pair.append("")
         if move_pair:
             self.moves.append(move_pair[:])
             self.annotations.append(annotation_pair[:])
