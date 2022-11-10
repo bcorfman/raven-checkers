@@ -84,13 +84,13 @@ def test_read_first_position_setup_string():
         assert cvt.white_kings == [19, 23]
 
 
-def test_first_position_file_migration():
+def test_first_position_rcf2pdn_migration():
     input_filename = os.path.join("training", "KeyEndgames", "FirstPosition.rcf")
-    output_filename = os.path.join("training", "FirstPosition.pdn")
-    RCF2PDN.with_file(input_filename, output_filename)
-    reader = PDNReader.from_file(output_filename)
-    game = reader.read_game(0)
-    assert game is not None
+    with open(input_filename) as rcf:
+        pdn = RCF2PDN.with_string(rcf)
+        reader = PDNReader.from_string(pdn)
+        game = reader.read_game(0)
+        assert game is not None
 
 
 def test_read_first_position_moves_string():

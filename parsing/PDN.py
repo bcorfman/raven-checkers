@@ -8,7 +8,7 @@ from pyparsing import Combine, Forward, Group, LineStart, LineEnd, Literal, OneO
 from typing import NamedTuple
 from base.move import Move
 from game.checkers import Checkers
-from util.globalconst import keymap, square_map, WHITE, BLACK
+from util.globalconst import keymap, square_map, BLACK, WHITE, MAN, KING
 
 
 def is_game_terminator(item):
@@ -280,10 +280,12 @@ class PDNReader:
                         self._moves.append([move_list, annotation])
                     else:
                         raise RuntimeError(f"Cannot interpret item {item} in game.body")
+                board_moves = self._PDN_to_board(self._next_to_move, self._black_men, self._black_kings,
+                                                 self._white_men, self._white_kings, self._moves)
                 return Game(self._event, self._site, self._date, self._round, self._black_player,
                             self._white_player, self._next_to_move, self._black_men, self._white_men,
                             self._black_kings, self._white_kings, self._result, self._flip_board,
-                            self._description, self._PDN_to_board(self._next_to_move, self._moves))
+                            self._description, board_moves)
 
     def _get_player_to_move(self, turn):
         turn = turn.upper()
@@ -329,13 +331,24 @@ class PDNReader:
                     self._model.make_move(move, state_copy, False, False)
                     return move
 
-    def _PDN_to_board(self, next_to_move: int, pdn_moves: list):
+    def _PDN_to_board(self, next_to_move: int, black_men: list[int], black_kings: list[int],
+                      white_men: list[int], white_kings: list[int], pdn_moves: list):
         """ Each move in the file lists the beginning and ending square, along
         with an optional annotation string (in Creole fmt) that describes it.
         I make sure that each move works on a copy of the model before I commit
         to using it inside the code. """
         state_copy = copy.deepcopy(self._model.curr_state)
+        state_copy.clear()
         state_copy.to_move = next_to_move
+        squares = state_copy.squares
+        for i in black_men:
+            squares[square_map[i]] = BLACK | MAN
+        for i in black_kings:
+            squares[square_map[i]] = BLACK | KING
+        for i in white_men:
+            squares[square_map[i]] = WHITE | MAN
+        for i in white_kings:
+            squares[square_map[i]] = WHITE | KING
 
         # analyze squares to perform a move or jump.
         idx = 0
