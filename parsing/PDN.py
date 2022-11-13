@@ -8,7 +8,7 @@ from pyparsing import Combine, Forward, Group, LineStart, LineEnd, Literal, OneO
 from typing import NamedTuple
 from base.move import Move
 from game.checkers import Checkers
-from util.globalconst import keymap, square_map, BLACK, WHITE, MAN, KING
+from util.globalconst import keymap, square_map, BLACK, WHITE, MAN, KING, HEADER, DESC, BODY
 
 
 def is_game_terminator(item):
@@ -52,16 +52,19 @@ _NormalMove = Group(_Square + Suppress(_MoveSeparator) + _Square)
 _CaptureMove = Group(_Square + OneOrMore(Suppress(_CaptureSeparator) + _Square))
 _Move = _NormalMove | _CaptureMove
 _LineComment = LineStart() + Group('% ' + rest_of_line()('comment'))
+_Description = Combine((OneOrMore(Combine(LineStart() + Suppress('% ') + ... + LineEnd()))))('description')
 _PDNTag = LineStart() + Suppress('[') + Group(_Identifier('key') + QuotedString('"')('value')) + Suppress(']') + \
           Suppress(LineEnd())
 _GameHeader = OneOrMore(_PDNTag)
-_SingleGameMove = Group(_MoveNumber('number') + _Move('first') + Optional(_Comment('comment1')) + Group(_Result))
-_DoubleGameMove = Group(_MoveNumber('number') + _Move('first') + Optional(_Comment('comment1')) +
-                        _Move('second') + Optional(_Comment('comment2')))
+_SingleGameMove = Group(_MoveNumber('number') + _Move('first') + Suppress(Optional(_MoveStrength)) +
+                        Optional(_Comment('comment1')) + Group(_Result))
+_DoubleGameMove = Group(_MoveNumber('number') + _Move('first') + Suppress(Optional(_MoveStrength)) +
+                        Optional(_Comment('comment1')) + _Move('second') + Suppress(Optional(_MoveStrength)) +
+                        Optional(_Comment('comment2')))
 _Variation = Forward()
 _GameBody = OneOrMore(_SingleGameMove | _DoubleGameMove | _Variation | _LineComment)('body')
 _Variation <<= Combine('(' + _GameBody + ')')
-_Game = (_GameHeader('header') + Optional(_GameBody)) | _GameBody
+_Game = (_GameHeader('header') + Optional(_Description) + Optional(_GameBody)) | _GameBody
 
 
 class PDNReader:
@@ -75,6 +78,7 @@ class PDNReader:
         self._game_titles = []
         self._game_indexes = []
         self._game_ctr = 0
+        self._description = ""
         self._reset_pdn_vars()
 
     @classmethod
@@ -245,20 +249,17 @@ class PDNReader:
         self._stream.seek(self._game_indexes[idx])
         game_chunk = self._game_indexes[idx+1] - self._game_indexes[idx]
         pdn = _Game.search_string(self._stream.read(game_chunk))
+        processed = 0
         for game in pdn:
-            if game.header:
+            if game.header and not (processed & HEADER):
                 for tag in game.header:
                     if parse_header.get(tag.key):
                         parse_header[tag.key](tag.value)
-            if game.comment:
-                self._description += game.comment
-            else:
-                if self._black_player and self._white_player:
-                    self._description += f"{self._event}: {self._black_player} vs. {self._white_player}"
-                else:
-                    self._description += f"{self._event}"
-                self._description += "\n\nUse the arrow keys in the toolbar above to progress through the game moves."
-            if game.body:
+                processed += HEADER
+            if game.description and not (processed & DESC):
+                self._description = game.description.as_list().pop()
+                processed += DESC
+            if game.body and not (processed & BODY):
                 self._set_board_defaults_if_needed()
                 for item in game.body:
                     if len(item) > 1:
@@ -280,12 +281,19 @@ class PDNReader:
                         self._moves.append([move_list, annotation])
                     else:
                         raise RuntimeError(f"Cannot interpret item {item} in game.body")
-                board_moves = self._PDN_to_board(self._next_to_move, self._black_men, self._black_kings,
-                                                 self._white_men, self._white_kings, self._moves)
-                return Game(self._event, self._site, self._date, self._round, self._black_player,
-                            self._white_player, self._next_to_move, self._black_men, self._white_men,
-                            self._black_kings, self._white_kings, self._result, self._flip_board,
-                            self._description, board_moves)
+            # if no game description was in the file, add a basic one so the user has something to guide them.
+        if not self._description:
+            if self._black_player and self._white_player:
+                self._description += f"{self._event}: {self._black_player} vs. {self._white_player}"
+            else:
+                self._description += f"{self._event}"
+            self._description += "\n\nUse the arrow keys in the toolbar above to progress through the game moves."
+        board_moves = self._PDN_to_board_ready(self._next_to_move, self._black_men, self._black_kings,
+                                               self._white_men, self._white_kings, self._moves)
+        return Game(self._event, self._site, self._date, self._round, self._black_player,
+                    self._white_player, self._next_to_move, self._black_men, self._white_men,
+                    self._black_kings, self._white_kings, self._result, self._flip_board,
+                    self._description, board_moves)
 
     def _get_player_to_move(self, turn):
         turn = turn.upper()
@@ -331,8 +339,8 @@ class PDNReader:
                     self._model.make_move(move, state_copy, False, False)
                     return move
 
-    def _PDN_to_board(self, next_to_move: int, black_men: list[int], black_kings: list[int],
-                      white_men: list[int], white_kings: list[int], pdn_moves: list):
+    def _PDN_to_board_ready(self, next_to_move: int, black_men: list[int], black_kings: list[int],
+                            white_men: list[int], white_kings: list[int], pdn_moves: list):
         """ Each move in the file lists the beginning and ending square, along
         with an optional annotation string (in Creole fmt) that describes it.
         I make sure that each move works on a copy of the model before I commit
@@ -340,15 +348,14 @@ class PDNReader:
         state_copy = copy.deepcopy(self._model.curr_state)
         state_copy.clear()
         state_copy.to_move = next_to_move
-        squares = state_copy.squares
         for i in black_men:
-            squares[square_map[i]] = BLACK | MAN
+            state_copy.squares[square_map[i]] = BLACK | MAN
         for i in black_kings:
-            squares[square_map[i]] = BLACK | KING
+            state_copy.squares[square_map[i]] = BLACK | KING
         for i in white_men:
-            squares[square_map[i]] = WHITE | MAN
+            state_copy.squares[square_map[i]] = WHITE | MAN
         for i in white_kings:
-            squares[square_map[i]] = WHITE | KING
+            state_copy.squares[square_map[i]] = WHITE | KING
 
         # analyze squares to perform a move or jump.
         idx = 0
@@ -422,7 +429,7 @@ def _translate_to_movetext(moves: list, annotations: list):
         item.reverse()
         anno.reverse()
         movenum += 1
-        # use a pipe as a temporary delimiter so TextWrapper will treat each numbered move
+        # use a backquote as a temporary delimiter so TextWrapper will treat each numbered move
         # as a single item for wrapping. After the wrapping is done, the pipe characters
         # will be replaced with spaces.
         move1 = item.pop()
@@ -487,8 +494,7 @@ class PDNWriter:
             self.stream.write(f'[FEN "{fen}"]\n')
         self.stream.write(f'[BoardOrientation "{board_orientation}"]\n')
         if description:
-            for line in description:
-                self.stream.write(line)
+            self.stream.write(description + "\n")
         if annotations is None:
             annotations = [["", ""] for _ in moves]
         for line in self._wrapper.wrap(_translate_to_movetext(moves, annotations)):
@@ -517,30 +523,29 @@ class PDNWriter:
             white_kings, result, board_orientation, description, moves, annotations)
 
 
-def board_to_PDN(board_moves: list[Move]):
-    pdn_moves = ""
-    move_count = 1
+def board_to_PDN_ready(board_moves: list[Move]):
+    pdn_moves = []
+    annotations = []
     for idx, move in enumerate(board_moves):
         num_squares = len(move.affected_squares)
-        if idx % 2 == 0:
-            pdn_moves += f"{move_count}. "
-            move_count += 1
         if num_squares == 2:  # move
             sq1 = keymap[move.affected_squares[0][0]]
             sq2 = keymap[move.affected_squares[1][0]]
-            pdn_moves += f"{sq1}-{sq2}"
+            pdn_moves.append([sq1, sq2])
         elif num_squares >= 3:  # jump
+            jump = []
             for i in range(0, num_squares-2, 2):
                 sq = keymap[move.affected_squares[i][0]]
-                pdn_moves += f"{sq}x"
+                jump.append(sq)
             sq = keymap[move.affected_squares[-1][0]]
-            pdn_moves += f"{sq}"
+            jump.append(sq)
+            pdn_moves.append(jump)
         else:
             raise RuntimeError("unknown number of affected_squares")
         if move.annotation:
-            pdn_moves += " {" + f"{move.annotation}" + "}"
-        if idx % 2 == 1:
-            pdn_moves += "  "
+            annotations.append(move.annotation)
         else:
-            pdn_moves += " "
-    return pdn_moves.rstrip()
+            annotations.append("")
+    pdn_moves.reverse()
+    annotations.reverse()
+    return pdn_moves, annotations

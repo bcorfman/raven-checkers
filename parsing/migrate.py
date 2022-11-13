@@ -18,6 +18,37 @@ def _get_game_result(_anno):
     return game_result
 
 
+def build_move_annotation_pairs(move_list, anno_list):
+    # populate real moves list with move pairs
+    move_collection = []
+    anno_collection = []
+    move_pair = []
+    anno_pair = []
+    i = 0
+    moves = list(reversed(move_list))
+    annotations = list(reversed(anno_list))
+    result = None
+    while moves:
+        move = moves.pop()
+        anno = annotations.pop()
+        result = _get_game_result(anno)
+        move_pair.append(move)
+        anno_pair.append(anno)
+        i += 1
+        if i % 2 == 0:
+            move_collection.append(move_pair[:])
+            anno_collection.append(anno_pair[:])
+            move_pair = []
+            anno_pair = []
+    if result:
+        move_pair.append(result)
+        anno_pair.append("")
+    if move_pair:
+        move_collection.append(move_pair[:])
+        anno_collection.append(anno_pair[:])
+    return move_collection, anno_collection
+
+
 class RCF2PDN:
     def __init__(self):
         self.description = []
@@ -87,7 +118,7 @@ class RCF2PDN:
         orientation = "black_on_top" if self.flip_board == 1 else "white_on_top"
         description = ""
         for line in self.description:
-            description += f"; {line}"
+            description += f"% {line}"
         self._game = Game(event, site, date, rnd, black_player, white_player, self.next_to_move, list(self.black_men),
                           list(self.white_men), list(self.black_kings), list(self.white_kings), result,
                           orientation, description, self.moves)
@@ -121,8 +152,6 @@ class RCF2PDN:
                 stream.seek(prior_loc)
                 self.lineno -= 1
                 break
-            elif line == '\n':
-                continue
             else:
                 self.description.append(line)
 
@@ -168,31 +197,7 @@ class RCF2PDN:
             move_list = [int(sq) for sq in move.split('-')]
             moves.append(move_list)
             annotations.append(annotation)
-        # populate real moves list with move pairs
-        move_pair = []
-        annotation_pair = []
-        i = 0
-        moves.reverse()
-        annotations.reverse()
-        result = None
-        while moves:
-            move = moves.pop()
-            anno = annotations.pop()
-            result = _get_game_result(anno)
-            move_pair.append(move)
-            annotation_pair.append(anno)
-            i += 1
-            if i % 2 == 0:
-                self.moves.append(move_pair[:])
-                self.annotations.append(annotation_pair[:])
-                move_pair = []
-                annotation_pair = []
-        if result:
-            move_pair.append(result)
-            annotation_pair.append("")
-        if move_pair:
-            self.moves.append(move_pair[:])
-            self.annotations.append(annotation_pair[:])
+        self.moves, self.annotations = build_move_annotation_pairs(moves, annotations)
 
     def _read_turn(self, line):
         self.next_to_move = line.split("_")[0].lower()

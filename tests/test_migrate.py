@@ -37,7 +37,9 @@ def test_read_first_position_description_string():
         cvt = RCF2PDN()
         cvt._read_description(rcf)
         assert cvt.description == ["**Key Ending 10: First Position**\n",
+                                   "\n",
                                    "//Summary//\n",
+                                   "\n",
                                    "Force: 2 v 2.\n",
                                    "Opposition: White has it.\n",
                                    "Terms: White to move and win.\n",
@@ -55,11 +57,13 @@ def test_read_first_position_description_string():
                                    "and the position would just be a draw.\n",
                                    "# The defender's other piece, which becomes a king (in the double-corner), is "
                                    "unable to reach the sanctuary of the opposite double-corner.\n",
+                                   "\n",
                                    "Broadly speaking, White's winning procedure consists of attacking Black's king, "
                                    "immobilizing it, and forcing Black's single man to advance into trouble. "
                                    "Naturally, Black tries to avoid the advance of this man for as long as possible.\n",
                                    "This theme, of attacking one piece to force another to move, arises in numerous "
                                    "endings, and should be thoroughly grasped by the student.\n",
+                                   "\n",
                                    "-- From //Key Endings// by Richard Pask\n"]
 
 
@@ -309,13 +313,14 @@ def test_glasgow_rcf2pdn_string():
                           '[Site "*"]\n' \
                           '[Result "*"]\n' \
                           '[BoardOrientation "white_on_top"]\n' \
-                          "; **Glasgow opening**, part of the 11-15 group\n" \
-                          "; 11-15 is considered Black's best opening move. It is so popular that it " \
+                          "% **Glasgow opening**, part of the 11-15 group\n" \
+                          "% 11-15 is considered Black's best opening move. It is so popular that it " \
                           "has branched off into more openings than any other initial move. Among the " \
                           "replies that can be recommended for White are 23-19 or 23-18 or 22-18 or " \
                           "22-17. On the other hand, 24-20 and 24-19 and 21-17 are all considered " \
                           "inferior in varying degrees.\n" \
-                          "; - from //How to Win At Checkers// by Fred Reinfeld\n" \
+                          "% - from //How to Win At Checkers// by Fred Reinfeld\n"\
+                          "\n"\
                           "1. 11-15 23-19! 2. 8-11 22-17 3. 11-16 {These moves form the opening, which is " \
                           "excellent for inexperienced players to\n" \
                           "adopt.} 24-20 4. 16x23 27x11 5. 7x16 20x11 6. 3-7 28-24 {The alternative 11-8 " \

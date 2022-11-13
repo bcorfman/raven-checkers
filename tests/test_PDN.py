@@ -1,15 +1,18 @@
 import os
 from base.move import Move
-from parsing.PDN import PDNReader, PDNWriter, translate_to_fen, board_to_PDN
+from parsing.PDN import PDNReader, PDNWriter, translate_to_fen, board_to_PDN_ready
 from util.globalconst import BLACK, WHITE, MAN, KING, FREE, square_map
 
 
-def test_board_to_PDN():
+def test_board_to_PDN_ready():
     board_moves = [Move([[23, BLACK | MAN, FREE], [29, WHITE | MAN, FREE], [35, FREE, FREE], [40, WHITE | MAN, FREE],
                         [45, FREE, BLACK | KING]],
                         'Black double jump taking out two white men and landing in the king row')]
-    pdn_moves = '1. 16x23x32 {Black double jump taking out two white men and landing in the king row}'
-    assert board_to_PDN(board_moves) == pdn_moves
+    pdn_moves, pdn_annotations = [[16, 23, 32]], \
+                                 ['Black double jump taking out two white men and landing in the king row']
+    moves, annotations = board_to_PDN_ready(board_moves)
+    assert moves == pdn_moves
+    assert annotations == pdn_annotations
     # First moves from Ballot 1, trunk line in Complete Checkers by Richard Pask
     board_moves = [Move([[square_map[9], BLACK | MAN, FREE], [square_map[13], FREE, BLACK | MAN]], ""),
                    Move([[square_map[21], WHITE | MAN, FREE], [square_map[17], FREE, WHITE | MAN]], ""),
@@ -41,11 +44,15 @@ def test_board_to_PDN():
                    Move([[square_map[32], WHITE | MAN, FREE], [square_map[27], FREE, WHITE | MAN]], ""),
                    Move([[square_map[8], BLACK | MAN, FREE], [square_map[12], FREE, BLACK | MAN]], ""),
                    Move([[square_map[27], WHITE | MAN, FREE], [square_map[24], FREE, WHITE | MAN]], "")]
-    pdn_moves = '1. 9-13 21-17  2. 5-9 25-21  3. 11-15 29-25  4. 9-14 23-18  5. 14x23 27x18x11  '\
-                '6. 8x15 17-14  7. 10x17 21x14  8. 12-16 24-20 {26-23; 16-19 23-16; 7-11 16-7 '\
-                '3-26 30-23; 4-8 25-22; 8-11 24-19; 15-24 28-19; 6-10 to a draw}  9. 16-19 25-21 '\
-                '{32-27; 4-8 25-21 same}  10. 4-8 32-27  11. 8-12 27-24'
-    assert board_to_PDN(board_moves) == pdn_moves
+    pdn_moves = [[27, 24], [8, 12], [32, 27], [4, 8], [25, 21], [16, 19], [24, 20], [12, 16], [21, 14], [10, 17],
+                 [17, 14], [8, 15], [27, 18, 11], [14, 23], [23, 18], [9, 14], [29, 25], [11, 15], [25, 21], [5, 9],
+                 [21, 17], [9, 13]]
+    pdn_annotations = ['', '', '', '', '32-27; 4-8 25-21 same', '',
+                       '26-23; 16-19 23-16; 7-11 16-7 3-26 30-23; 4-8 25-22; 8-11 24-19; 15-24 28-19; 6-10 to a draw',
+                       '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
+    moves, annotations = board_to_PDN_ready(board_moves)
+    assert moves == pdn_moves
+    assert annotations == pdn_annotations
 
 
 def test_parse_PDN_string_success():

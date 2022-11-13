@@ -8,8 +8,8 @@ from gui.boardview import BoardView
 from gui.filelist import FileList
 from gui.playercontroller import PlayerController
 from gui.alphabetacontroller import AlphaBetaController
-from parsing.PDN import PDNReader, PDNWriter
-from parsing.migrate import RCF2PDN
+from parsing.PDN import PDNReader, PDNWriter, board_to_PDN_ready
+from parsing.migrate import RCF2PDN, build_move_annotation_pairs
 from util.globalconst import BLACK, WHITE, TITLE, VERSION, KING, MAN, PROGRAM_TITLE, TRAINING_DIR
 from util.globalconst import square_map, keymap
 
@@ -168,9 +168,9 @@ class GameManager(object):
 
     def save_game_as(self):
         self._stop_updates()
-        filename = asksaveasfilename(filetypes=(('Raven Checkers files', '*.rcf'), ('All files', '*.*')),
+        filename = asksaveasfilename(filetypes=(('Portable Draughts Notation files', '*.pdn'), ('All files', '*.*')),
                                      initialdir=TRAINING_DIR,
-                                     defaultextension='.rcf')
+                                     defaultextension='.pdn')
         if filename == '':
             return
 
@@ -225,15 +225,19 @@ class GameManager(object):
                     white_men.append(keymap[i])
                 elif sq == WHITE | KING:
                     white_kings.append(keymap[i])
+            # change description into line comments
             description = self.view.serializer.dump()
-            moves = self.model.curr_state.redo_list
-            annotations = []
+            description = '% ' + description
+            description = description.replace('\n', '\n% ')
+            board_moves = self.model.curr_state.redo_list
             board_orientation = "white_on_top" if self.view.flip_view is False else "black_on_top"
             black_player = "Player1"
             white_player = "Player2"
+            move_list, anno_list = board_to_PDN_ready(board_moves)
+            moves, annotations = build_move_annotation_pairs(move_list, anno_list)
             PDNWriter.to_file(filename, '*', '*', datetime.now().strftime("%d/%m/%Y"), '*', black_player, white_player,
                               to_move, black_men, white_men, black_kings, white_kings, result, board_orientation,
-                              description, moves, annotations)
+                              moves, annotations, description)
 
             # redo moves forward to the previous state
             for i in range(undo_steps):
