@@ -1,4 +1,4 @@
-from tkinter import IntVar, Menu, Tk
+from tkinter import IntVar, Menu, Tk, Image
 from tkinter.messagebox import askyesnocancel
 from multiprocessing import freeze_support
 from util.globalconst import RAVEN_ICON, VERSION, TITLE, BLACK, get_preferences_from_file, write_preferences_to_file
@@ -13,7 +13,8 @@ class MainFrame(CenteredWindow):
     def __init__(self, master):
         self.root = master
         self.root.withdraw()
-        self.root.iconbitmap(RAVEN_ICON)
+        img = Image("photo", file=RAVEN_ICON)
+        self.root.iconphoto(True, img)
         self.root.title('Raven ' + VERSION)
         self.root.protocol('WM_DELETE_WINDOW', self._on_close)
         self.thinkTime = IntVar(value=5)

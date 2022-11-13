@@ -31,7 +31,7 @@ MIN = 0
 MAX = 1
 
 IMAGE_DIR = 'images' + os.sep
-RAVEN_ICON = IMAGE_DIR + '_raven.ico'
+RAVEN_ICON = IMAGE_DIR + '_raven.gif'
 BULLET_IMAGE = IMAGE_DIR + 'bullet_green.gif'
 CROWN_IMAGE = IMAGE_DIR + 'crown.gif'
 BOLD_IMAGE = IMAGE_DIR + 'text_bold.gif'
