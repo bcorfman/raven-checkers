@@ -1,9 +1,11 @@
 __pypackages__/
 mainframe.build/
 mainframe.dist/
+.vscode/
 .idea/
 .DS_Store
 .pdm.toml
 raven.ini
 *.pyc
 pdm.lock
+.python-version

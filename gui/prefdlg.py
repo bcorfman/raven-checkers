@@ -10,6 +10,14 @@ class PreferencesDialog(Dialog):
         self.result = False
         self.font = font
         self.size = size
+        self._npFrame = None
+        self._fontFrame = None
+        self._fontLabel = None
+        self._fontCombo = None
+        self._sizeCombo = None
+        self._sizeFrame = None
+        self._sizeLabel = None
+        self.parent = None
         Dialog.__init__(self, parent, title)
 
     def body(self, master):
@@ -24,8 +32,7 @@ class PreferencesDialog(Dialog):
         self._sizeFrame = Frame(self._npFrame, borderwidth=0)
         self._sizeLabel = Label(self._sizeFrame, text='Size:', width=5)
         self._sizeLabel.pack(side=LEFT, padx=3)
-        self._sizeCombo = Combobox(self._sizeFrame, values=range(8, 15),
-                                   state='readonly')
+        self._sizeCombo = Combobox(self._sizeFrame, values=list(range(8, 15)), state='readonly')
         self._sizeCombo.pack(side=RIGHT, fill=X)
         self._fontFrame.pack()
         self._sizeFrame.pack()
@@ -38,7 +45,7 @@ class PreferencesDialog(Dialog):
         self.size = self._sizeCombo.get()
         self.result = True
 
-    def cancel(self, event=None):
+    def cancel(self, _=None):
         if self.parent is not None:
             self.parent.focus_set()
         self.destroy()

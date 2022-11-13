@@ -4,14 +4,14 @@ from util.globalconst import VERSION
 
 
 class AboutBox(Dialog):
-    def __init__(self, parent):
-        Dialog.__init__(self, parent)
+    def __init__(self, parent, title):
+        Dialog.__init__(self, parent, title)
         self.canvas = None
         self.button = None
         self.blank = None
 
     def body(self, master):
-        self.canvas = Canvas(self, width=300, height=275)
+        self.canvas = Canvas(self, width=300, height=275, bg='light gray')
         self.canvas.pack(side=TOP, fill=BOTH, expand=0)
         self.canvas.create_text(152, 47, text='Raven', fill='black',
                                 font=('Helvetica', 36))
@@ -19,34 +19,34 @@ class AboutBox(Dialog):
                                 font=('Helvetica', 36))
         self.canvas.create_text(150, 85, text='Version ' + VERSION,
                                 fill='black',
-                                font=('Helvetica', 12))
+                                font=('Helvetica', 14))
         self.canvas.create_text(150, 115, text='An open source checkers program',
                                 fill='black',
-                                font=('Helvetica', 10))
+                                font=('Helvetica', 12))
         self.canvas.create_text(150, 130, text='by Brandon Corfman',
                                 fill='black',
-                                font=('Helvetica', 10))
+                                font=('Helvetica', 12))
         self.canvas.create_text(150, 160, text='Evaluation function translated from',
                                 fill='black',
-                                font=('Helvetica', 10))
+                                font=('Helvetica', 12))
         self.canvas.create_text(150, 175, text="Martin Fierz's Simple Checkers",
                                 fill='black',
-                                font=('Helvetica', 10))
+                                font=('Helvetica', 12))
         self.canvas.create_text(150, 205, text="Alpha-beta search code written by",
                                 fill='black',
-                                font=('Helvetica', 10))
+                                font=('Helvetica', 12))
         self.canvas.create_text(150, 220, text="Peter Norvig for the AIMA project;",
                                 fill='black',
-                                font=('Helvetica', 10))
+                                font=('Helvetica', 12))
         self.canvas.create_text(150, 235, text="adopted for checkers usage",
                                 fill='black',
-                                font=('Helvetica', 10))
+                                font=('Helvetica', 12))
         self.canvas.create_text(150, 250, text="by Brandon Corfman",
                                 fill='black',
-                                font=('Helvetica', 10))
+                                font=('Helvetica', 12))
         return self.canvas
 
-    def cancel(self, event=None):
+    def cancel(self, _=None):
         self.destroy()
 
     def buttonbox(self):

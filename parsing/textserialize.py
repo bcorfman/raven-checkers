@@ -1,24 +1,23 @@
 from tkinter import PhotoImage
 from tkinter.constants import END
 from util.globalconst import BULLET_IMAGE
-from parsing.creoleparser import Parser
-from parsing.rules import LinkRules
+from parsing.creole import Parser, LinkRules
 
 
 class TextTagEmitter(object):
     """
     Generate tagged output compatible with the Tkinter Text widget
     """
-    def __init__(self, root, txtWidget, hyperMgr, bulletImage, link_rules=None):
+    def __init__(self, root, txt_widget, hyper_mgr, bullet_image, link_rules=None):
         self.root = root
         self.link_rules = link_rules or LinkRules()
-        self.txtWidget = txtWidget
-        self.hyperMgr = hyperMgr
+        self.txtWidget = txt_widget
+        self.hyperMgr = hyper_mgr
         self.line = 1
         self.index = 0
         self.number = 1
         self.bullet = False
-        self.bullet_image = bulletImage
+        self.bullet_image = bullet_image
         self.begin_italic = ''
         self.begin_bold = ''
         self.begin_list_item = ''
@@ -29,7 +28,7 @@ class TextTagEmitter(object):
     def visit_document(self, node):
         pass
 
-    def leave_document(self, node):
+    def leave_document(self, _):
         # leave_paragraph always leaves two extra carriage returns at the
         # end of the text. This deletes them.
         text_index = '%d.%d' % (self.line - 1, self.index)
@@ -57,43 +56,43 @@ class TextTagEmitter(object):
     def visit_paragraph(self, node):
         pass
 
-    def leave_paragraph(self, node):
+    def leave_paragraph(self, _):
         text_index = '%d.%d' % (self.line, self.index)
         self.txtWidget.insert(text_index, '\n\n')
         self.line += 2
         self.index = 0
         self.number = 1
 
-    def visit_bullet_list(self, node):
+    def visit_bullet_list(self, _):
         self.bullet = True
 
-    def leave_bullet_list(self, node):
+    def leave_bullet_list(self, _):
         text_index = '%d.%d' % (self.line, self.index)
         self.txtWidget.insert(text_index, '\n')
         self.line += 1
         self.index = 0
         self.bullet = False
 
-    def visit_number_list(self, node):
+    def visit_number_list(self, _):
         self.number = 1
 
-    def leave_number_list(self, node):
+    def leave_number_list(self, _):
         text_index = '%d.%d' % (self.line, self.index)
         self.txtWidget.insert(text_index, '\n')
         self.line += 1
         self.index = 0
 
-    def visit_list_item(self, node):
+    def visit_list_item(self, _):
         self.begin_list_item = '%d.%d' % (self.line, self.index)
 
-    def leave_list_item(self, node):
+    def leave_list_item(self, _):
         if self.bullet:
             self.txtWidget.insert(self.begin_list_item, '\t')
-            next = '%d.%d' % (self.line, self.index+1)
-            self.txtWidget.image_create(next, image=self.bullet_image)
-            next = '%d.%d' % (self.line, self.index+2)
+            next_tag = '%d.%d' % (self.line, self.index + 1)
+            self.txtWidget.image_create(next_tag, image=self.bullet_image)
+            next_tag = '%d.%d' % (self.line, self.index + 2)
             content = '\t%s\t\n' % self.list_item
-            self.txtWidget.insert(next, content)
+            self.txtWidget.insert(next_tag, content)
             end_list_item = '%d.%d' % (self.line, self.index + len(content)+2)
             self.txtWidget.tag_add('bullet', self.begin_list_item, end_list_item)
         elif self.number:
@@ -107,21 +106,21 @@ class TextTagEmitter(object):
         self.line += 1
         self.index = 0
 
-    def visit_emphasis(self, node):
+    def visit_emphasis(self, _):
         self.begin_italic = '%d.%d' % (self.line, self.index)
 
-    def leave_emphasis(self, node):
+    def leave_emphasis(self, _):
         end_italic = '%d.%d' % (self.line, self.index)
         self.txtWidget.tag_add('italic', self.begin_italic, end_italic)
 
-    def visit_strong(self, node):
+    def visit_strong(self, _):
         self.begin_bold = '%d.%d' % (self.line, self.index)
 
-    def leave_strong(self, node):
+    def leave_strong(self, _):
         end_bold = '%d.%d' % (self.line, self.index)
         self.txtWidget.tag_add('bold', self.begin_bold, end_bold)
 
-    def visit_link(self, node):
+    def visit_link(self, _):
         self.begin_link = '%d.%d' % (self.line, self.index)
 
     def leave_link(self, node):
@@ -134,11 +133,11 @@ class TextTagEmitter(object):
                               self.hyperMgr.add(filename))
         self.begin_link = ''
 
-    def visit_break(self, node):
+    def visit_break(self, _):
         text_index = '%d.%d' % (self.line, self.index)
         self.txtWidget.insert(text_index, '\n')
 
-    def leave_break(self, node):
+    def leave_break(self, _):
         self.line += 1
         self.index = 0
 
@@ -169,16 +168,21 @@ class TextTagEmitter(object):
 
 
 class Serializer(object):
-    def __init__(self, txtWidget, hyperMgr):
-        self.txt = txtWidget
-        self.hyperMgr = hyperMgr
+    def __init__(self, txt_widget, hyper_mgr):
+        self.txt = txt_widget
+        self.hyperMgr = hyper_mgr
         self.bullet_image = PhotoImage(file=BULLET_IMAGE)
+        self.filename = ""
+        self.number = 0
+        self.bullet = False
+        self.list_end = False
+        self.link_start = False
         self._reset()
 
     def _reset(self):
         self.number = 0
         self.bullet = False
-        self.filename = ''
+        self.filename = ""
         self.link_start = False
         self.first_tab = True
         self.list_end = False
@@ -211,9 +215,9 @@ class Serializer(object):
                 elif value.startswith('hyper-'):
                     creole += ']]'
                 elif value == 'number':
-                    numstr = '#\t%d.\t' % self.number
-                    if numstr in creole:
-                        creole = creole.replace(numstr, '# ', 1)
+                    num_str = '#\t%d.\t' % self.number
+                    if num_str in creole:
+                        creole = creole.replace(num_str, '# ', 1)
                     self.list_end = True
                 elif value == 'bullet':
                     creole = creole.replace('\n*\t\t', '\n* ', 1)
@@ -229,8 +233,8 @@ class Serializer(object):
                     link_text = value.replace(' ', '%20')
                     value = '[[%s|%s' % (filename, link_text)
                     self.link_start = False
-                numstr = '%d.\t' % self.number
-                if self.list_end and value != '\n' and numstr not in value:
+                num_str = '%d.\t' % self.number
+                if self.list_end and value != '\n' and num_str not in value:
                     creole += '\n'
                     self.number = 0
                     self.list_end = False

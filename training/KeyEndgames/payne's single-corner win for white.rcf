@@ -1,0 +1,26 @@
+<description>
+**Payne's Single-Corner Win for White**
+
+//Diagnosis//
+
+Force: 2 v 2.
+Terms: Either to move; White wins.
+Description: Even more fundamental to the  concept of single-corner confinement is the following ending by William Payne, which may properly be considered a phase of the American Position. The crucial piece here is the White king on 26, which stands guard until the other White piece (which could in fact be virtually anywhere on the board) is ready to attack.
+
+-- From //Key Endings// by Richard Pask
+<setup>
+white_first
+2_player_game
+flip_board 1
+black_men 21 
+black_kings 25 
+white_men 
+white_kings 26 27 
+<moves>
+27-23;
+25-29;
+23-18;
+29-25;
+26-30;
+25-29;
+18-22;. **White wins.**

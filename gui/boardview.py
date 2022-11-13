@@ -12,8 +12,8 @@ from util.globalconst import NUMBERS_IMAGE, BULLET_IMAGE, BULLETS_IMAGE, DEFAULT
 from util.globalconst import create_grid_map, create_position_map, get_preferences_from_file, parse_index, to_string, \
     keymap, reverse_dict
 from gui.autoscrollbar import AutoScrollbar
-from parsing.textserialize import Serializer
 from gui.hyperlinkmgr import HyperlinkManager
+from parsing.textserialize import Serializer
 from gui.tooltip import ToolTip
 
 
@@ -146,8 +146,8 @@ class BoardView(Observer):
             if not already_tagged:
                 self.txt.tag_add(tag, 'sel.first', 'sel.last')
                 btn.configure(relief='sunken')
-                other_btns = self.button_set.difference([btn])
-                for b in other_btns:
+                other_buttons = self.button_set.difference([btn])
+                for b in other_buttons:
                     b.configure(relief='raised')
             else:
                 btn.configure(relief='raised')
@@ -173,20 +173,20 @@ class BoardView(Observer):
     def _process_button_click(self, tag, tooltip, add_func, remove_func):
         tooltip.hide()
         if self.txt.tag_ranges('sel'):
-            startline, _ = parse_index(self.txt.index('sel.first'))
-            endline, _ = parse_index(self.txt.index('sel.last'))
+            start_line, _ = parse_index(self.txt.index('sel.first'))
+            end_line, _ = parse_index(self.txt.index('sel.last'))
         else:
-            startline, _ = parse_index(self.txt.index(INSERT))
-            endline = startline
-        current_tags = self.txt.tag_names('%d.0' % startline)
+            start_line, _ = parse_index(self.txt.index(INSERT))
+            end_line = start_line
+        current_tags = self.txt.tag_names('%d.0' % start_line)
         if tag not in current_tags:
-            add_func(startline, endline)
+            add_func(start_line, end_line)
         else:
-            remove_func(startline, endline)
+            remove_func(start_line, end_line)
 
-    def _add_bullets_if_needed(self, startline, endline):
-        self._remove_numbers_if_needed(startline, endline)
-        for line in range(startline, endline+1):
+    def _add_bullets_if_needed(self, start_line, end_line):
+        self._remove_numbers_if_needed(start_line, end_line)
+        for line in range(start_line, end_line + 1):
             current_tags = self.txt.tag_names('%d.0' % line)
             if 'bullet' not in current_tags:
                 start = '%d.0' % line
@@ -198,8 +198,8 @@ class BoardView(Observer):
         self.bullets.configure(relief='sunken')
         self.numbers.configure(relief='raised')
 
-    def _remove_bullets_if_needed(self, startline, endline):
-        for line in range(startline, endline+1):
+    def _remove_bullets_if_needed(self, start_line, end_line):
+        for line in range(start_line, end_line + 1):
             current_tags = self.txt.tag_names('%d.0' % line)
             if 'bullet' in current_tags:
                 start = '%d.0' % line
@@ -210,26 +210,26 @@ class BoardView(Observer):
                 self.txt.delete(start, end)
         self.bullets.configure(relief='raised')
 
-    def _add_numbers_if_needed(self, startline, endline):
-        self._remove_bullets_if_needed(startline, endline)
+    def _add_numbers_if_needed(self, start_line, end_line):
+        self._remove_bullets_if_needed(start_line, end_line)
         num = 1
-        for line in range(startline, endline+1):
+        for line in range(start_line, end_line + 1):
             current_tags = self.txt.tag_names('%d.0' % line)
             if 'number' not in current_tags:
                 start = '%d.0' % line
                 end = '%d.end' % line
                 self.txt.insert(start, '\t')
-                numstr = '%d.' % num
-                self.txt.insert(start, numstr)
+                num_str = '%d.' % num
+                self.txt.insert(start, num_str)
                 self.txt.insert(start, '\t')
                 self.txt.tag_add('number', start, end)
                 num += 1
         self.numbers.configure(relief='sunken')
         self.bullets.configure(relief='raised')
 
-    def _remove_numbers_if_needed(self, startline, endline):
+    def _remove_numbers_if_needed(self, start_line, end_line):
         cnt = IntVar()
-        for line in range(startline, endline+1):
+        for line in range(start_line, end_line + 1):
             current_tags = self.txt.tag_names('%d.0' % line)
             if 'number' in current_tags:
                 start = '%d.0' % line
@@ -346,8 +346,8 @@ class BoardView(Observer):
 
     def highlight_square(self, idx, color):
         row, col = self._grid_pos[idx]
-        hpos = col + row * 8
-        self.canvas.itemconfigure('o'+str(hpos), outline=color)
+        h_pos = col + row * 8
+        self.canvas.itemconfigure('o' + str(h_pos), outline=color)
 
     def calc_valid_xy(self, x, y):
         return (min(max(0, self.canvas.canvasx(x)), self._board_side-1),
@@ -356,8 +356,8 @@ class BoardView(Observer):
     def notify(self, move):
         add_lst = []
         rem_lst = []
-        for idx, _, newval in move.affected_squares:
-            if newval & FREE:
+        for idx, _, new_val in move.affected_squares:
+            if new_val & FREE:
                 rem_lst.append(idx)
             else:
                 add_lst.append(idx)
@@ -400,7 +400,7 @@ class BoardView(Observer):
             return
 
         if self._model.terminal_test():
-            text = "Game over. "
+            text = "_Game over. "
             if self._model.curr_state.to_move == WHITE:
                 text += "Black won."
             else:
@@ -456,9 +456,9 @@ class BoardView(Observer):
     def _label_board(self):
         for key, pair in self._grid_pos.items():
             row, col = pair
-            xpos, ypos = col * self._square_size, row * self._square_size
-            self.canvas.create_text(xpos+self._square_size-7,
-                                    ypos+self._square_size-7,
+            x_pos, y_pos = col * self._square_size, row * self._square_size
+            self.canvas.create_text(x_pos + self._square_size - 7,
+                                    y_pos + self._square_size - 7,
                                     text=str(keymap[key]),
                                     fill=LIGHT_SQUARES, tag='label')
 
