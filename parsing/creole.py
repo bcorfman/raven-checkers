@@ -301,7 +301,7 @@ class Parser(object):
         if groups.get('break') and self.cur.kind in ('paragraph', 'emphasis', 'strong', 'code'):
             DocNode('break', self.cur, '')
         self.text = None
-    _break_repl = _text_repl
+    # _break_repl = _text_repl
 
     def _table_repl(self, groups):
         row = groups.get('table', '|').strip()
