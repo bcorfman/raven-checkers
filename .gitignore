@@ -4,7 +4,7 @@ mainframe.dist/
 .vscode/
 .idea/
 .DS_Store
-.pdm.toml
+.pdm-python
 raven.ini
 *.pyc
 pdm.lock
