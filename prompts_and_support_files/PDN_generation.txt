@@ -1,0 +1,84 @@
+The PDN output for each diagram should be as follows:
+An Event tag is first in the file. It should be the name of the diagram, such as "Diagram 5".
+
+Next is the Date tag. If there is a date listed as part of the surrounding diagram text (such as "Edinburgh 1848, game 1" or "I got Willie Leeds with this move in the 1985 championship") then the date would go here in the value; otherwise, the value should just be an asterisk. All dates should be represented in MM/DD/YYYY format. If some of the date is unknown, then use question marks to represent the unknown portions, e.g., ??/??/1985
+
+The Round tag is next. Use an asterisk for this value.
+
+The Black tag is next. If the Black player has a name, it should be included here. For instance, if the surrounding diagram text said "Tinsley is Black; Chinook is White", then the value for Black would be "Tinsley". If no Black player is listed, then leave it as an empty string.
+
+The White tag is next. If the White player has a name, it should be included here. For instance, if the surrounding diagram text said "Tinsley is Black; Chinook is White", then the value for White would be "Chinook". If no White player is listed, then leave it as an empty string.
+
+The Site tag is next. Use an asterisk for this value.
+
+The Result tag is next. If Black wins, the result is 1-0; if White wins, the result is 0-1; if both players draw, the result is 1/2-1/2; if the game is still in-process, the result is an asterisk.
+
+The FEN tag is next. Use the procedure for generating the FEN for each diagram outlined in the attached FEN_description.txt file. Be sure to correctly identify all pieces and their positions.
+
+The BoardOrientation tag is next. Use "white_on_top" for this value.
+
+Next is one or more comment lines (each beginning with a % symbol and a space) that should contain the overall description of the diagram. Things to include in the comments:
+
+1. The title of the section that the diagram is in, if it applies to the diagram.
+2. The lesson title.
+3. Relevant context or descriptive information in the paragraphs related to the diagram, but not involving the actual checker moves or annotations in the game continuation.
+4. Make sure to directly reference the diagram by number in the description (e.g., "Diagram 5 shows...")
+5. Don't start descriptions with transition words like "However" that imply preceding content
+6. Don't refer to other diagrams in the descriptions
+7. Make each description self-contained with all relevant information
+8. Use clear, simple language (avoid phrases like "all-king endgame" in favor of clearer phrasing)
+
+After the descriptive comments, add a play instruction line as a comment (starting with % symbol) that describes whose turn it is to play and the expected outcome (e.g., "% Black to play, White wins" or "% White to play and draw").
+
+Next in the file is a GameBody, as defined in PDN_Grammar.txt. This is the PDN version of the move continuation text, listed in the text after its matching diagram. The move continuation text starts with the phrase "Continue: ..." or "Continue from Diagram N: ..." where N refers to the number of the diagram preceding. Include move numbers (1., 2., etc.) at the beginning of each pair of moves. One difference from the PDN grammar GameBody definition is that both Variations or COMMENTs will be in parentheses, and when translated to PDN, both the Variations and the COMMENTs should be in curly braces. Each move should be followed by a comment in curly braces containing the move notation and any variations or annotations given in the original text. The other difference from the PDN grammar in the move continuation text is that rather than ending with a WIN1, DRAW1 or LOSS1, the ending will say something like "Black wins.", "White wins." or "Drawn.". This should be translated to the appropriate WIN1, DRAW1 or LOSS1 when the PDN is created.
+
+Three examples of valid, generated PDNs based on the instructions above:
+
+Example 1 -
+[Event "Diagram 5"]
+[Date "*"]
+[Round "*"]
+[Black "Player 1"]
+[White "Player 2"]
+[Site "*"]
+[Result "*"]
+[FEN "W:WK23:BK31"]
+[BoardOrientation "white_on_top"]
+% Chapter 3: Simple Endgames
+% Lesson 3: 1 King v 1 King
+% Diagram 5 shows a position where Black is pinned on the side of the board and just two moves away from losing.
+% Black to play, White wins
+1. 31-27 {31-27 (Or 31-26 23-30)} 23-32 {23-32. White wins.} 0-1
+
+Example 2 - 
+[Event "Diagram 10"]
+[Date "*"]
+[Round "*"]
+[Black "Player 1"]
+[White "Player 2"]
+[Site "*"]
+[Result "*"]
+[FEN "W:WK5,WK6:BK15"]
+[BoardOrientation "white_on_top"]
+% Chapter 3: Simple Endgames
+% Lesson 4: 2 Kings v 1 King
+% In an open all-king situation where there is a material imbalance, the side with the king majority has a forced win at hand. In the case of 2 kings v 1, the strategy employed is as follows: the lone king strives to access one of the double-corners; the two kings pursue it there, force it out and pin it on the side of the board. Diagram 10 is representative.
+% White to play and win
+ 1. 5-9 {5-9} 2. 15-19 {15-19 (15-18 comes to the same thing, while 15-11 just hastens the end)} 6-10 {6-10} 3. 19-24 {19-24 (The same comments apply to 19-23 and 19-16)} 10-15 {10-15 (There is no need to memorize specific moves, just the general strategy)} 4. 24-28 {24-28 (Again, 24-27 is essentially the same; 24-20 loses quickly)} 15-19 {15-19} 5. 28-32 {28-32} 9-14 {9-14} 6. 32-28 {32-28} 14-18 {14-18} 7. 28-32 {28-32} 18-23 {18-23} 8. 32-28 {32-28} 23-27 {23-27} 9. 28-32 {28-32} 19-23 {19-23!} 10. 32-28 {32-28} 27-32 {27-32! (Entering the double-corner and forcing Black out)} 11. 28-24 {28-24} 32-28 {32-28} 12. 24-20 {24-20} 23-18 {23-18!} 13. 20-16 {20-16} 18-15 {18-15} 14. 16-20 {16-20} 15-11 {15-11! White wins.} 0-1
+
+Example 3 -
+[Event "Diagram 8"]
+[Date "*"]
+[Round "*"]
+[Black "Player 1"]
+[White "Player 2"]
+[Site "*"]
+[Result "1/2-1/2"]
+[FEN "W:WK5:BK12"]
+[BoardOrientation "white_on_top"]
+% Chapter 3: Simple Endgames
+% Lesson 3: 1 King v 1 King
+% In Diagram 8, White has the opposition, but it confers no advantage in the current setup. In a 1 king v 1 king situation, possession of the opposition means it's impossible to lose. This position requires Black to employ care to secure the draw.
+% Simple as it may be, before proceeding it's well worth playing through Diagram 8 several times, examining all the possible alternate moves, in order to firmly embed the underlying principles.
+% White to play, Black draws
+1. 5-9 {5-9}; 2. 12-16 {12-16!} 9-14 {9-14} 3. 16-19 {16-19 (16-20 is also okay, but both 16-11? and 16-12? lose)} 14-18 {14-18} 4. 19-24 {19-24!} 18-23 {18-23} 5. 24-28 {24-28!} 23-27 {23-27} 6. 28-32 {28-32} 27-23 {27-23 (Or 27-24 or 27-31) and drawn.} 1/2-1/2

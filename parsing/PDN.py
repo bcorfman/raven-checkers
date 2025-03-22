@@ -163,7 +163,7 @@ class PDNReader:
             raise SyntaxError(f"Unknown {value} used in board_orientation tag.")
 
     def _start_move_list(self, _):
-        if self._black_player and self._white_player:
+        if self._black_player and self._white_player and self._black_player != "*" and self._white_player != "*":
             title = f"{self._event}: {self._black_player} vs. {self._white_player}"
         else:
             title = f"{self._event}"
@@ -281,9 +281,9 @@ class PDNReader:
                         self._moves.append([move_list, annotation])
                     else:
                         raise RuntimeError(f"Cannot interpret item {item} in game.body")
-            # if no game description was in the file, add a basic one so the user has something to guide them.
+        # if no game description was in the file, add a basic one so the user has something to guide them.
         if not self._description:
-            if self._black_player and self._white_player:
+            if self._black_player and self._white_player and self._black_player != "*" and self._white_player != "*":
                 self._description += f"{self._event}: {self._black_player} vs. {self._white_player}"
             else:
                 self._description += f"{self._event}"

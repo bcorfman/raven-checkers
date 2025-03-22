@@ -1,0 +1,78 @@
+Each diagram in the attached PDF represents a checkers board state using a structured text format. Diagrams are labeled "Diagram N" or "Diagram N:", where N is a number between 1 and 128.
+
+Each diagram consists of the following key components:
+1. Diagram Label
+A label starting with "Diagram N" or "Diagram N:", where N is a number.
+This may be followed by optional descriptive text and one or more newlines.
+
+2. Checkerboard Representation
+Begins with the border line:
+QRRRRRRRRS
+
+Ends with the border line:
+VWWWWWWWWX
+
+Contains rows prefixed with "T" or "U", which are border characters and must be ignored.
+
+Each row consists of:
+Dark, non-playable squares → Represented by "E" (IGNORE THESE COMPLETELY).
+Playable squares (either occupied or empty) are defined by a letter-number pair.
+
+Piece Representation:
+"A" → Black man
+"B" → White man
+"C" → Black king
+"D" → White king
+" " (space) → Open playable square
+
+Square Number Encoding:
+1-9 → "1" through "9"
+10-19 → "!" replaces the leading 1 (e.g., "!0" = 10, "!1" = 11, etc.)
+20-29 → "@" replaces the leading 2 (e.g., "@0" = 20, "@1" = 21, etc.)
+30-32 → "#" replaces the leading 3 (e.g., "#0" = 30, "#1" = 31, "#2" = 32)
+
+3. Play Instruction
+After the checkerboard, a single line starts with "Black to play", "White to play" or "Either to play". 
+
+The following rigorous steps must be followed every time:
+Step 1: Extract the Diagram
+Locate "Diagram N" or "Diagram N:" to identify the start of the diagram.
+Extract everything from "QRRRRRRRRS" (inclusive) to "VWWWWWWWWX" (inclusive).
+Extract the single play instruction line directly below the diagram.
+
+Step 2: Process the Board
+Ignore "T" and "U" (border characters).
+Ignore all "E" characters (non-playable dark squares).
+Read only letter-number pairs and map them to the correct square numbers.
+Do not infer or assume; each piece must be explicitly listed in the extracted text.
+
+Step 3: List All Pieces
+Black Men (A) → List all numbered squares
+White Men (B) → List all numbered squares
+Black Kings (C) → List all numbered squares
+White Kings (D) → List all numbered squares
+
+Confirm each square number using the exact encoding rules.
+
+Example: Interpreting Diagram 86
+
+Extracted board text:
+QRRRRRRRRS
+TE 1E 2E 3E 4U
+TA5EB6E 7E 8EU
+TEB9E !0E !1E !2U
+T !3EB!4EC!5E !6EU
+TE !7E !8E !9E @0U
+T @1E @2E @3E @4EU
+TE @5EC@6E @7E @8U
+T @9E #0E #1E #2EU
+VWWWWWWWWX
+
+Play instruction: "White to play"
+
+Final Interpretation
+Type of Piece	Square Numbers
+Black Men (A)	5
+White Men (B)	6, 9, 14
+Black Kings (C)	15, 26
+White Kings (D)	(None)

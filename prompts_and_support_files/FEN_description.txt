@@ -1,0 +1,42 @@
+# FEN Description for American Checkers (8x8 Board)
+
+The Forsyth-Edwards Notation (FEN) represents a checkers position in a concise string format. For American Checkers, the FEN format follows this pattern:
+
+[TURN]:[COLOR1][PIECES]:[COLOR2][PIECES]
+
+Where:
+- [TURN] is either "W" (White's turn) or "B" (Black's turn)
+- [COLOR1] is always "W" for White pieces
+- [COLOR2] is always "B" for Black pieces
+- [PIECES] is a comma-separated list of piece positions, with kings prefixed by "K"
+
+## Format Rules:
+1. The FEN always begins with the turn indicator "W" or "B" followed by a colon
+2. White pieces are always listed first, then Black pieces
+3. Regular men are indicated by just their square number
+4. Kings are indicated by "K" followed immediately by their square number
+5. Multiple pieces of the same color are separated by commas
+6. The two color sections are separated by a colon
+7. No spaces are allowed in the FEN string
+8. Square numbers range from 1-32
+
+## Examples:
+
+Starting position (White to move):
+W:W21,22,23,24,25,26,27,28,29,30,31,32:B1,2,3,4,5,6,7,8,9,10,11,12
+
+White has two kings, Black has one king and one man (Black to move):
+B:WK10,K20:B5,K15
+
+White has one king, Black has three kings (White to move):
+W:WK23:BK7,K10,K15
+
+Two kings vs one king (Either to play):
+W:WK5,K10:BK20
+B:WK5,K10:BK20
+
+## Important Notes:
+1. When generating a FEN string from a diagram, first determine the turn from the accompanying instruction line ("Black to play", "White to play", or "Either to play").
+2. When the instruction says "Either to play", use the side specified first in the continuation text.
+3. In PDN files, the FEN tag must be formatted as: [FEN "W:W1,2:B3,4"] (including the quotes)
+4. Men and kings should be listed in ascending order by square number for readability (though this is not required by the standard)
