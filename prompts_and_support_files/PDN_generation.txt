@@ -21,16 +21,33 @@ Next is one or more comment lines (each beginning with a % symbol and a space) t
 
 1. The title of the section that the diagram is in, if it applies to the diagram.
 2. The lesson title.
-3. Relevant context or descriptive information in the paragraphs related to the diagram, but not involving the actual checker moves or annotations in the game continuation.
-4. Make sure to directly reference the diagram by number in the description (e.g., "Diagram 5 shows...")
-5. Don't start descriptions with transition words like "However" that imply preceding content
-6. Don't refer to other diagrams in the descriptions
-7. Make each description self-contained with all relevant information
-8. Use clear, simple language (avoid phrases like "all-king endgame" in favor of clearer phrasing)
+3. If there is relevant context or descriptive information in the paragraphs directly related to the diagram, include that information.
+4. If there is no specific description surrounding the diagram itself, use the description of the lesson instead. For example, if the lesson is titled "Breeches" and describes "Here a king is placed between two of the opponent's pieces. Because they can't both move out of the way at once, one of them is gained on the next move," then include this description.
+5. Make sure to directly reference the diagram by number in the description (e.g., "Diagram 5 shows...")
+6. Don't start descriptions with transition words like "However" that imply preceding content
+7. Don't refer to other diagrams in the descriptions
+8. Make each description self-contained with all relevant information
+9. Use clear, simple language (avoid phrases like "all-king endgame" in favor of clearer phrasing)
 
 After the descriptive comments, add a play instruction line as a comment (starting with % symbol) that describes whose turn it is to play and the expected outcome (e.g., "% Black to play, White wins" or "% White to play and draw").
 
-Next in the file is a GameBody, as defined in PDN_Grammar.txt. This is the PDN version of the move continuation text, listed in the text after its matching diagram. The move continuation text starts with the phrase "Continue: ..." or "Continue from Diagram N: ..." where N refers to the number of the diagram preceding. Include move numbers (1., 2., etc.) at the beginning of each pair of moves. One difference from the PDN grammar GameBody definition is that both Variations or COMMENTs will be in parentheses, and when translated to PDN, both the Variations and the COMMENTs should be in curly braces. Each move should be followed by a comment in curly braces containing the move notation and any variations or annotations given in the original text. The other difference from the PDN grammar in the move continuation text is that rather than ending with a WIN1, DRAW1 or LOSS1, the ending will say something like "Black wins.", "White wins." or "Drawn.". This should be translated to the appropriate WIN1, DRAW1 or LOSS1 when the PDN is created.
+Next in the file is a GameBody, as defined in PDN_Grammar.txt. This is the PDN version of the move continuation text, listed in the text after its matching diagram. The move continuation text starts with the phrase "Continue: ..." or "Continue from Diagram N: ..." where N refers to the number of the diagram preceding. 
+
+IMPORTANT: In checkers PDN, moves are typically arranged in pairs - Black's move followed by White's move - under a single move number. There are two exceptions:
+1. When White moves first in the position, only White's move is listed as move 1, and then all following moves are Black-White pairs.
+2. When Black makes the final move of the game, there is no corresponding White move for that pair.
+
+The semicolons (;) in the move continuation text indicate where new move numbering should begin. However, this should not disrupt the standard Black-White pairing within a single move number. For positions where Black moves first, each new semicolon-separated sequence should start with a new move number, but the moves still follow the Black-White pairing pattern. 
+
+For example, if the continuation shows "31-27; 23-32" for a Black-to-play position, the PDN would be:
+1. 31-27 {31-27} 23-32 {23-32}
+
+For positions where White moves first, if the continuation shows "2-7; 13-17 10-14; 8-10 12-3", the PDN would be:
+1. 2-7 {2-7} 
+2. 13-17 {13-17} 10-14 {10-14} 
+3. 8-10 {8-10} 12-3 {12-3}
+
+One difference from the PDN grammar GameBody definition is that both Variations or COMMENTs will be in parentheses, and when translated to PDN, both the Variations and the COMMENTs should be in curly braces. Each move should be followed by a comment in curly braces containing the move notation and any variations or annotations given in the original text. The other difference from the PDN grammar in the move continuation text is that rather than ending with a WIN1, DRAW1 or LOSS1, the ending will say something like "Black wins.", "White wins." or "Drawn.". This should be translated to the appropriate WIN1, DRAW1 or LOSS1 when the PDN is created.
 
 Three examples of valid, generated PDNs based on the instructions above:
 
