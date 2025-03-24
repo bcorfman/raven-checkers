@@ -21,13 +21,15 @@ Next is one or more comment lines (each beginning with a % symbol and a space) t
 
 1. The title of the section that the diagram is in, if it applies to the diagram.
 2. The lesson title.
-3. If there is relevant context or descriptive information in the paragraphs directly related to the diagram, include that information.
+3. If there is relevant context or descriptive information in the paragraphs directly related to the diagram, include that information. Include all relevant commentary and explanations that provide insight into the position and the strategic principles being demonstrated. This is especially important for explanations about why certain moves are marked with exclamation points or are considered best.
 4. If there is no specific description surrounding the diagram itself, use the description of the lesson instead. For example, if the lesson is titled "Breeches" and describes "Here a king is placed between two of the opponent's pieces. Because they can't both move out of the way at once, one of them is gained on the next move," then include this description.
 5. Make sure to directly reference the diagram by number in the description (e.g., "Diagram 5 shows...")
 6. Don't start descriptions with transition words like "However" that imply preceding content
-7. Don't refer to other diagrams in the descriptions
+7. Each PDN must be completely self-contained and should never reference other diagrams. If the text describes a relationship to another diagram (e.g., "This position might well have been derived from Diagram 5"), rephrase it to describe the position independently (e.g., "This position shows a king attempting to reach the double-corner diagonals while being pursued").
 8. Make each description self-contained with all relevant information
-9. Use clear, simple language (avoid phrases like "all-king endgame" in favor of clearer phrasing)
+9. Use clear, simple language (avoid phrases like "all-king endgame" in favor of clearer phrasing). Always clearly explain the key strategic concepts shown in the diagram (e.g., "the opposition", "double-corner sanctuary", etc.) rather than assuming the reader already understands these concepts.
+10. Always include all relevant commentary about the strategies, principles, or techniques shown in the diagram, especially comments that explain why certain moves are marked with exclamation points or are considered best.
+11. Each PDN should preserve the full educational value of the original diagram and its surrounding text, ensuring all strategic principles and concepts are properly explained.
 
 After the descriptive comments, add a play instruction line as a comment (starting with % symbol) that describes whose turn it is to play and the expected outcome (e.g., "% Black to play, White wins" or "% White to play and draw").
 

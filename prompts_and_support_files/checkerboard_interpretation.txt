@@ -54,6 +54,14 @@ White Kings (D) → List all numbered squares
 
 Confirm each square number using the exact encoding rules.
 
+Step 4: Capture Surrounding Context
+
+Be thorough in reading and understanding all text surrounding the diagram
+Pay special attention to the paragraphs before and after the diagram
+Look for strategic explanations, principles, and concepts being illustrated
+Note any descriptions of key moves (those marked with ! or ?) and why they are significant
+Capture any discussion about winning strategies, drawing techniques, or general principles
+
 Example: Interpreting Diagram 86
 
 Extracted board text:
