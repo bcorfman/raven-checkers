@@ -35,20 +35,6 @@ After the descriptive comments, add a play instruction line as a comment (starti
 
 Next in the file is a GameBody, as defined in PDN_Grammar.txt. This is the PDN version of the move continuation text, listed in the text after its matching diagram. The move continuation text starts with the phrase "Continue: ..." or "Continue from Diagram N: ..." where N refers to the number of the diagram preceding. 
 
-IMPORTANT: In checkers PDN, moves are typically arranged in pairs - Black's move followed by White's move - under a single move number. There are two exceptions:
-1. When White moves first in the position, only White's move is listed as move 1, and then all following moves are Black-White pairs.
-2. When Black makes the final move of the game, there is no corresponding White move for that pair.
-
-The semicolons (;) in the move continuation text indicate where new move numbering should begin. However, this should not disrupt the standard Black-White pairing within a single move number. For positions where Black moves first, each new semicolon-separated sequence should start with a new move number, but the moves still follow the Black-White pairing pattern. 
-
-For example, if the continuation shows "31-27; 23-32" for a Black-to-play position, the PDN would be:
-1. 31-27 {31-27} 23-32 {23-32}
-
-For positions where White moves first, if the continuation shows "2-7; 13-17 10-14; 8-10 12-3", the PDN would be:
-1. 2-7 {2-7} 
-2. 13-17 {13-17} 10-14 {10-14} 
-3. 8-10 {8-10} 12-3 {12-3}
-
 One difference from the PDN grammar GameBody definition is that both Variations or COMMENTs will be in parentheses, and when translated to PDN, both the Variations and the COMMENTs should be in curly braces. Each move should be followed by a comment in curly braces containing the move notation and any variations or annotations given in the original text. The other difference from the PDN grammar in the move continuation text is that rather than ending with a WIN1, DRAW1 or LOSS1, the ending will say something like "Black wins.", "White wins." or "Drawn.". This should be translated to the appropriate WIN1, DRAW1 or LOSS1 when the PDN is created.
 
 Three examples of valid, generated PDNs based on the instructions above:
@@ -83,7 +69,7 @@ Example 2 -
 % Lesson 4: 2 Kings v 1 King
 % In an open all-king situation where there is a material imbalance, the side with the king majority has a forced win at hand. In the case of 2 kings v 1, the strategy employed is as follows: the lone king strives to access one of the double-corners; the two kings pursue it there, force it out and pin it on the side of the board. Diagram 10 is representative.
 % White to play and win
-1. 5-9 {5-9} 2. 15-19 {15-19 (15-18 comes to the same thing, while 15-11 just hastens the end)} 6-10 {6-10} 3. 19-24 {19-24 (The same comments apply to 19-23 and 19-16)} 10-15 {10-15 (There is no need to memorize specific moves, just the general strategy)} 4. 24-28 {24-28 (Again, 24-27 is essentially the same; 24-20 loses quickly)} 15-19 {15-19} 5. 28-32 {28-32} 9-14 {9-14} 6. 32-28 {32-28} 14-18 {14-18} 7. 28-32 {28-32} 18-23 {18-23} 8. 32-28 {32-28} 23-27 {23-27} 9. 28-32 {28-32} 19-23 {19-23!} 10. 32-28 {32-28} 27-32 {27-32! (Entering the double-corner and forcing Black out)} 11. 28-24 {28-24} 32-28 {32-28} 12. 24-20 {24-20} 23-18 {23-18!} 13. 20-16 {20-16} 18-15 {18-15} 14. 16-20 {16-20} 15-11 {15-11! White wins.} 0-1
+1. 5-9 {5-9} 15-19 {15-19 (15-18 comes to the same thing, while 15-11 just hastens the end)} 2. 6-10 {6-10} 19-24 {19-24 (The same comments apply to 19-23 and 19-16)} 3. 10-15 {10-15 (There is no need to memorize specific moves, just the general strategy)} 24-28 {24-28 (Again, 24-27 is essentially the same; 24-20 loses quickly)} 4. 15-19 {15-19} 28-32 {28-32} 5. 9-14 {9-14} 32-28 {32-28} 6. 14-18 {14-18} 28-32 {28-32} 7. 18-23 {18-23} 32-28 {32-28} 8. 23-27 {23-27} 28-32 {28-32} 9. 19-23 {19-23!} 32-28 {32-28} 10. 27-32 {27-32! (Entering the double-corner and forcing Black out)} 28-24 {28-24} 11. 32-28 {32-28} 24-20 {24-20} 12. 23-18 {23-18!} 20-16 {20-16} 13. 18-15 {18-15} 16-20 {16-20} 14. 15-11 {15-11! White wins.} 0-1
 
 Example 3 -
 [Event "Diagram 8"]
@@ -100,4 +86,4 @@ Example 3 -
 % White has the opposition, but it confers no advantage in the current setup. In a 1 king v 1 king situation, possession of the opposition means it's impossible to lose. This position requires Black to employ care to secure the draw.
 % Simple as it may be, before proceeding it's well worth playing through Diagram 8 several times, examining all the possible alternate moves, in order to firmly embed the underlying principles.
 % White to play, Black draws
-1. 5-9 {5-9}; 2. 12-16 {12-16!} 9-14 {9-14} 3. 16-19 {16-19 (16-20 is also okay, but both 16-11? and 16-12? lose)} 14-18 {14-18} 4. 19-24 {19-24!} 18-23 {18-23} 5. 24-28 {24-28!} 23-27 {23-27} 6. 28-32 {28-32} 27-23 {27-23 (Or 27-24 or 27-31) and drawn.} 1/2-1/2
+1. 5-9 {5-9} 12-16 {12-16!} 2. 9-14 {9-14} 16-19 {16-19 (16-20 is also okay, but both 16-11? and 16-12? lose)} 3. 14-18 {14-18} 19-24 {19-24!} 4. 18-23 {18-23} 24-28 {24-28!} 5. 23-27 {23-27} 28-32 {28-32} 6. 27-23 {27-23 (Or 27-24 or 27-31) and drawn.} 1/2-1/2
