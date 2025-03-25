@@ -1,86 +1,73 @@
-Each diagram in the attached PDF represents a checkers board state using a structured text format. Diagrams are labeled "Diagram N" or "Diagram N:", where N is a number between 1 and 128.
+Each diagram in the book represents a checkers board state using a structured text format. Follow these steps precisely to extract the board information:
 
-Each diagram consists of the following key components:
-1. Diagram Label
-A label starting with "Diagram N" or "Diagram N:", where N is a number.
-This may be followed by optional descriptive text and one or more newlines.
+1. Diagram Structure
+Diagram Label:
+Each diagram starts with a label such as “Diagram N” or “Diagram N:”, where N is the diagram number. This may be followed by optional descriptive text.
 
-2. Checkerboard Representation
-Begins with the border line:
+Board Boundary:
+The board representation begins with the top border line:
 QRRRRRRRRS
-
-Ends with the border line:
+and ends with the bottom border line:
 VWWWWWWWWX
+The border rows should be removed from the analysis.
 
-Contains rows prefixed with "T" or "U", which are border characters and must be ignored.
+Rows:
+The board is composed of several rows. Each row is prefixed with a border token (either “T” or “U”), which should be replaced with spaces in the analysis.
 
-Each row consists of:
-Dark, non-playable squares → Represented by "E" (IGNORE THESE COMPLETELY).
-Playable squares (either occupied or empty) are defined by a letter-number pair.
+Non-Playable Squares:
+Non-playable (dark) squares are represented by the letter E. These should be replaced with spaces to make the tokenization and parsing easier.
 
-Piece Representation:
-"A" → Black man
-"B" → White man
-"C" → Black king
-"D" → White king
-" " (space) → Open playable square
-
+2. Playable Squares and Square Numbering
 Square Number Encoding:
-1-9 → "1" through "9"
-10-19 → "!" replaces the leading 1 (e.g., "!0" = 10, "!1" = 11, etc.)
-20-29 → "@" replaces the leading 2 (e.g., "@0" = 20, "@1" = 21, etc.)
-30-32 → "#" replaces the leading 3 (e.g., "#0" = 30, "#1" = 31, "#2" = 32)
 
-3. Play Instruction
-After the checkerboard, a single line starts with "Black to play", "White to play" or "Either to play". 
+Squares 1–9: Represented by digits “1” through “9”.
 
-The following rigorous steps must be followed every time:
-Step 1: Extract the Diagram
-Locate "Diagram N" or "Diagram N:" to identify the start of the diagram.
-Extract everything from "QRRRRRRRRS" (inclusive) to "VWWWWWWWWX" (inclusive).
-Extract the single play instruction line directly below the diagram.
+Squares 10–19: Represented with an exclamation mark as the leading symbol (e.g., !0 = 10, !1 = 11, …).
 
-Step 2: Process the Board
-Ignore "T" and "U" (border characters).
-Ignore all "E" characters (non-playable dark squares).
-Read only letter-number pairs and map them to the correct square numbers.
-Do not infer or assume; each piece must be explicitly listed in the extracted text.
+Squares 20–29: Represented with an at symbol as the leading symbol (e.g., @0 = 20, @1 = 21, …).
 
-Step 3: List All Pieces
-Black Men (A) → List all numbered squares
-White Men (B) → List all numbered squares
-Black Kings (C) → List all numbered squares
-White Kings (D) → List all numbered squares
+Squares 30–32: Represented with a hash symbol as the leading symbol (e.g., #0 = 30, #1 = 31, #2 = 32).
 
-Confirm each square number using the exact encoding rules.
+Empty Square:
+A playable square with no piece is shown only by its square number (e.g., !5 or @3). No piece identifier is attached.
 
-Step 4: Capture Surrounding Context
+3. Piece Identification
+Valid Piece Identifiers:
 
-Be thorough in reading and understanding all text surrounding the diagram
-Pay special attention to the paragraphs before and after the diagram
-Look for strategic explanations, principles, and concepts being illustrated
-Note any descriptions of key moves (those marked with ! or ?) and why they are significant
-Capture any discussion about winning strategies, drawing techniques, or general principles
+A: Black man
 
-Example: Interpreting Diagram 86
+B: White man
 
-Extracted board text:
-QRRRRRRRRS
-TE 1E 2E 3E 4U
-TA5EB6E 7E 8EU
-TEB9E !0E !1E !2U
-T !3EB!4EC!5E !6EU
-TE !7E !8E !9E @0U
-T @1E @2E @3E @4EU
-TE @5EC@6E @7E @8U
-T @9E #0E #1E #2EU
-VWWWWWWWWX
+C: Black king
 
-Play instruction: "White to play"
+D: White king
 
-Final Interpretation
-Type of Piece	Square Numbers
-Black Men (A)	5
-White Men (B)	6, 9, 14
-Black Kings (C)	15, 26
-White Kings (D)	(None)
+Rule for Identification:
+A piece is only recognized if the piece identifier (A, B, C, or D) immediately precedes the square number with no intervening characters.
+Examples:
+
+C3 is valid and indicates a Black king on square 3. 
+
+A!7 is valid and indicates a Black man on square !7 (i.e. square 17).
+
+B@3 is valid and indicates a White man on square @3 (i.e. square 23).
+
+4. Play Instruction
+After the board representation, a single line will indicate which side is to move. This line starts with “Black to play”, “White to play”, or “Either to play”. This instruction must be extracted separately from the board.
+
+5. Extraction Process Summary
+Step 1: Locate the diagram by its label (“Diagram N” or “Diagram N:”).
+
+Step 2: Extract the board from QRRRRRRRRS to VWWWWWWWWX. Delete those top and bottom borders after extraction.
+
+Step 3: For each row, replace any E, T or U characters with spaces.
+
+Step 4: For each space-separated token in the row:
+
+If a token is simply a square number (with its special encoding), mark that square as empty.
+
+If a token begins with one of the valid letters (A, B, C, or D) immediately followed by the square number, record that piece on the corresponding square.
+
+Step 5: Verify the count and placement of pieces by comparing with the visual structure of the board.
+
+Step 6: Record the play instruction provided on the line immediately following the board.

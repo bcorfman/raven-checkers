@@ -33,7 +33,7 @@ Next is one or more comment lines (each beginning with a % symbol and a space) t
 
 After the descriptive comments, add a play instruction line as a comment (starting with % symbol) that describes whose turn it is to play and the expected outcome (e.g., "% Black to play, White wins" or "% White to play and draw").
 
-Next in the file is a GameBody, as defined in PDN_Grammar.txt. This is the PDN version of the move continuation text, listed in the text after its matching diagram. The move continuation text starts with the phrase "Continue: ..." or "Continue from Diagram N: ..." where N refers to the number of the diagram preceding. 
+Next in the file is a GameBody, as defined in pdn_standard.pdf. This is the PDN version of the move continuation text, listed in the text after its matching diagram. The move continuation text starts with the phrase "Continue: ..." or "Continue from Diagram N: ..." where N refers to the number of the diagram preceding. 
 
 One difference from the PDN grammar GameBody definition is that both Variations or COMMENTs will be in parentheses, and when translated to PDN, both the Variations and the COMMENTs should be in curly braces. Each move should be followed by a comment in curly braces containing the move notation and any variations or annotations given in the original text. The other difference from the PDN grammar in the move continuation text is that rather than ending with a WIN1, DRAW1 or LOSS1, the ending will say something like "Black wins.", "White wins." or "Drawn.". This should be translated to the appropriate WIN1, DRAW1 or LOSS1 when the PDN is created.
 
