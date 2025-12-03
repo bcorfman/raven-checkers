@@ -1,0 +1,3 @@
+ALGORITHM = 'alphabeta'
+ENABLE_METRICS = False
+SEARCH_DEPTH = None

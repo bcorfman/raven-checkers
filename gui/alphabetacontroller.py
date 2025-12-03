@@ -1,4 +1,5 @@
 import ai.games as games
+import ai.algorithm_config as config  # NEW: Import config
 import copy
 import multiprocessing
 import time
@@ -36,7 +37,10 @@ class AlphaBetaController(Controller):
             self._before_turn_event()
             self._model.curr_state.attach(self._view)
             return
-        self._view.update_statusbar('Thinking ...')
+        
+        # Added: Show which algorithm is being used
+        self._view.update_statusbar(f'Thinking ({config.ALGORITHM.upper()})...')
+        
         self.process = multiprocessing.Process(target=calc_move,
                                                args=(self._model,
                                                      self._search_time,
@@ -107,14 +111,45 @@ def calc_move(model, search_time, term_event, child_conn):
         start_time = time.time()
         curr_time = start_time
         model_copy = copy.deepcopy(model)
+        
+        # Added: Print which algorithm we're using if metrics enabled
+        if config.ENABLE_METRICS:
+            print(f"\n AI Search ({config.ALGORITHM.upper()})")
+        
         while 1:
             depth += 1
-            move = games.alphabeta_search(model_copy.curr_state,
-                                          model_copy,
-                                          depth)
+            
+            # Added: Uses configured algorithm
+            if config.ALGORITHM == 'spark':
+                # Mike's Spark implementation goes here
+                try:
+                    from ai.spark_search import spark_search
+                    move = spark_search(model_copy.curr_state, model_copy, depth)
+                except ImportError:
+                    print("Spark search not found, using alphabeta")
+                    move = games.alphabeta_search(model_copy.curr_state,
+                                                  model_copy,
+                                                  depth)
+            # Regular minimax (no pruning) - Kevin adds track metrics here
+            elif config.ALGORITHM == 'minimax':
+                move = games.alphabeta_search(model_copy.curr_state,
+                                              model_copy,
+                                              depth)
+            # Kevin tracks metrics here too
+            else:  # alphabeta (default)
+                move = games.alphabeta_search(model_copy.curr_state,
+                                              model_copy,
+                                              depth)
+            
             checkpoint = curr_time
             curr_time = time.time()
             rem_time = search_time - (curr_time - checkpoint)
+            
+            # Added: Print depth progress if metrics enabled
+            if config.ENABLE_METRICS:
+                elapsed = curr_time - start_time
+                print(f"Depth {depth} complete in {elapsed:.2f}s")
+            
             if term_event.is_set():  # a signal means terminate
                 term_event.clear()
                 move = None
@@ -122,5 +157,10 @@ def calc_move(model, search_time, term_event, child_conn):
             if (curr_time - start_time > search_time or
                ((curr_time - checkpoint) * 2) > rem_time or
                depth > MAX_DEPTH):
+                # Added: Print final stats if metrics are on
+                if config.ENABLE_METRICS:
+                    total_time = curr_time - start_time
+                    print(f"Final depth: {depth}, Total time: {total_time:.2f}s")
+                    print()
                 break
     child_conn.send(move)
