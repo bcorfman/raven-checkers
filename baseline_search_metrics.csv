@@ -1,0 +1,9 @@
+algorithm,depth_limit,max_depth_reached,nodes_expanded,runtime_sec
+baseline_alphabeta,1,2,226,0.005129000055603683
+baseline_alphabeta,2,3,809,0.019180624978616834
+baseline_alphabeta,3,4,2702,0.06130304210819304
+baseline_alphabeta,4,5,7758,0.16842929203994572
+baseline_alphabeta,5,6,28652,0.6467492080992088
+baseline_alphabeta,6,7,75260,1.6904361670603976
+baseline_alphabeta,7,8,245614,5.960739917005412
+baseline_alphabeta,8,9,583188,13.661641207989305

@@ -5,6 +5,7 @@
 from ai.utils import infinity, argmax, argmax_random_tie, num_or_str, Dict, update
 from ai.utils import if_, Struct, abstract
 import random
+import time
 
 # Minimax Search
 
@@ -74,9 +75,20 @@ def alphabeta_full_search(state, game):
 def alphabeta_search(state, game, d=4, cutoff_test=None, eval_fn=None):
     """Search game to determine best action; use alpha-beta pruning.
     This version cuts off search and uses an evaluation function."""
+    start = time.perf_counter()
+
+    stats = {
+        "depth_limit": d,
+        "max_depth_reached": 0,
+        "nodes_expanded": 0,  # optional but useful
+    }
+
     player = game.to_move(state)
 
     def max_value(st, alpha, beta, depth):
+        nonlocal stats
+        stats["max_depth_reached"] = max(stats["max_depth_reached"], depth)
+        stats["nodes_expanded"] += 1
         if cutoff_test(st, depth):
             return eval_fn(st)
         v = -infinity
@@ -90,6 +102,9 @@ def alphabeta_search(state, game, d=4, cutoff_test=None, eval_fn=None):
         return v
 
     def min_value(st, alpha, beta, depth):
+        nonlocal stats
+        stats["max_depth_reached"] = max(stats["max_depth_reached"], depth)
+        stats["nodes_expanded"] += 1
         if cutoff_test(st, depth):
             return eval_fn(st)
         v = infinity
@@ -109,6 +124,12 @@ def alphabeta_search(state, game, d=4, cutoff_test=None, eval_fn=None):
     eval_fn = eval_fn or (lambda st: game.utility(player, st))
     action, state = argmax_random_tie(game.successors(state),
                                       lambda a_s: min_value(a_s[1], -infinity, infinity, 0))
+    elapsed = time.perf_counter() - start
+    stats["runtime_sec"] = elapsed
+
+    # Attach stats to the game object for later retrieval
+    game.last_search_stats = stats
+    
     return action
 
 
