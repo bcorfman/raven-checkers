@@ -9,32 +9,25 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v3
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
         with:
-          python-version: ${{ matrix.python-version }}
-      - name: Detect python location (Windows)
-        if: matrix.os == 'windows-latest'
-        run: where python
-      - name: Detect python location (Linux/Mac)
-        if: matrix.os != 'windows-latest'
-        run: which python
-      - name: Install dependencies
+          version: latest
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+      - name: Install system Tk (Ubuntu only)
+        if: matrix.os == 'ubuntu-latest'
         run: |
-          pip3 install pdm
-      - name: Install project dependencies
-        run: |
-          pdm config python.use_venv false
-          pdm install -G dev
+          sudo apt-get update -y
+          sudo apt-get install -y python3-tk
+      - name: Sync dependencies (incl. dev)
+        run: uv sync
       - name: Lint with flake8
         run: |
-          # stop the build if there are Python syntax errors or undefined names
-          pdm run flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          # The GitHub editor is 127 chars wide
-          pdm run flake8 . --count --max-complexity=27 --max-line-length=127 --statistics
+          uv run flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          uv run flake8 . --count --max-complexity=27 --max-line-length=127 --statistics
       - name: Run unit tests
-        run: |
-          pdm run pytest
+        run: uv run pytest -v --tb=short
