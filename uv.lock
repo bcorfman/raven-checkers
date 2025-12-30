@@ -386,7 +386,7 @@ wheels = [
 
 [[package]]
 name = "raven-checkers"
-version = "0.6"
+version = "0.7"
 source = { virtual = "." }
 dependencies = [
     { name = "charset-normalizer" },
