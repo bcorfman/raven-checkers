@@ -5,8 +5,8 @@ on: [push, pull_request]
 jobs:
   build:
     permissions:
-    contents: read
-    pull-requests: write
+      contents: read
+      pull-requests: write
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
