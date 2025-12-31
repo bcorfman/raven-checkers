@@ -20,6 +20,7 @@ cli = [
     "ipython>=8.5.0",
 ]
 dev = [
+    "flake8>=7.3.0",
     "pytest>=8.3.3",
     "pytest-cov>=5.0.0",
     "ruff>=0.12.0",
