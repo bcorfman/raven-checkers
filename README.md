@@ -15,13 +15,13 @@ Raven is a checkers game program, for one or two players. While there are exampl
 ## Prerequisites
 
 * Python 3.9 or higher on your system.
-* Install [PDM](https://pdm.fming.dev) on your system.
-* From a command prompt in the project directory, type `pdm install --prod` to install project dependencies only, or `pdm install -G dev` to install both project and developer dependencies (like the pytest library, necessary for running unit tests).
+* Install [uv](https://docs.astral.sh/uv/getting-started/installation/) on your system.
+* From a command prompt in the project directory, type `make install` to install project dependencies only, or `make devinstall` to install both project and developer dependencies (like the pytest library, necessary for running unit tests).
 
 ## Running the program
 
-* From a command prompt inside the project folder, type `pdm run python main.py`.
+* From a command prompt inside the project folder, type `make run`.
 
 ## Running unit tests
 
-* From a command prompt inside the project folder, type `pdm run pytest`.
+* From a command prompt inside the project folder, type `make test`.
