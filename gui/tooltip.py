@@ -8,6 +8,7 @@ class ToolTip(Toplevel):
     To apply a ToolTip to any Tkinter widget, simply pass the widget to the
     ToolTip constructor
     """
+
     def __init__(self, wdgt, msg=None, msg_func=None, delay=1, follow=True):
         """
         Initialize the ToolTip
@@ -20,14 +21,14 @@ class ToolTip(Toplevel):
           follow:  If True, the ToolTip follows motion, otherwise hides
         """
         self.wdgt = wdgt
-        self.parent = self.wdgt.master   # The parent of the ToolTip is the parent of the ToolTips widget
-        Toplevel.__init__(self, self.parent, bg='black', padx=1, pady=1)      # Initialize the Toplevel
-        self.withdraw()                                                         # Hide initially
-        self.overrideredirect(True)   # The ToolTip Toplevel should have no frame or title bar
+        self.parent = self.wdgt.master  # The parent of the ToolTip is the parent of the ToolTips widget
+        Toplevel.__init__(self, self.parent, bg="black", padx=1, pady=1)  # Initialize the Toplevel
+        self.withdraw()  # Hide initially
+        self.overrideredirect(True)  # The ToolTip Toplevel should have no frame or title bar
 
-        self.msgVar = StringVar()     # The msgVar will contain the text displayed by the ToolTip
+        self.msgVar = StringVar()  # The msgVar will contain the text displayed by the ToolTip
         if msg is None:
-            self.msgVar.set('No message provided')
+            self.msgVar.set("No message provided")
         else:
             self.msgVar.set(msg)
         self.msgFunc = msg_func
@@ -35,12 +36,13 @@ class ToolTip(Toplevel):
         self.follow = follow
         self.visible = 0
         self.lastMotion = 0
-        Message(self, textvariable=self.msgVar, bg='#FFFFDD',
-                aspect=1000).grid()  # The test of the ToolTip is displayed in a Message widget
+        Message(
+            self, textvariable=self.msgVar, bg="#FFFFDD", aspect=1000
+        ).grid()  # The test of the ToolTip is displayed in a Message widget
         # Add bindings to the widget.  This will NOT override bindings that the widget already has
-        self.wdgt.bind('<Enter>', self.spawn, '+')
-        self.wdgt.bind('<Leave>', self.hide, '+')
-        self.wdgt.bind('<Motion>', self.move, '+')
+        self.wdgt.bind("<Enter>", self.spawn, "+")
+        self.wdgt.bind("<Leave>", self.hide, "+")
+        self.wdgt.bind("<Motion>", self.move, "+")
 
     def spawn(self, event=None):
         """
@@ -70,10 +72,10 @@ class ToolTip(Toplevel):
           event: The event that called this function
         """
         self.lastMotion = time()
-        if not self.follow:   # If the follow flag is not set, motion within the widget will make the ToolTip disappear
+        if not self.follow:  # If the follow flag is not set, motion within the widget will make the ToolTip disappear
             self.withdraw()
             self.visible = 1
-        self.geometry('+%i+%i' % (event.x_root+10, event.y_root+10))   # Offset the ToolTip 10x10 pixels southwest
+        self.geometry("+%i+%i" % (event.x_root + 10, event.y_root + 10))  # Offset the ToolTip 10x10 pixels southwest
         try:
             # Try to call the message function.  Will not change the message if the message
             # function is None or the message function fails
@@ -125,37 +127,37 @@ def print_time():
     HH:MM:SS.00
     """
     t = time()
-    time_string = 'time='
-    time_string += strftime('%H:%M:', localtime(t))
-    time_string += '%.2f' % (t % 60, )
+    time_string = "time="
+    time_string += strftime("%H:%M:", localtime(t))
+    time_string += "%.2f" % (t % 60,)
     return time_string
 
 
 def main():
     root = Tk()
     btn_list = []
-    for (i, j) in range2d(6, 4):
-        text = 'delay=%i\n' % i
+    for i, j in range2d(6, 4):
+        text = "delay=%i\n" % i
         delay = i
         if j >= 2:
             follow = True
-            text += '+follow\n'
+            text += "+follow\n"
         else:
             follow = False
-            text += '-follow\n'
+            text += "-follow\n"
         if j % 2 == 0:
             msg = None
             msg_func = print_time
-            text += 'Message Function'
+            text += "Message Function"
         else:
-            msg = 'Button at %s' % str((i, j))
+            msg = "Button at %s" % str((i, j))
             msg_func = None
-            text += 'Static Message'
+            text += "Static Message"
         btn_list.append(Button(root, text=text))
         ToolTip(btn_list[-1], msg=msg, msg_func=msg_func, follow=follow, delay=delay)
-        btn_list[-1].grid(row=i, column=j, sticky=N+S+E+W)
+        btn_list[-1].grid(row=i, column=j, sticky=N + S + E + W)
     root.mainloop()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

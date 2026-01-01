@@ -29,6 +29,7 @@ class DefaultDict(dict):
     """Dictionary with a default value for unknown keys.
     Ex: d = DefaultDict(0); d['x'] += 1; d['x'] ==> 1
     d =  DefaultDict([]); d['x'] += [1]; d['y'] += [2]; d['x'] ==> [1]"""
+
     def __init__(self, default):
         super(DefaultDict, self).__init__()
         self.default = default
@@ -43,6 +44,7 @@ class Struct:
     """Create an instance with argument=value slots.
     This is for making a lightweight obj whose class doesn't matter.
     Ex: s = Struct(a=1, b=2); s.a ==> 1; s.a = 3; s ==> Struct(a=3, b=2)"""
+
     def __init__(self, **entries):
         self.__dict__.update(entries)
 
@@ -53,8 +55,8 @@ class Struct:
             return cmp(self.__dict__, other)
 
     def __repr__(self):
-        args = ['%s=%s' % (k, repr(v)) for (k, v) in vars(self).items()]
-        return 'Struct(%s)' % ', '.join(args)
+        args = ["%s=%s" % (k, repr(v)) for (k, v) in vars(self).items()]
+        return "Struct(%s)" % ", ".join(args)
 
 
 def update(x, **entries):
@@ -72,12 +74,13 @@ def update(x, **entries):
 # NOTE: Sequence functions (count_if, find_if, every, some) take function
 # argument first (like reduce, filter, and map).
 
+
 def sort(seq, compare=cmp):
     """Sort seq (mutating it) and return it.  compare is the 2nd arg to .sort.
     Ex: sort([3, 1, 2]) ==> [1, 2, 3]; reverse(sort([3, 1, 2])) ==> [3, 2, 1]
     sort([-3, 1, 2], comparer(abs)) ==> [1, 2, -3]"""
     if isinstance(seq, str):
-        seq = ''.join(sort(list(seq), compare))
+        seq = "".join(sort(list(seq), compare))
     elif compare == cmp:
         seq.sort()
     else:
@@ -99,7 +102,7 @@ def remove_all(item, seq):
     Ex: remove_all(3, [1, 2, 3, 3, 2, 1, 3]) ==> [1, 2, 2, 1]
     remove_all(4, [1, 2, 3]) ==> [1, 2, 3]"""
     if isinstance(seq, str):
-        return seq.replace(item, '')
+        return seq.replace(item, "")
     else:
         return [x for x in seq if x != item]
 
@@ -108,7 +111,7 @@ def reverse(seq):
     """Return the reverse of a string or list or tuple.  Mutates the seq.
     Ex: reverse([1, 2, 3]) ==> [3, 2, 1]; reverse('abc') ==> 'cba'"""
     if isinstance(seq, str):
-        return ''.join(reverse(list(seq)))
+        return "".join(reverse(list(seq)))
     elif isinstance(seq, tuple):
         return tuple(reverse(list(seq)))
     else:
@@ -125,8 +128,10 @@ def unique(seq):
 def count_if(predicate, seq):
     """Count the number of elements of seq for which the predicate is true.
     count_if(callable, [42, None, max, min]) ==> 2"""
+
     def count_func(count, x):
         return count + (not not predicate(x))
+
     return reduce(count_func, seq, 0)
 
 
@@ -269,9 +274,9 @@ def median(values):
     n = len(values)
     values = sort(values[:])
     if n % 2 == 1:
-        return values[n/2]
+        return values[n / 2]
     else:
-        middle2 = values[(n/2)-1:(n/2)+1]
+        middle2 = values[(n / 2) - 1 : (n / 2) + 1]
         try:
             return mean(middle2)
         except TypeError:
@@ -310,7 +315,7 @@ def probability(p):
 
 def num_or_str(x):
     """The argument is a string; convert to a number if possible, or strip it.
-    Ex: num_or_str('42') ==> 42; num_or_str(' 42x ') ==> '42x' """
+    Ex: num_or_str('42') ==> 42; num_or_str(' 42x ') ==> '42x'"""
     try:
         return int(x)
     except ValueError:
@@ -328,10 +333,10 @@ def distance(a, b):
 
 
 def distance2(a, b):
-    """"The square of the dist between two (x, y) points."""
+    """ "The square of the dist between two (x, y) points."""
     ax, ay = a
     bx, by = b
-    return (ax - bx)**2 + (ay - by)**2
+    return (ax - bx) ** 2 + (ay - by) ** 2
 
 
 def normalize(numbers, total=1.0):
@@ -352,7 +357,9 @@ def printf(fmt, *args):
 def print_(*args):
     """Print the args and return the last one."""
     for arg in args:
-        print(arg,)
+        print(
+            arg,
+        )
     print()
     return if_(args, args[-1], None)
 
@@ -365,6 +372,7 @@ def memoize(fn, slot=None):
     # Now we make it faster:
     fib = memoize(fib); fib(9) ==> 55"""
     if slot:
+
         def memoized_fn(obj, *args):
             if hasattr(obj, slot):
                 return getattr(obj, slot)
@@ -373,10 +381,12 @@ def memoize(fn, slot=None):
                 setattr(obj, slot, val)
                 return val
     else:
+
         def memoized_fn(*args):
             if args not in memoized_fn.cache:
                 memoized_fn.cache[args] = fn(*args)
             return memoized_fn.cache[args]
+
         memoized_fn.cache = {}
     return memoized_fn
 
@@ -398,13 +408,14 @@ def method2(nm, *static_args):
 def abstract():
     """Indicate abstract methods that should be implemented in a subclass.
     Ex: def m(): abstract() # Similar to Java's 'abstract void m()'"""
-    raise NotImplementedError(caller() + ' must be implemented in subclass')
+    raise NotImplementedError(caller() + " must be implemented in subclass")
 
 
 def caller(n=1):
     """Return the filename of the calling function n levels up in the frame stack.
     Ex: caller(0) ==> 'caller'; def f(): return caller(); f() ==> 'f'"""
     import inspect
+
     return inspect.getouterframes(inspect.currentframe())[n][3]
 
 
@@ -422,7 +433,7 @@ def if_(test, result, alternative):
     both result and alternative are always evaluated. However, if
     either evaluates to a function, it is applied to the empty arg list,
     so you can delay execution by putting it in a lambda.
-    Ex: if_(2 + 2 == 4, 'ok', lambda: expensive_computation()) ==> 'ok' """
+    Ex: if_(2 + 2 == 4, 'ok', lambda: expensive_computation()) ==> 'ok'"""
     if test:
         if callable(result):
             return result()
@@ -435,54 +446,61 @@ def if_(test, result, alternative):
 
 def name(obj):
     """Try to find some reasonable filename for the obj."""
-    return (getattr(obj, 'filename', 0) or getattr(obj, '__name__', 0)
-            or getattr(getattr(obj, '__class__', 0), '__name__', 0)
-            or str(obj))
+    return (
+        getattr(obj, "filename", 0)
+        or getattr(obj, "__name__", 0)
+        or getattr(getattr(obj, "__class__", 0), "__name__", 0)
+        or str(obj)
+    )
 
 
 def is_number(x):
     """Is x a number? We say it is if it has a __int__ method."""
-    return hasattr(x, '__int__')
+    return hasattr(x, "__int__")
 
 
 def is_sequence(x):
     """Is x a sequence? We say it is if it has a __getitem__ method."""
-    return hasattr(x, '__getitem__')
+    return hasattr(x, "__getitem__")
 
 
-def print_table(table, header=None, sep=' ', numfmt='%g'):
+def print_table(table, header=None, sep=" ", numfmt="%g"):
     """Print a list of lists as a table, so that columns line up nicely.
     header, if specified, will be printed as the first row.
     numfmt is the fmt for all numbers; you might want e.g. '%6.2f'.
     (If you want different formats in different columns, don't use print_table.)
     sep is the separator between columns."""
-    justs = [if_(is_number(x), 'rjust', 'ljust') for x in table[0]]
+    justs = [if_(is_number(x), "rjust", "ljust") for x in table[0]]
     if header:
         table = [header] + table
-    table = [[if_(is_number(x), lambda: numfmt % x, x) for x in row]
-             for row in table]
+    table = [[if_(is_number(x), lambda: numfmt % x, x) for x in row] for row in table]
 
     def max_length(seq):
         return max(map(len, seq))
+
     sizes = map(max_length, zip(*[map(str, row) for row in table]))
     for row in table:
-        for (j, size, x) in zip(justs, sizes, row):
-            print(getattr(str(x), j)(size), sep,)
+        for j, size, x in zip(justs, sizes, row):
+            print(
+                getattr(str(x), j)(size),
+                sep,
+            )
         print()
 
 
-def AIMAFile(components, file_mode='r'):
+def AIMAFile(components, file_mode="r"):
     """Open a file based at the AIMA root directory."""
     directory = os.path.dirname(__file__)
     return open(os.path.join(*([directory] + components)), file_mode)
 
 
-def DataFile(filename, file_mode='r'):
+def DataFile(filename, file_mode="r"):
     """Return a file in the AIMA /data directory."""
-    return AIMAFile(['data', filename], file_mode)
+    return AIMAFile(["data", filename], file_mode)
 
 
 # Queues: Stack, FIFOQueue, PriorityQueue
+
 
 class Queue:
     """Queue is an abstract class/interface. There are three types:
@@ -514,6 +532,7 @@ def Stack():
 class FIFOQueue(Queue):
     """A First-In-First-Out Queue.
     Ex: q = FIFOQueue();q.append(1);q.append(2); q.pop(), q.pop() ==> (1, 2)"""
+
     def __init__(self):
         Queue.__init__(self)
         self.A = []
@@ -531,8 +550,8 @@ class FIFOQueue(Queue):
     def pop(self):
         e = self.A[self.start]
         self.start += 1
-        if self.start > 5 and self.start > len(self.A)/2:
-            self.A = self.A[self.start:]
+        if self.start > 5 and self.start > len(self.A) / 2:
+            self.A = self.A[self.start :]
             self.start = 0
         return e
 
@@ -541,6 +560,7 @@ class PriorityQueue(Queue):
     """A queue in which the minimum (or maximum) element (as determined by f and
     order) is returned first. If order is min, the item with minimum f(x) is
     returned first; if order is max, then it is the item with maximum f(x)."""
+
     def __init__(self, order=min, f=lambda x: x):
         Queue.__init__(self)
         update(self, A=[], order=order, f=f)

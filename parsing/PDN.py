@@ -3,8 +3,25 @@ import copy
 import os
 import textwrap
 from io import StringIO
-from pyparsing import Combine, Forward, Group, LineStart, LineEnd, Literal, OneOrMore, Optional, \
-    QuotedString, Suppress, Word, WordEnd, WordStart, nums, one_of, rest_of_line, srange
+from pyparsing import (
+    Combine,
+    Forward,
+    Group,
+    LineStart,
+    LineEnd,
+    Literal,
+    OneOrMore,
+    Optional,
+    QuotedString,
+    Suppress,
+    Word,
+    WordEnd,
+    WordStart,
+    nums,
+    one_of,
+    rest_of_line,
+    srange,
+)
 from typing import NamedTuple
 from base.move import Move
 from game.checkers import Checkers
@@ -20,51 +37,81 @@ def _is_move(delta):
 
 
 def _removeLineFeed(s):
-    return s[0].replace('\n', ' ')
+    return s[0].replace("\n", " ")
 
 
-Game = NamedTuple("Game", [("event", str), ("site", str), ("date", str),
-                           ("round", str), ("black_player", str), ("white_player", str),
-                           ("next_to_move", int), ("black_men", list), ("white_men", list),
-                           ("black_kings", list), ("white_kings", list),
-                           ("result", str), ("board_orientation", str),
-                           ("description", str), ("moves", list)])
+Game = NamedTuple(
+    "Game",
+    [
+        ("event", str),
+        ("site", str),
+        ("date", str),
+        ("round", str),
+        ("black_player", str),
+        ("white_player", str),
+        ("next_to_move", int),
+        ("black_men", list),
+        ("white_men", list),
+        ("black_kings", list),
+        ("white_kings", list),
+        ("result", str),
+        ("board_orientation", str),
+        ("description", str),
+        ("moves", list),
+    ],
+)
 
 GameTitle = NamedTuple("GameTitle", [("index", int), ("name", str)])
 
-_MoveStrength = one_of('! ?') | '(' + one_of('! ?') + ')'
-_Identifier = Word(srange('[A-Z]'), srange('[A-Za-z0-9_]'))
+_MoveStrength = one_of("! ?") | "(" + one_of("! ?") + ")"
+_Identifier = Word(srange("[A-Z]"), srange("[A-Za-z0-9_]"))
 _lbrace, _rbrace = map(Literal, "{}")
-_Comment = Suppress('{') + ... + Suppress('}')
+_Comment = Suppress("{") + ... + Suppress("}")
 _Comment = _Comment.setParseAction(_removeLineFeed)
 
-_Win = WordStart() + '1-0' + WordEnd()
-_Draw = WordStart() + '1/2-1/2' + WordEnd()
-_Loss = WordStart() + '0-1' + WordEnd()
-_Asterisk = WordStart() + '*' + WordEnd()
+_Win = WordStart() + "1-0" + WordEnd()
+_Draw = WordStart() + "1/2-1/2" + WordEnd()
+_Loss = WordStart() + "0-1" + WordEnd()
+_Asterisk = WordStart() + "*" + WordEnd()
 _Result = _Asterisk | _Win | _Draw | _Loss
-_Ellipses = '...'
-_MoveNumber = WordStart() + Combine(Word(nums) + '.')("move_number")
+_Ellipses = "..."
+_MoveNumber = WordStart() + Combine(Word(nums) + ".")("move_number")
 _Square = Word(nums).set_parse_action(lambda n: [int(n[0])])
-_MoveSeparator = '-'
-_CaptureSeparator = 'x'
+_MoveSeparator = "-"
+_CaptureSeparator = "x"
 _NormalMove = Group(_Square + Suppress(_MoveSeparator) + _Square)
 _CaptureMove = Group(_Square + OneOrMore(Suppress(_CaptureSeparator) + _Square))
 _Move = _NormalMove | _CaptureMove
-_LineComment = LineStart() + Group('% ' + rest_of_line()('comment'))
-_Description = Combine((OneOrMore(Combine(LineStart() + Suppress('% ') + ... + LineEnd()))))('description')
-_PDNTag = LineStart() + Suppress('[') + Group(_Identifier('key') + QuotedString('"')('value')) + Suppress(']') + \
-          Suppress(LineEnd())
+_LineComment = LineStart() + Group("% " + rest_of_line()("comment"))
+_Description = Combine((OneOrMore(Combine(LineStart() + Suppress("% ") + ... + LineEnd()))))("description")
+_PDNTag = (
+    LineStart()
+    + Suppress("[")
+    + Group(_Identifier("key") + QuotedString('"')("value"))
+    + Suppress("]")
+    + Suppress(LineEnd())
+)
 _GameHeader = OneOrMore(_PDNTag)
-_SingleGameMove = Group(_MoveNumber('number') + _Move('first') + Suppress(Optional(_MoveStrength)) +
-                        Optional(_Comment('comment1')) + Group(_Result))
-_DoubleGameMove = Group(_MoveNumber('number') + _Move('first') + Suppress(Optional(_MoveStrength)) +
-                        Optional(_Comment('comment1')) + _Move('second') + Suppress(Optional(_MoveStrength)) +
-                        Optional(_Comment('comment2')))
+_SingleGameMove = Group(
+    _MoveNumber("number")
+    + _Move("first")
+    + Suppress(Optional(_MoveStrength))
+    + Optional(_Comment("comment1"))
+    + Group(_Result)
+)
+_DoubleGameMove = Group(
+    _MoveNumber("number")
+    + _Move("first")
+    + Suppress(Optional(_MoveStrength))
+    + Optional(_Comment("comment1"))
+    + _Move("second")
+    + Suppress(Optional(_MoveStrength))
+    + Optional(_Comment("comment2"))
+)
 _Variation = Forward()
-_GameBody = OneOrMore(_SingleGameMove | _DoubleGameMove | _Variation | _LineComment)('body')
-_Variation <<= Combine('(' + _GameBody + ')')
-_Game = (_GameHeader('header') + Optional(_Description) + Optional(_GameBody)) | _GameBody
+_GameBody = OneOrMore(_SingleGameMove | _DoubleGameMove | _Variation | _LineComment)("body")
+_Variation <<= Combine("(" + _GameBody + ")")
+_Game = (_GameHeader("header") + Optional(_Description) + Optional(_GameBody)) | _GameBody
 
 
 class PDNReader:
@@ -91,8 +138,8 @@ class PDNReader:
         filename = os.path.basename(filepath)
         # sample a small chunk of the file to determine encoding
         chunk_size = min(os.path.getsize(filepath), 10000)
-        with open(filepath, 'rb') as test:
-            pdn_encoding = charset_normalizer.detect(test.read(chunk_size))['encoding']
+        with open(filepath, "rb") as test:
+            pdn_encoding = charset_normalizer.detect(test.read(chunk_size))["encoding"]
             stream = open(filepath, encoding=pdn_encoding)
             return cls(stream, filename)
 
@@ -207,11 +254,12 @@ class PDNReader:
     def get_game_list(self):
         self._game_ctr = 0
         self._stream.seek(0)
-        parse_header = {"[Event": self._add_game_index,
-                        "[White": self._read_white_player,
-                        "[Black": self._read_black_player,
-                        "1.": self._start_move_list,
-                        }
+        parse_header = {
+            "[Event": self._add_game_index,
+            "[White": self._read_white_player,
+            "[Black": self._read_black_player,
+            "1.": self._start_move_list,
+        }
 
         self._game_titles = []
         self._game_indexes = []
@@ -231,23 +279,25 @@ class PDNReader:
 
     def read_game(self, idx):
         # parse the game at the requested index
-        parse_header = {"Event": self._read_event,
-                        "Site": self._read_site,
-                        "Date": self._read_date,
-                        "White": self._read_white_player,
-                        "Black": self._read_black_player,
-                        "BlackType": self._read_black_type,
-                        "WhiteType": self._read_white_type,
-                        "GameType": self._read_game_type,
-                        "Result": self._read_result,
-                        "FEN": self._read_fen,
-                        "BoardOrientation": self._read_board_orientation}
+        parse_header = {
+            "Event": self._read_event,
+            "Site": self._read_site,
+            "Date": self._read_date,
+            "White": self._read_white_player,
+            "Black": self._read_black_player,
+            "BlackType": self._read_black_type,
+            "WhiteType": self._read_white_type,
+            "GameType": self._read_game_type,
+            "Result": self._read_result,
+            "FEN": self._read_fen,
+            "BoardOrientation": self._read_board_orientation,
+        }
 
         self._reset_pdn_vars()
         if not self._game_indexes:
             self.get_game_list()
         self._stream.seek(self._game_indexes[idx])
-        game_chunk = self._game_indexes[idx+1] - self._game_indexes[idx]
+        game_chunk = self._game_indexes[idx + 1] - self._game_indexes[idx]
         pdn = _Game.search_string(self._stream.read(game_chunk))
         processed = 0
         for game in pdn:
@@ -288,12 +338,26 @@ class PDNReader:
             else:
                 self._description += f"{self._event}"
             self._description += "\n\nUse the arrow keys in the toolbar above to progress through the game moves."
-        board_moves = self._PDN_to_board_ready(self._next_to_move, self._black_men, self._black_kings,
-                                               self._white_men, self._white_kings, self._moves)
-        return Game(self._event, self._site, self._date, self._round, self._black_player,
-                    self._white_player, self._next_to_move, self._black_men, self._white_men,
-                    self._black_kings, self._white_kings, self._result, self._flip_board,
-                    self._description, board_moves)
+        board_moves = self._PDN_to_board_ready(
+            self._next_to_move, self._black_men, self._black_kings, self._white_men, self._white_kings, self._moves
+        )
+        return Game(
+            self._event,
+            self._site,
+            self._date,
+            self._round,
+            self._black_player,
+            self._white_player,
+            self._next_to_move,
+            self._black_men,
+            self._white_men,
+            self._black_kings,
+            self._white_kings,
+            self._result,
+            self._flip_board,
+            self._description,
+            board_moves,
+        )
 
     def _get_player_to_move(self, turn):
         turn = turn.upper()
@@ -311,7 +375,7 @@ class PDNReader:
         men = []
         kings = []
         for sq in sq_text:
-            if sq.startswith('K'):
+            if sq.startswith("K"):
                 kings.append(int(sq[1:]))
             else:
                 men.append(int(sq))
@@ -323,8 +387,9 @@ class PDNReader:
         # try to match squares with available moves on checkerboard
         sq_len = len(squares)
         for move in legal_moves:
-            if sq_len == len(move.affected_squares) and \
-                    all(sq == move.affected_squares[i][0] for i, sq in enumerate(board_squares)):
+            if sq_len == len(move.affected_squares) and all(
+                sq == move.affected_squares[i][0] for i, sq in enumerate(board_squares)
+            ):
                 move.annotation = annotation
                 self._model.make_move(move, state_copy, False, False)
                 return move
@@ -334,17 +399,24 @@ class PDNReader:
         if self._model.captures_available(state_copy):
             legal_moves = self._model.legal_moves(state_copy)
             for move in legal_moves:
-                if all(sq == move.affected_squares[i*2][0] for i, sq in enumerate(board_squares)):
+                if all(sq == move.affected_squares[i * 2][0] for i, sq in enumerate(board_squares)):
                     move.annotation = annotation
                     self._model.make_move(move, state_copy, False, False)
                     return move
 
-    def _PDN_to_board_ready(self, next_to_move: int, black_men: list[int], black_kings: list[int],
-                            white_men: list[int], white_kings: list[int], pdn_moves: list):
-        """ Each move in the file lists the beginning and ending square, along
+    def _PDN_to_board_ready(
+        self,
+        next_to_move: int,
+        black_men: list[int],
+        black_kings: list[int],
+        white_men: list[int],
+        white_kings: list[int],
+        pdn_moves: list,
+    ):
+        """Each move in the file lists the beginning and ending square, along
         with an optional annotation string (in Creole fmt) that describes it.
         I make sure that each move works on a copy of the model before I commit
-        to using it inside the code. """
+        to using it inside the code."""
         state_copy = copy.deepcopy(self._model.curr_state)
         state_copy.clear()
         state_copy.to_move = next_to_move
@@ -384,9 +456,9 @@ class PDNReader:
 
 
 def translate_to_fen(next_to_move, black_men, white_men, black_kings, white_kings):
-    if next_to_move == 'black':
+    if next_to_move == "black":
         fen = "B:"
-    elif next_to_move == 'white':
+    elif next_to_move == "white":
         fen = "W:"
     else:
         raise RuntimeError(f"Unknown player {next_to_move} in next_to_move variable")
@@ -396,7 +468,7 @@ def translate_to_fen(next_to_move, black_men, white_men, black_kings, white_king
             fen += ",".join([str(n) for n in white_men])
         if white_kings:
             if white_men:
-                fen += ','
+                fen += ","
             fen += ",".join([f"K{n}" for n in white_kings])
         fen += ":"
     if black_men or black_kings:
@@ -405,7 +477,7 @@ def translate_to_fen(next_to_move, black_men, white_men, black_kings, white_king
             fen += ",".join([str(n) for n in black_men])
         if black_kings:
             if black_men:
-                fen += ','
+                fen += ","
             fen += ",".join([f"K{n}" for n in black_kings])
     return fen
 
@@ -413,7 +485,7 @@ def translate_to_fen(next_to_move, black_men, white_men, black_kings, white_king
 def _translate_to_movetext(moves: list, annotations: list):
     def _translate_to_text(move):
         sq1, sq2 = move[0], move[1]
-        sep = '-' if abs(sq1 - sq2) <= 5 else 'x'
+        sep = "-" if abs(sq1 - sq2) <= 5 else "x"
         return sep.join([str(n) for n in move])
 
     moves.reverse()
@@ -438,7 +510,7 @@ def _translate_to_movetext(moves: list, annotations: list):
             break
         movetext += f"{movenum}.`"
         comment1 = anno.pop()
-        if comment1 and comment1[0] in ['!', '?']:
+        if comment1 and comment1[0] in ["!", "?"]:
             tokens = comment1.split(maxsplit=1)
             strength1 = tokens[0]
             comment1 = tokens[1] if len(tokens) > 1 else ""
@@ -455,7 +527,7 @@ def _translate_to_movetext(moves: list, annotations: list):
                 movetext += move2
                 break
             comment2 = anno.pop()
-            if comment2 and comment2[0] in ['!', '?']:
+            if comment2 and comment2[0] in ["!", "?"]:
                 tokens = comment2.split(maxsplit=1)
                 strength2 = tokens[0]
                 comment2 = tokens[1] if len(tokens) > 1 else ""
@@ -469,16 +541,66 @@ def _translate_to_movetext(moves: list, annotations: list):
 
 
 class PDNWriter:
-    def __init__(self, stream, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men,
-                 black_kings, white_kings, result, board_orientation, description, moves, annotations):
+    def __init__(
+        self,
+        stream,
+        event,
+        site,
+        date,
+        rnd,
+        black_player,
+        white_player,
+        next_to_move,
+        black_men,
+        white_men,
+        black_kings,
+        white_kings,
+        result,
+        board_orientation,
+        description,
+        moves,
+        annotations,
+    ):
         self.stream = stream
         self._wrapper = textwrap.TextWrapper(width=119)  # minus one character for line feed
-        self._write(event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men, black_kings,
-                    white_kings, result, board_orientation, description, moves, annotations)
+        self._write(
+            event,
+            site,
+            date,
+            rnd,
+            black_player,
+            white_player,
+            next_to_move,
+            black_men,
+            white_men,
+            black_kings,
+            white_kings,
+            result,
+            board_orientation,
+            description,
+            moves,
+            annotations,
+        )
 
-    def _write(self, event: str, site: str, date: str, rnd: str, black_player: str, white_player: str,
-               next_to_move: str, black_men: list, white_men: list, black_kings: list, white_kings: list, result: str,
-               board_orientation: str, description: str, moves: list, annotations: list):
+    def _write(
+        self,
+        event: str,
+        site: str,
+        date: str,
+        rnd: str,
+        black_player: str,
+        white_player: str,
+        next_to_move: str,
+        black_men: list,
+        white_men: list,
+        black_kings: list,
+        white_kings: list,
+        result: str,
+        board_orientation: str,
+        description: str,
+        moves: list,
+        annotations: list,
+    ):
         self.stream.write(f'[Event "{event}"]\n')
         self.stream.write(f'[Date "{date}"]\n')
         if rnd:
@@ -487,8 +609,13 @@ class PDNWriter:
         self.stream.write(f'[White "{white_player}"]\n')
         self.stream.write(f'[Site "{site}"]\n')
         self.stream.write(f'[Result "{result}"]\n')
-        if (next_to_move == "white" or black_kings or white_kings or frozenset(black_men) != frozenset(range(1, 13)) or
-                frozenset(white_men) != frozenset(range(21, 33))):
+        if (
+            next_to_move == "white"
+            or black_kings
+            or white_kings
+            or frozenset(black_men) != frozenset(range(1, 13))
+            or frozenset(white_men) != frozenset(range(21, 33))
+        ):
             self.stream.write('[SetUp "1"]\n')
             fen = translate_to_fen(next_to_move, black_men, white_men, black_kings, white_kings)
             self.stream.write(f'[FEN "{fen}"]\n')
@@ -499,28 +626,132 @@ class PDNWriter:
             annotations = [["", ""] for _ in moves]
         for line in self._wrapper.wrap(_translate_to_movetext(moves, annotations)):
             line = line.replace("`", " ")  # NOTE: see _translate_to_movetext function
-            self.stream.write(line + '\n')
+            self.stream.write(line + "\n")
 
     @classmethod
-    def to_string(cls, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men,
-                  black_kings, white_kings, result, board_orientation, moves, annotations=None, description=""):
+    def to_string(
+        cls,
+        event,
+        site,
+        date,
+        rnd,
+        black_player,
+        white_player,
+        next_to_move,
+        black_men,
+        white_men,
+        black_kings,
+        white_kings,
+        result,
+        board_orientation,
+        moves,
+        annotations=None,
+        description="",
+    ):
         with StringIO() as stream:
-            cls(stream, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men,
-                black_kings, white_kings, result, board_orientation, description, moves, annotations)
+            cls(
+                stream,
+                event,
+                site,
+                date,
+                rnd,
+                black_player,
+                white_player,
+                next_to_move,
+                black_men,
+                white_men,
+                black_kings,
+                white_kings,
+                result,
+                board_orientation,
+                description,
+                moves,
+                annotations,
+            )
             return stream.getvalue()
 
     @classmethod
-    def to_file(cls, filepath, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men,
-                black_kings, white_kings, result, board_orientation, moves, annotations=None, description=""):
-        with open(filepath, 'w') as stream:
-            cls(stream, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men,
-                black_kings, white_kings, result, board_orientation, description, moves, annotations)
+    def to_file(
+        cls,
+        filepath,
+        event,
+        site,
+        date,
+        rnd,
+        black_player,
+        white_player,
+        next_to_move,
+        black_men,
+        white_men,
+        black_kings,
+        white_kings,
+        result,
+        board_orientation,
+        moves,
+        annotations=None,
+        description="",
+    ):
+        with open(filepath, "w") as stream:
+            cls(
+                stream,
+                event,
+                site,
+                date,
+                rnd,
+                black_player,
+                white_player,
+                next_to_move,
+                black_men,
+                white_men,
+                black_kings,
+                white_kings,
+                result,
+                board_orientation,
+                description,
+                moves,
+                annotations,
+            )
 
     @classmethod
-    def to_stream(cls, stream, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men,
-                  black_kings, white_kings, result, board_orientation, moves, annotations=None, description=""):
-        cls(stream, event, site, date, rnd, black_player, white_player, next_to_move, black_men, white_men, black_kings,
-            white_kings, result, board_orientation, description, moves, annotations)
+    def to_stream(
+        cls,
+        stream,
+        event,
+        site,
+        date,
+        rnd,
+        black_player,
+        white_player,
+        next_to_move,
+        black_men,
+        white_men,
+        black_kings,
+        white_kings,
+        result,
+        board_orientation,
+        moves,
+        annotations=None,
+        description="",
+    ):
+        cls(
+            stream,
+            event,
+            site,
+            date,
+            rnd,
+            black_player,
+            white_player,
+            next_to_move,
+            black_men,
+            white_men,
+            black_kings,
+            white_kings,
+            result,
+            board_orientation,
+            description,
+            moves,
+            annotations,
+        )
 
 
 def board_to_PDN_ready(board_moves: list[Move]):
@@ -534,7 +765,7 @@ def board_to_PDN_ready(board_moves: list[Move]):
             pdn_moves.append([sq1, sq2])
         elif num_squares >= 3:  # jump
             jump = []
-            for i in range(0, num_squares-2, 2):
+            for i in range(0, num_squares - 2, 2):
                 sq = keymap[move.affected_squares[i][0]]
                 jump.append(sq)
             sq = keymap[move.affected_squares[-1][0]]

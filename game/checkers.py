@@ -19,19 +19,98 @@ class Checkerboard(object):
     #            12  13  14  15
     #          6   7   8   9
     #   (black)
-    valid_squares = [6, 7, 8, 9, 12, 13, 14, 15, 17, 18, 19, 20, 23, 24, 25, 26,
-                     28, 29, 30, 31, 34, 35, 36, 37, 39, 40, 41, 42, 45, 46,
-                     47, 48]
+    valid_squares = [
+        6,
+        7,
+        8,
+        9,
+        12,
+        13,
+        14,
+        15,
+        17,
+        18,
+        19,
+        20,
+        23,
+        24,
+        25,
+        26,
+        28,
+        29,
+        30,
+        31,
+        34,
+        35,
+        36,
+        37,
+        39,
+        40,
+        41,
+        42,
+        45,
+        46,
+        47,
+        48,
+    ]
     # values of pieces (KING, MAN, BLACK, WHITE, FREE)
     value = [0, 0, 0, 0, 0, 1, 256, 0, 0, 16, 4096, 0, 0, 0, 0, 0, 0]
     edge = [6, 7, 8, 9, 15, 17, 26, 28, 37, 39, 45, 46, 47, 48]
     center = [18, 19, 24, 25, 29, 30, 35, 36]
     # values used to calculate tempo -- one for each square on board (0, 48)
-    row = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 2, 2, 2, 2, 0, 0, 3, 3, 3, 3, 0,
-           4, 4, 4, 4, 0, 0, 5, 5, 5, 5, 0, 6, 6, 6, 6, 0, 0, 7, 7, 7, 7]
+    row = [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0,
+        2,
+        2,
+        2,
+        2,
+        0,
+        0,
+        3,
+        3,
+        3,
+        3,
+        0,
+        4,
+        4,
+        4,
+        4,
+        0,
+        0,
+        5,
+        5,
+        5,
+        5,
+        0,
+        6,
+        6,
+        6,
+        6,
+        0,
+        0,
+        7,
+        7,
+        7,
+        7,
+    ]
     safe_edge = [9, 15, 39, 45]
-    rank = {0: 0, 1: -1, 2: 1, 3: 0, 4: 1, 5: 1, 6: 2, 7: 1, 8: 1, 9: 0,
-            10: 7, 11: 4, 12: 2, 13: 2, 14: 9, 15: 8}
+    rank = {0: 0, 1: -1, 2: 1, 3: 0, 4: 1, 5: 1, 6: 2, 7: 1, 8: 1, 9: 0, 10: 7, 11: 4, 12: 2, 13: 2, 14: 9, 15: 8}
 
     def __init__(self):
         self.squares = [OCCUPIED for _ in range(56)]
@@ -41,9 +120,14 @@ class Checkerboard(object):
             s[34 + i] = s[39 + i] = s[45 + i] = WHITE | MAN
             s[23 + i] = s[28 + i] = FREE
         self.to_move = BLACK
-        self.char_lookup = {BLACK | MAN: BLACK_CHAR, WHITE | MAN: WHITE_CHAR,
-                            BLACK | KING: BLACK_KING, WHITE | KING: WHITE_KING,
-                            OCCUPIED: OCCUPIED_CHAR, FREE: FREE_CHAR}
+        self.char_lookup = {
+            BLACK | MAN: BLACK_CHAR,
+            WHITE | MAN: WHITE_CHAR,
+            BLACK | KING: BLACK_KING,
+            WHITE | KING: WHITE_KING,
+            OCCUPIED: OCCUPIED_CHAR,
+            FREE: FREE_CHAR,
+        }
         self.observers = []
         self.white_pieces = []
         self.black_pieces = []
@@ -59,25 +143,15 @@ class Checkerboard(object):
         wc = self.count(WHITE)
         sq = self.squares
         lookup = self.lookup
-        s = "[%s=%2d %s=%2d (%+d)]\n" % (BLACK_CHAR, bc,
-                                         WHITE_CHAR, wc,
-                                         bc - wc)
-        s += "8   %s   %s   %s   %s\n" % (lookup(sq[45]), lookup(sq[46]),
-                                          lookup(sq[47]), lookup(sq[48]))
-        s += "7 %s   %s   %s   %s\n" % (lookup(sq[39]), lookup(sq[40]),
-                                        lookup(sq[41]), lookup(sq[42]))
-        s += "6   %s   %s   %s   %s\n" % (lookup(sq[34]), lookup(sq[35]),
-                                          lookup(sq[36]), lookup(sq[37]))
-        s += "5 %s   %s   %s   %s\n" % (lookup(sq[28]), lookup(sq[29]),
-                                        lookup(sq[30]), lookup(sq[31]))
-        s += "4   %s   %s   %s   %s\n" % (lookup(sq[23]), lookup(sq[24]),
-                                          lookup(sq[25]), lookup(sq[26]))
-        s += "3 %s   %s   %s   %s\n" % (lookup(sq[17]), lookup(sq[18]),
-                                        lookup(sq[19]), lookup(sq[20]))
-        s += "2   %s   %s   %s   %s\n" % (lookup(sq[12]), lookup(sq[13]),
-                                          lookup(sq[14]), lookup(sq[15]))
-        s += "1 %s   %s   %s   %s\n" % (lookup(sq[6]), lookup(sq[7]),
-                                        lookup(sq[8]), lookup(sq[9]))
+        s = "[%s=%2d %s=%2d (%+d)]\n" % (BLACK_CHAR, bc, WHITE_CHAR, wc, bc - wc)
+        s += "8   %s   %s   %s   %s\n" % (lookup(sq[45]), lookup(sq[46]), lookup(sq[47]), lookup(sq[48]))
+        s += "7 %s   %s   %s   %s\n" % (lookup(sq[39]), lookup(sq[40]), lookup(sq[41]), lookup(sq[42]))
+        s += "6   %s   %s   %s   %s\n" % (lookup(sq[34]), lookup(sq[35]), lookup(sq[36]), lookup(sq[37]))
+        s += "5 %s   %s   %s   %s\n" % (lookup(sq[28]), lookup(sq[29]), lookup(sq[30]), lookup(sq[31]))
+        s += "4   %s   %s   %s   %s\n" % (lookup(sq[23]), lookup(sq[24]), lookup(sq[25]), lookup(sq[26]))
+        s += "3 %s   %s   %s   %s\n" % (lookup(sq[17]), lookup(sq[18]), lookup(sq[19]), lookup(sq[20]))
+        s += "2   %s   %s   %s   %s\n" % (lookup(sq[12]), lookup(sq[13]), lookup(sq[14]), lookup(sq[15]))
+        s += "1 %s   %s   %s   %s\n" % (lookup(sq[6]), lookup(sq[7]), lookup(sq[8]), lookup(sq[9]))
         s += "  a b c d e f g h"
         return s
 
@@ -86,8 +160,7 @@ class Checkerboard(object):
             return WHITE
         return BLACK
 
-    enemy = property(_get_enemy,
-                     doc="The color for the player that doesn't have the current turn")
+    enemy = property(_get_enemy, doc="The color for the player that doesn't have the current turn")
 
     def attach(self, observer):
         if observer not in self.observers:
@@ -143,7 +216,7 @@ class Checkerboard(object):
     def delete_redo_list(self):
         del self.redo_list[:]
 
-    def make_move(self, move, notify=True, undo=True, annotation=''):
+    def make_move(self, move, notify=True, undo=True, annotation=""):
         sq = self.squares
         for idx, _, new_value in move.affected_squares:
             sq[idx] = new_value
@@ -158,39 +231,37 @@ class Checkerboard(object):
             self.undo_list.append(move)
         return self
 
-    def undo_move(self, move=None, notify=True, redo=True, annotation=''):
+    def undo_move(self, move=None, notify=True, redo=True, annotation=""):
         if move is None:
             if not self.undo_list:
                 return
             if redo:
                 move = self.undo_list.pop()
-        rev_move = Move([[idx, dest, src] for idx, src, dest
-                         in move.affected_squares])
+        rev_move = Move([[idx, dest, src] for idx, src, dest in move.affected_squares])
         rev_move.annotation = move.annotation
         self.make_move(rev_move, notify, False)
         if redo:
             move.annotation = annotation
             self.redo_list.append(move)
 
-    def undo_all_moves(self, annotation=''):
+    def undo_all_moves(self, annotation=""):
         while self.undo_list:
             move = self.undo_list.pop()
-            rev_move = Move([[idx, dest, src] for idx, src, dest
-                             in move.affected_squares])
+            rev_move = Move([[idx, dest, src] for idx, src, dest in move.affected_squares])
             rev_move.annotation = move.annotation
             self.make_move(rev_move, True, False)
             move.annotation = annotation
             self.redo_list.append(move)
             annotation = rev_move.annotation
 
-    def redo_move(self, move=None, annotation=''):
+    def redo_move(self, move=None, annotation=""):
         if move is None:
             if not self.redo_list:
                 return
             move = self.redo_list.pop()
         self.make_move(move, True, True, annotation)
 
-    def redo_all_moves(self, annotation=''):
+    def redo_all_moves(self, annotation=""):
         while self.redo_list:
             move = self.redo_list.pop()
             next_annotation = move.annotation
@@ -202,7 +273,7 @@ class Checkerboard(object):
         self.redo_list = []
 
     def utility(self, player):
-        """ Player evaluation function """
+        """Player evaluation function"""
         sq = self.squares
         code = sum(self.value[s] for s in sq)
         nwm = code % 16
@@ -228,10 +299,16 @@ class Checkerboard(object):
             evaluation -= TURN
             multiplier = 1
 
-        return multiplier * (evaluation + self._eval_cramp(sq) + self._eval_back_rank_guard(sq) +
-                             self._eval_double_corner(sq) + self._eval_center(sq) + self._eval_edge(sq) +
-                             self._eval_tempo(sq, nm, nbk, nbm, nwk, nwm) +
-                             self._eval_player_opposition(sq, nwm, nwk, nbk, nbm, nm, nk))
+        return multiplier * (
+            evaluation
+            + self._eval_cramp(sq)
+            + self._eval_back_rank_guard(sq)
+            + self._eval_double_corner(sq)
+            + self._eval_center(sq)
+            + self._eval_edge(sq)
+            + self._eval_tempo(sq, nm, nbk, nbm, nwk, nwm)
+            + self._eval_player_opposition(sq, nwm, nwk, nbk, nbm, nm, nk)
+        )
 
     def _extend_capture(self, valid_moves, captures, add_sq_func, visited):
         player = self.to_move
@@ -247,10 +324,12 @@ class Checkerboard(object):
                 last_pos = capture[-1][0]
                 mid = last_pos + j
                 dest = last_pos + j * 2
-                if ((last_pos, mid, dest) not in visited and
-                        (dest, mid, last_pos) not in visited and
-                        squares[mid] & enemy and
-                        squares[dest] & FREE):
+                if (
+                    (last_pos, mid, dest) not in visited
+                    and (dest, mid, last_pos) not in visited
+                    and squares[mid] & enemy
+                    and squares[dest] & FREE
+                ):
                     sq2, sq3 = add_sq_func(player, squares, mid, dest, last_pos)
                     capture[-1][2] = FREE
                     capture.extend([sq2, sq3])
@@ -264,8 +343,7 @@ class Checkerboard(object):
 
     def _capture_man(self, player, squares, mid, dest, last_pos):
         sq2 = [mid, squares[mid], FREE]
-        if ((player == BLACK and last_pos >= 34) or
-                (player == WHITE and last_pos <= 20)):
+        if (player == BLACK and last_pos >= 34) or (player == WHITE and last_pos <= 20):
             sq3 = [dest, FREE, player | KING]
         else:
             sq3 = [dest, FREE, player | MAN]
@@ -290,8 +368,7 @@ class Checkerboard(object):
                     if squares[mid] & enemy and squares[dest] & FREE:
                         sq1 = [i, player | MAN, FREE]
                         sq2 = [mid, squares[mid], FREE]
-                        if ((player == BLACK and i >= 34) or
-                                (player == WHITE and i <= 20)):
+                        if (player == BLACK and i >= 34) or (player == WHITE and i <= 20):
                             sq3 = [dest, FREE, player | KING]
                         else:
                             sq3 = [dest, FREE, player | MAN]
@@ -300,10 +377,7 @@ class Checkerboard(object):
                         visited.add((i, mid, dest))
                         temp = squares[i]
                         squares[i] = FREE
-                        captures = self._extend_capture(valid_indices,
-                                                        capture,
-                                                        self._capture_man,
-                                                        visited)
+                        captures = self._extend_capture(valid_indices, capture, self._capture_man, visited)
                         squares[i] = temp
                         all_captures.extend(captures)
             if squares[i] & player and squares[i] & KING:
@@ -319,16 +393,12 @@ class Checkerboard(object):
                         visited.add((i, mid, dest))
                         temp = squares[i]
                         squares[i] = FREE
-                        captures = self._extend_capture(KING_IDX,
-                                                        capture,
-                                                        self._capture_king,
-                                                        visited)
+                        captures = self._extend_capture(KING_IDX, capture, self._capture_king, visited)
                         squares[i] = temp
                         all_captures.extend(captures)
         return all_captures
 
-    captures = property(_get_captures,
-                        doc="Forced captures for the current player")
+    captures = property(_get_captures, doc="Forced captures for the current player")
 
     def _get_moves(self):
         player = self.to_move
@@ -338,28 +408,22 @@ class Checkerboard(object):
         for i in self.valid_squares:
             for j in valid_indices:
                 dest = i + j
-                if (squares[i] & player and
-                        squares[i] & MAN and
-                        squares[dest] & FREE):
+                if squares[i] & player and squares[i] & MAN and squares[dest] & FREE:
                     sq1 = [i, player | MAN, FREE]
-                    if ((player == BLACK and i >= 39) or
-                            (player == WHITE and i <= 15)):
+                    if (player == BLACK and i >= 39) or (player == WHITE and i <= 15):
                         sq2 = [dest, FREE, player | KING]
                     else:
                         sq2 = [dest, FREE, player | MAN]
                     moves.append(Move([sq1, sq2]))
             for j in KING_IDX:
                 dest = i + j
-                if (squares[i] & player and
-                        squares[i] & KING and
-                        squares[dest] & FREE):
+                if squares[i] & player and squares[i] & KING and squares[dest] & FREE:
                     sq1 = [i, player | KING, FREE]
                     sq2 = [dest, FREE, player | KING]
                     moves.append(Move([sq1, sq2]))
         return moves
 
-    moves = property(_get_moves,
-                     doc="Available moves for the current player")
+    moves = property(_get_moves, doc="Available moves for the current player")
 
     def _eval_cramp(self, sq):
         evaluation = 0
@@ -529,25 +593,23 @@ class Checkers(games.Game):
         state = curr_state or self.curr_state
         return state.captures or state.moves
 
-    def make_move(self, move, curr_state=None, notify=True, undo=True,
-                  annotation=''):
+    def make_move(self, move, curr_state=None, notify=True, undo=True, annotation=""):
         state = curr_state or self.curr_state
         return state.make_move(move, notify, undo, annotation)
 
-    def undo_move(self, move=None, curr_state=None, notify=True, redo=True,
-                  annotation=''):
+    def undo_move(self, move=None, curr_state=None, notify=True, redo=True, annotation=""):
         state = curr_state or self.curr_state
         return state.undo_move(move, notify, redo, annotation)
 
-    def undo_all_moves(self, curr_state=None, annotation=''):
+    def undo_all_moves(self, curr_state=None, annotation=""):
         state = curr_state or self.curr_state
         return state.undo_all_moves(annotation)
 
-    def redo_move(self, move=None, curr_state=None, annotation=''):
+    def redo_move(self, move=None, curr_state=None, annotation=""):
         state = curr_state or self.curr_state
         return state.redo_move(move, annotation)
 
-    def redo_all_moves(self, curr_state=None, annotation=''):
+    def redo_all_moves(self, curr_state=None, annotation=""):
         state = curr_state or self.curr_state
         return state.redo_all_moves(annotation)
 
@@ -598,10 +660,8 @@ def play():
     game = Checkers()
     for depth in range(1, 11):
         start = time.time()
-        print("Perft for depth %d: %d. Time: %5.3f sec" % (depth,
-                                                           game.perft(depth),
-                                                           time.time() - start))
+        print("Perft for depth %d: %d. Time: %5.3f sec" % (depth, game.perft(depth), time.time() - start))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     play()

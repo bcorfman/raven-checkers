@@ -8,11 +8,11 @@ from util.globalconst import OUTLINE_COLOR, DARK_SQUARES, MAX_DEPTH
 
 class AlphaBetaController(Controller):
     def __init__(self, **props):
-        self._model = props['model']
-        self._view = props['view']
-        self._end_turn_event = props['end_turn_event']
+        self._model = props["model"]
+        self._view = props["view"]
+        self._end_turn_event = props["end_turn_event"]
         self._highlights = []
-        self._search_time = props['searchtime']  # in seconds
+        self._search_time = props["searchtime"]  # in seconds
         self._before_turn_event = None
         self._parent_conn, self._child_conn = multiprocessing.Pipe()
         self._term_event = multiprocessing.Event()
@@ -36,12 +36,10 @@ class AlphaBetaController(Controller):
             self._before_turn_event()
             self._model.curr_state.attach(self._view)
             return
-        self._view.update_statusbar('Thinking ...')
-        self.process = multiprocessing.Process(target=calc_move,
-                                               args=(self._model,
-                                                     self._search_time,
-                                                     self._term_event,
-                                                     self._child_conn))
+        self._view.update_statusbar("Thinking ...")
+        self.process = multiprocessing.Process(
+            target=calc_move, args=(self._model, self._search_time, self._term_event, self._child_conn)
+        )
         self._start_time = time.time()
         self.process.daemon = True
         self.process.start()
@@ -50,8 +48,7 @@ class AlphaBetaController(Controller):
     def get_move(self):
         self._highlights = []
         moved = self._parent_conn.poll()
-        while (not moved and (time.time() - self._start_time)
-               < self._search_time * 2):
+        while not moved and (time.time() - self._start_time) < self._search_time * 2:
             self._call_id = self._view.canvas.after(500, self.get_move)
             return
         self._view.canvas.after_cancel(self._call_id)
@@ -66,8 +63,7 @@ class AlphaBetaController(Controller):
             self._highlights.append(idx)
 
         self._model.curr_state.attach(self._view)
-        self._model.make_move(move, None, True, True,
-                              self._view.get_annotation())
+        self._model.make_move(move, None, True, True, self._view.get_annotation())
         # a new move obliterates any more redo's along a branch of the game tree
         self._model.curr_state.delete_redo_list()
         self._end_turn_event()
@@ -109,9 +105,7 @@ def calc_move(model, search_time, term_event, child_conn):
         model_copy = copy.deepcopy(model)
         while 1:
             depth += 1
-            move = games.alphabeta_search(model_copy.curr_state,
-                                          model_copy,
-                                          depth)
+            move = games.alphabeta_search(model_copy.curr_state, model_copy, depth)
             checkpoint = curr_time
             curr_time = time.time()
             rem_time = search_time - (curr_time - checkpoint)
@@ -119,8 +113,6 @@ def calc_move(model, search_time, term_event, child_conn):
                 term_event.clear()
                 move = None
                 break
-            if (curr_time - start_time > search_time or
-               ((curr_time - checkpoint) * 2) > rem_time or
-               depth > MAX_DEPTH):
+            if curr_time - start_time > search_time or ((curr_time - checkpoint) * 2) > rem_time or depth > MAX_DEPTH:
                 break
     child_conn.send(move)

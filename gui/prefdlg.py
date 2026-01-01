@@ -21,18 +21,17 @@ class PreferencesDialog(Dialog):
         Dialog.__init__(self, parent, title)
 
     def body(self, master):
-        self._npFrame = LabelFrame(master, text='Annotation window text')
+        self._npFrame = LabelFrame(master, text="Annotation window text")
         self._npFrame.pack(fill=X)
         self._fontFrame = Frame(self._npFrame, borderwidth=0)
-        self._fontLabel = Label(self._fontFrame, text='Font:', width=5)
+        self._fontLabel = Label(self._fontFrame, text="Font:", width=5)
         self._fontLabel.pack(side=LEFT, padx=3)
-        self._fontCombo = Combobox(self._fontFrame, values=sorted(families()),
-                                   state='readonly')
+        self._fontCombo = Combobox(self._fontFrame, values=sorted(families()), state="readonly")
         self._fontCombo.pack(side=RIGHT, fill=X)
         self._sizeFrame = Frame(self._npFrame, borderwidth=0)
-        self._sizeLabel = Label(self._sizeFrame, text='Size:', width=5)
+        self._sizeLabel = Label(self._sizeFrame, text="Size:", width=5)
         self._sizeLabel.pack(side=LEFT, padx=3)
-        self._sizeCombo = Combobox(self._sizeFrame, values=list(range(8, 15)), state='readonly')
+        self._sizeCombo = Combobox(self._sizeFrame, values=list(range(8, 15)), state="readonly")
         self._sizeCombo.pack(side=RIGHT, fill=X)
         self._fontFrame.pack()
         self._sizeFrame.pack()

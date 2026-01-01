@@ -10,5 +10,5 @@ class CenteredWindow:
         sh = self.root.winfo_screenheight()
         w = self.root.winfo_reqwidth()
         h = self.root.winfo_reqheight()
-        new_geometry = "+%d+%d" % ((sw-w)/2, (sh-h)/2)
+        new_geometry = "+%d+%d" % ((sw - w) / 2, (sh - h) / 2)
         self.root.geometry(newGeometry=new_geometry)
