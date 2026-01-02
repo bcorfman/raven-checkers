@@ -92,8 +92,7 @@ jobs:
           output-file: ${{ env.APP_NAME }}
           windows-console-mode: disable
           enable-plugins: tk-inter
-          nuitka-extra-args: >-
-            --include-data-dir=images=images
+          include-data-dir: images=images
 
 
       - name: Smoke test binary (Linux/macOS)
