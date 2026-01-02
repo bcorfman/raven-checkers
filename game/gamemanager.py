@@ -93,42 +93,42 @@ class GameManager:
     def load_game(self, filepath):
         self._stop_updates()
         try:
-            reader = PDNReader.from_file(filepath)
-            game_list = reader.get_game_list()
-            game = None
-            if len(game_list) > 1:
-                dlg = FileList(self._root, game_list)
-                if dlg.result:
-                    game = reader.read_game(dlg.result)
-            else:
-                game = reader.read_game(0)
-            if game is not None:
-                self.model.curr_state.clear()
-                self.model.curr_state.to_move = game.next_to_move
-                self.num_players = 2
-                if game.black_player.startswith("Computer"):
-                    self.num_players -= 1
-                if game.white_player.startswith("Computer"):
-                    self.num_players -= 1
-                squares = self.model.curr_state.squares
-                for i in game.black_men:
-                    squares[square_map[i]] = BLACK | MAN
-                for i in game.black_kings:
-                    squares[square_map[i]] = BLACK | KING
-                for i in game.white_men:
-                    squares[square_map[i]] = WHITE | MAN
-                for i in game.white_kings:
-                    squares[square_map[i]] = WHITE | KING
-                self.model.curr_state.reset_undo()
-                self.model.curr_state.redo_list = game.moves
-                self.model.curr_state.update_piece_count()
-                self.view.reset_view(self.model)
-                self.view.serializer.restore(game.description)
-                self.view.curr_annotation = self.view.get_annotation()
-                self.view.flip_board(game.board_orientation == "white_on_top")
-                self.view.update_statusbar()
-                self.parent.set_title_bar_filename(os.path.basename(filepath))
-                self.filepath = filepath
+            with PDNReader.from_file(filepath) as reader:
+                game_list = reader.get_game_list()
+                game = None
+                if len(game_list) > 1:
+                    dlg = FileList(self._root, game_list)
+                    if dlg.result:
+                        game = reader.read_game(dlg.result)
+                else:
+                    game = reader.read_game(0)
+                if game is not None:
+                    self.model.curr_state.clear()
+                    self.model.curr_state.to_move = game.next_to_move
+                    self.num_players = 2
+                    if game.black_player.startswith("Computer"):
+                        self.num_players -= 1
+                    if game.white_player.startswith("Computer"):
+                        self.num_players -= 1
+                    squares = self.model.curr_state.squares
+                    for i in game.black_men:
+                        squares[square_map[i]] = BLACK | MAN
+                    for i in game.black_kings:
+                        squares[square_map[i]] = BLACK | KING
+                    for i in game.white_men:
+                        squares[square_map[i]] = WHITE | MAN
+                    for i in game.white_kings:
+                        squares[square_map[i]] = WHITE | KING
+                    self.model.curr_state.reset_undo()
+                    self.model.curr_state.redo_list = game.moves
+                    self.model.curr_state.update_piece_count()
+                    self.view.reset_view(self.model)
+                    self.view.serializer.restore(game.description)
+                    self.view.curr_annotation = self.view.get_annotation()
+                    self.view.flip_board(game.board_orientation == "white_on_top")
+                    self.view.update_statusbar()
+                    self.parent.set_title_bar_filename(os.path.basename(filepath))
+                    self.filepath = filepath
         except OSError as err:
             showerror(PROGRAM_TITLE, "Invalid file. " + str(err))
 
