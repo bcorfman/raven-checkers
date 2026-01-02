@@ -1,7 +1,5 @@
 import copy
-import os
 import textwrap
-from contextlib import contextmanager
 from io import StringIO
 from typing import NamedTuple
 
@@ -120,6 +118,7 @@ _Game = (_GameHeader("header") + Optional(_Description) + Optional(_GameBody)) |
 class PDNReader:
     def __init__(self, stream, source=""):
         self._stream = stream
+        self._stack = None
         self._model = Checkers()
         self._source = f"in {source}" if source else ""
         self._stream_pos = 0
@@ -137,26 +136,42 @@ class PDNReader:
         return cls(stream, "PDN string")
 
     @classmethod
-    @contextmanager
     def from_file(cls, filepath):
+        import os
+
         filename = os.path.basename(filepath)
 
         chunk_size = min(os.path.getsize(filepath), 10_000)
         with open(filepath, "rb") as test:
             pdn_encoding = charset_normalizer.detect(test.read(chunk_size))["encoding"]
 
-        # One open, managed by `with`:
+        # Open under a real context manager...
         with open(filepath, encoding=pdn_encoding) as stream:
-            yield cls(stream, filename)
+            # ...but prevent it from closing by transferring ownership:
+            # We do that by duplicating the underlying file descriptor.
+            import os
+
+            fd = os.dup(stream.fileno())
+            # Recreate a new Python file object that this reader owns
+            owned_stream = os.fdopen(fd, mode="r", encoding=pdn_encoding)
+
+        reader = cls(owned_stream, filename)
+        reader._owns_stream = True
+        return reader
+
+    def close(self):
+        # If we own a context stack, close it (which closes the file)
+        if self._stack is not None:
+            self._stack.close()
+            self._stack = None
+        else:
+            self._stream.close()
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_t, exc_v, trace):
         self.close()
-
-    def close(self):
-        self._stream.close()
 
     def _reset_pdn_vars(self):
         self._event = None
