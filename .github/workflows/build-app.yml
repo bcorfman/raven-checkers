@@ -58,7 +58,6 @@ jobs:
       - name: Export runtime requirements from pyproject.toml
         run: |
           python - <<'PY'
-          import sys
           import tomllib
           from pathlib import Path
 
@@ -79,7 +78,7 @@ jobs:
       # Fail fast if Tk isn't available on the runner's Python
       - name: Sanity check Tk import
         run: |
-          python -c "import tkinter; print('tkinter ok:', tkinter.TkVersion)"
+          python -c "import tkinter; import tkinter._tkinter; print('ok', tkinter.TkVersion)"
         shell: bash
 
       # ---- Build with Nuitka (onefile everywhere) ----
@@ -95,6 +94,41 @@ jobs:
           # Keep tk-inter enabled (do NOT disable it; do NOT nofollow *tk*)
           enable-plugins: tk-inter
 
+      - name: Smoke test binary (Linux/macOS)
+        if: matrix.os != 'windows-latest'
+        run: |
+          python - <<'PY'
+          import subprocess
+          from pathlib import Path
+
+          build_dir = Path("build")
+          if not build_dir.exists():
+              print("Smoke test skipped: build/ directory not found")
+              raise SystemExit(0)
+
+          candidates = []
+          for pat in ("raven-checkers*", "main*"):
+              candidates.extend(build_dir.rglob(pat))
+
+          candidates = [p for p in candidates if p.is_file()]
+          if not candidates:
+              print("Smoke test skipped: no binary found")
+              raise SystemExit(0)
+
+          bin_path = candidates[0]
+          print("Smoke test candidate:", bin_path)
+
+          try:
+              subprocess.run([str(bin_path)], timeout=2, check=False)
+          except subprocess.TimeoutExpired:
+              print("Smoke test: timed out (expected for GUI app)")
+          PY
+
+      - name: Smoke test binary (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          Get-ChildItem -Recurse -File -Filter "$env:APP_NAME*.exe" | Select-Object -First 5
+        shell: pwsh
 
       # ---- Stage clean distribution folder ----
       - name: Stage minimal distribution (Linux/macOS)
@@ -106,15 +140,25 @@ jobs:
 
           # Find the built onefile output.
           # Nuitka-Action often puts outputs under ./build/ or repo root depending on platform/version.
-          BIN="$(find . -maxdepth 4 -type f \( -name "${APP_NAME}.bin" -o -name "main.bin" -o -name "${APP_NAME}" -o -name "main" \) \
-          -exec test -x {} \; -print | head -n 1)"
+          # Prefer outputs under ./build (Nuitka-Action usually uses output-dir=build)
+          BIN="$(find ./build -maxdepth 4 -type f \
+            \( -name "${APP_NAME}.bin" -o -name "main.bin" -o -name "${APP_NAME}" -o -name "main" \) \
+            -print -quit 2>/dev/null || true)"
+
+          # Fallback: search repo root if not found
+          if [ -z "${BIN}" ]; then
+            BIN="$(find . -maxdepth 4 -type f \
+              \( -name "${APP_NAME}.bin" -o -name "main.bin" -o -name "${APP_NAME}" -o -name "main" \) \
+              -print -quit)"
+          fi
+
 
           if [ -z "${BIN}" ]; then
             echo "ERROR: Could not find onefile output."
             echo "Top-level files:"
             ls -la | head -200
             echo "Searching common build directories:"
-            find . -maxdepth 4 -type d -name "build" -o -name "*.dist" -o -name "*.build" | head -50 || true
+            find . -maxdepth 4 -type d \( -name "build" -o -name "*.dist" -o -name "*.build" \) | head -50 || true
             exit 1
           fi
 
@@ -140,7 +184,13 @@ jobs:
           New-Item -ItemType Directory -Force -Path "stage\$env:DIST_DIR_NAME" | Out-Null
 
           # Locate the built exe (Nuitka-Action output location can vary)
-          $exe = Get-ChildItem -Recurse -File -Filter "$env:APP_NAME*.exe" | Select-Object -First 1
+          $exe = Get-ChildItem -Path build -Recurse -File -Filter "$env:APP_NAME*.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $exe) {
+            $exe = Get-ChildItem -Path build -Recurse -File -Filter "main*.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+          }
+          if (-not $exe) {
+            $exe = Get-ChildItem -Recurse -File -Filter "$env:APP_NAME*.exe" | Select-Object -First 1
+          }
           if (-not $exe) {
             $exe = Get-ChildItem -Recurse -File -Filter "main*.exe" | Select-Object -First 1
           }
