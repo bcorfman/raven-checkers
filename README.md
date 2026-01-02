@@ -14,7 +14,7 @@ Raven is a checkers game program, for one or two players. While there are exampl
 
 ## Prerequisites
 
-* Python 3.9 or higher on your system.
+* Python 3.12 or higher on your system.
 * Install [uv](https://docs.astral.sh/uv/getting-started/installation/) on your system.
 * From a command prompt in the project directory, type `make install` to install project dependencies only, or `make devinstall` to install both project and developer dependencies (like the pytest library, necessary for running unit tests).
 
