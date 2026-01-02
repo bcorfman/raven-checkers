@@ -1,6 +1,29 @@
 import os
 import sys
 from configparser import RawConfigParser
+from pathlib import Path
+
+
+def _app_root() -> Path:
+    """
+    Preferred root for runtime assets.
+    1) If images/ or training/ exist next to the executable, use that (release layout).
+    2) Else fall back to repo-relative (dev/test), based on this file location.
+    """
+    exe_dir = Path(sys.executable).resolve().parent
+    if (exe_dir / "images").exists() or (exe_dir / "training").exists():
+        return exe_dir
+
+    # dev fallback: globalconst.py is under util/
+    return Path(__file__).resolve().parents[1]
+
+
+APP_ROOT = _app_root()
+
+
+def get_resource_path(relative_path: str) -> str:
+    return str(APP_ROOT / relative_path)
+
 
 DEFAULT_SIZE = 400
 BOARD_SIZE = 8
@@ -29,7 +52,7 @@ COMPUTER = 1
 MIN = 0
 MAX = 1
 
-IMAGE_DIR = "images" + os.sep
+IMAGE_DIR = get_resource_path("images") + os.sep
 RAVEN_ICON = IMAGE_DIR + "_raven.gif"
 BULLET_IMAGE = IMAGE_DIR + "bullet_green.gif"
 CROWN_IMAGE = IMAGE_DIR + "crown.gif"
@@ -60,8 +83,8 @@ MAX_DEPTH = 10
 VERSION = "0.6"
 TITLE = "Raven " + VERSION
 PROGRAM_TITLE = "Raven Checkers"
-CUR_DIR = sys.path[0]
-TRAINING_DIR = "training"
+CUR_DIR = str(APP_ROOT)
+TRAINING_DIR = get_resource_path("training")
 
 # search values for transposition table
 hashfALPHA, hashfBETA, hashfEXACT = range(3)
@@ -380,17 +403,20 @@ def reverse_dict(m):
     return d
 
 
+INI_PATH = APP_ROOT / "raven.ini"
+
+
 def get_preferences_from_file():
     config = RawConfigParser()
-    if not os.access("raven.ini", os.F_OK):
+    if not INI_PATH.exists():
         # no .ini file yet, so make one
         config.add_section("AnnotationWindow")
         config.set("AnnotationWindow", "font", "Arial")
         config.set("AnnotationWindow", "size", "12")
         # Writing our configuration file to 'raven.ini'
-        with open("raven.ini", "w") as configfile:
+        with open(INI_PATH, "w", encoding="utf-8") as configfile:
             config.write(configfile)
-    config.read("raven.ini")
+    config.read(str(INI_PATH), encoding="utf-8")
     font = config.get("AnnotationWindow", "font")
     size = config.get("AnnotationWindow", "size")
     return font, size
@@ -402,7 +428,7 @@ def write_preferences_to_file(font, size):
     config.set("AnnotationWindow", "font", font)
     config.set("AnnotationWindow", "size", size)
     # Writing our configuration file to 'raven.ini'
-    with open("raven.ini", "w") as configfile:
+    with open(INI_PATH, "w", encoding="utf-8") as configfile:
         config.write(configfile)
 
 
