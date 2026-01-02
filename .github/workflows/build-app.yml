@@ -90,7 +90,7 @@ jobs:
           script-name: main.py
           mode: onefile
           output-file: ${{ env.APP_NAME }}
-          windows-console-mode: disable
+          windows-console-mode: enable
           # Keep tk-inter enabled (do NOT disable it; do NOT nofollow *tk*)
           enable-plugins: tk-inter
 
