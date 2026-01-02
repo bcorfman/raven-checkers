@@ -78,7 +78,7 @@ jobs:
       # Fail fast if Tk isn't available on the runner's Python
       - name: Sanity check Tk import
         run: |
-          python -c "import tkinter; import tkinter._tkinter; print('ok', tkinter.TkVersion)"
+          python -c "import tkinter; print('ok', tkinter.TkVersion)"
         shell: bash
 
       # ---- Build with Nuitka (onefile everywhere) ----
