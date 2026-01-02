@@ -92,9 +92,9 @@ jobs:
           mode: onefile
           output-file: ${{ env.APP_NAME }}
           windows-console-mode: disable
-          nuitka-args: >-
-            --assume-yes-for-downloads
-            --enable-plugin=tk-inter
+          # Keep tk-inter enabled (do NOT disable it; do NOT nofollow *tk*)
+          enable-plugins: tk-inter
+
 
       # ---- Stage clean distribution folder ----
       - name: Stage minimal distribution (Linux/macOS)
