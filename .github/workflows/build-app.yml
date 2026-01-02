@@ -91,8 +91,10 @@ jobs:
           mode: onefile
           output-file: ${{ env.APP_NAME }}
           windows-console-mode: disable
-          # Keep tk-inter enabled (do NOT disable it; do NOT nofollow *tk*)
           enable-plugins: tk-inter
+          nuitka-extra-args: >-
+            --include-data-dir=images=images
+
 
       - name: Smoke test binary (Linux/macOS)
         if: matrix.os != 'windows-latest'
@@ -137,27 +139,22 @@ jobs:
           set -euo pipefail
           rm -rf stage build_output
           mkdir -p "stage/${DIST_DIR_NAME}"
+          mkdir -p build_output
 
           # Find the built onefile output.
-          # Nuitka-Action often puts outputs under ./build/ or repo root depending on platform/version.
-          # Prefer outputs under ./build (Nuitka-Action usually uses output-dir=build)
-          BIN="$(find ./build -maxdepth 4 -type f \
-            \( -name "${APP_NAME}.bin" -o -name "main.bin" -o -name "${APP_NAME}" -o -name "main" \) \
+          BIN="$(find ./build -maxdepth 6 -type f \
+            \( -name "${APP_NAME}" -o -name "${APP_NAME}.bin" -o -name "main" -o -name "main.bin" \) \
             -print -quit 2>/dev/null || true)"
 
-          # Fallback: search repo root if not found
           if [ -z "${BIN}" ]; then
-            BIN="$(find . -maxdepth 4 -type f \
-              \( -name "${APP_NAME}.bin" -o -name "main.bin" -o -name "${APP_NAME}" -o -name "main" \) \
-              -print -quit)"
+            BIN="$(find . -maxdepth 6 -type f \
+              \( -name "${APP_NAME}" -o -name "${APP_NAME}.bin" -o -name "main" -o -name "main.bin" \) \
+              -print -quit 2>/dev/null || true)"
           fi
-
 
           if [ -z "${BIN}" ]; then
             echo "ERROR: Could not find onefile output."
-            echo "Top-level files:"
             ls -la | head -200
-            echo "Searching common build directories:"
             find . -maxdepth 4 -type d \( -name "build" -o -name "*.dist" -o -name "*.build" \) | head -50 || true
             exit 1
           fi
@@ -165,15 +162,17 @@ jobs:
           cp "$BIN" "stage/${DIST_DIR_NAME}/${APP_NAME}"
           chmod +x "stage/${DIST_DIR_NAME}/${APP_NAME}"
 
-          # Copy only what you want users to see
-          cp -R images "stage/${DIST_DIR_NAME}/"
+          # Users can browse training outside
           cp -R training "stage/${DIST_DIR_NAME}/"
 
-          # Zip the clean folder
-          mkdir -p build_output
-          (cd stage && zip -r "../build_output/${APP_NAME}-${{ matrix.platform }}.zip" "${DIST_DIR_NAME}")
-          echo "Created build_output/${APP_NAME}-${{ matrix.platform }}.zip"
+          # (Optional) also include images outside for visibility/modding;
+          # app will still work if they delete it because images are embedded in onefile
+          cp -R images "stage/${DIST_DIR_NAME}/"
+
+          (cd stage && tar -czf "../build_output/${APP_NAME}-${{ matrix.platform }}.tar.gz" "${DIST_DIR_NAME}")
+          echo "Created build_output/${APP_NAME}-${{ matrix.platform }}.tar.gz"
         shell: bash
+
 
       - name: Stage minimal distribution (Windows)
         if: matrix.os == 'windows-latest'
@@ -216,7 +215,10 @@ jobs:
         uses: actions/upload-artifact@v5
         with:
           name: ${{ matrix.platform }}
-          path: build_output/${{ env.APP_NAME }}-${{ matrix.platform }}.zip
+          path: |
+            build_output/${{ env.APP_NAME }}-${{ matrix.platform }}.zip
+            build_output/${{ env.APP_NAME }}-${{ matrix.platform }}.tar.gz
+
 
   release:
     runs-on: ubuntu-latest
@@ -248,4 +250,5 @@ jobs:
           fi
 
           # Upload zips (because we include directories)
-          find downloads -type f -name "${APP_NAME}-*.zip" -print -exec gh release upload "$TAG" {} --clobber \;
+          find downloads -type f \( -name "${APP_NAME}-*.zip" -o -name "${APP_NAME}-*.tar.gz" \) -print -exec gh release upload "$TAG" {} --clobber \;
+
