@@ -1,0 +1,200 @@
+# Build Raven Checkers (onefile) + package clean folder with images/ and training/
+name: Build Application
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.*"
+
+permissions:
+  contents: write
+
+env:
+  GITHUB_TOKEN: ${{ github.token }}
+  APP_NAME: "raven-checkers"
+  DIST_DIR_NAME: "RavenCheckers"
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            platform: linux
+            python-version: "3.12"
+          - os: windows-latest
+            platform: windows
+            python-version: "3.12"
+          - os: macos-latest
+            platform: macos
+            python-version: "3.12"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: "x64"
+          cache: "pip"
+          cache-dependency-path: |
+            **/pyproject.toml
+
+      - uses: seanmiddleditch/gha-setup-vsdevenv@master
+        if: matrix.os == 'windows-latest'
+
+      # Tk on Linux runners often needs python3-tk at system level so "import tkinter" works
+      - name: Install system Tk (Ubuntu only)
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y python3-tk
+        shell: bash
+
+      - name: Install dependencies
+        run: |
+          pip install .
+          pip install nuitka
+        shell: bash
+
+      # Fail fast if Tk isn't available on the runner's Python
+      - name: Sanity check Tk import
+        run: |
+          python -c "import tkinter; print('tkinter ok:', tkinter.TkVersion)"
+        shell: bash
+
+      # ---- Build with Nuitka (onefile everywhere) ----
+      # We do NOT disable tk-inter and we do NOT nofollow Tk.
+      - name: Build Executable with Nuitka
+        uses: Nuitka/Nuitka-Action@main
+        with:
+          nuitka-version: main
+          script-name: main.py
+          mode: onefile
+          output-file: ${{ env.APP_NAME }}
+          windows-console-mode: disable
+          nuitka-args: >-
+            --assume-yes-for-downloads
+            --enable-plugin=tk-inter
+
+      # ---- Stage clean distribution folder ----
+      - name: Stage minimal distribution (Linux/macOS)
+        if: matrix.os != 'windows-latest'
+        run: |
+          set -euo pipefail
+          rm -rf stage build_output
+          mkdir -p "stage/${DIST_DIR_NAME}"
+
+          # Find the built onefile output.
+          # Depending on Nuitka-Action + platform, output may be:
+          # - ./${APP_NAME}.bin
+          # - ./main.bin
+          # - ./${APP_NAME}
+          # - ./main
+          CANDIDATES=(
+            "${APP_NAME}.bin"
+            "main.bin"
+            "${APP_NAME}"
+            "main"
+          )
+
+          BIN=""
+          for c in "${CANDIDATES[@]}"; do
+            if [ -f "$c" ]; then
+              BIN="$c"
+              break
+            fi
+          done
+
+          if [ -z "$BIN" ]; then
+            echo "ERROR: Could not find onefile output."
+            echo "Top-level files:"
+            ls -la | head -200
+            exit 1
+          fi
+
+          cp "$BIN" "stage/${DIST_DIR_NAME}/${APP_NAME}"
+          chmod +x "stage/${DIST_DIR_NAME}/${APP_NAME}"
+
+          # Copy only what you want users to see
+          cp -R images "stage/${DIST_DIR_NAME}/"
+          cp -R training "stage/${DIST_DIR_NAME}/"
+
+          # Zip the clean folder
+          mkdir -p build_output
+          (cd stage && zip -r "../build_output/${APP_NAME}-${{ matrix.platform }}.zip" "${DIST_DIR_NAME}")
+          echo "Created build_output/${APP_NAME}-${{ matrix.platform }}.zip"
+        shell: bash
+
+      - name: Stage minimal distribution (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          Remove-Item -Recurse -Force stage, build_output -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path "stage\$env:DIST_DIR_NAME" | Out-Null
+
+          # Locate the built exe (Nuitka-Action output location can vary)
+          $exe = Get-ChildItem -Recurse -File -Filter "$env:APP_NAME*.exe" | Select-Object -First 1
+          if (-not $exe) {
+            $exe = Get-ChildItem -Recurse -File -Filter "main*.exe" | Select-Object -First 1
+          }
+          if (-not $exe) {
+            Write-Error "ERROR: Could not find built .exe"
+            Get-ChildItem -Recurse -File | Select-Object -First 200 | ForEach-Object { $_.FullName }
+            exit 1
+          }
+
+          Copy-Item $exe.FullName "stage\$env:DIST_DIR_NAME\$env:APP_NAME.exe"
+
+          # Copy only what you want users to see
+          Copy-Item -Recurse -Force images "stage\$env:DIST_DIR_NAME\images"
+          Copy-Item -Recurse -Force training "stage\$env:DIST_DIR_NAME\training"
+
+          New-Item -ItemType Directory -Force -Path build_output | Out-Null
+          Compress-Archive -Path "stage\$env:DIST_DIR_NAME" -DestinationPath "build_output\$env:APP_NAME-windows.zip" -Force
+
+          Write-Host "Created build_output\$env:APP_NAME-windows.zip"
+        shell: pwsh
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: ${{ matrix.platform }}
+          path: build_output/${{ env.APP_NAME }}-${{ matrix.platform }}.zip
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v6
+        with:
+          path: downloads
+
+      - name: Create release (if missing) and upload assets to tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="${{ github.ref_name }}"
+          echo "Target release tag: $TAG"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists; will upload assets with --clobber"
+          else
+            gh release create "$TAG" \
+              --title "$TAG" \
+              --notes "Automated build for $TAG"
+          fi
+
+          # Upload zips (because we include directories)
+          find downloads -type f -name "${APP_NAME}-*.zip" -print -exec gh release upload "$TAG" {} --clobber \;
