@@ -1,5 +1,5 @@
 import game.checkers as checkers
-from util.globalconst import BLACK, WHITE, MAN, KING, FREE
+from util.globalconst import BLACK, FREE, KING, MAN, WHITE
 
 #   (white)
 #            45  46  47  48
@@ -446,10 +446,6 @@ def test_perft_depth1_equals_number_of_legal_moves_multijump_position():
 
     moves = game.legal_moves(board)
     assert game.perft(1, board) == len(moves)
-
-
-import game.checkers as checkers
-from util.globalconst import BLACK, WHITE, MAN, KING, FREE
 
 
 def test_double_corner_block_white_wins_black_has_no_moves():

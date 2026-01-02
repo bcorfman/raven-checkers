@@ -1,8 +1,7 @@
 import pytest
 
 import game.checkers as checkers
-from util.globalconst import BLACK, WHITE, MAN, KING
-
+from util.globalconst import BLACK, KING, MAN, WHITE
 
 # --- Mirror mapping (left-right) for your square index scheme ---------------
 

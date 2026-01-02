@@ -1,13 +1,12 @@
 """Provide some widely useful utilities. Safe for "from utils import *"."""
 
-from __future__ import generators
-import operator
-import math
-import random
-import copy
-import sys
-import os.path
 import bisect
+import copy
+import math
+import operator
+import os.path
+import random
+import sys
 from functools import reduce
 
 # Simple Data Structures: booleans, infinity, Dict, Struct
@@ -31,7 +30,7 @@ class DefaultDict(dict):
     d =  DefaultDict([]); d['x'] += [1]; d['y'] += [2]; d['x'] ==> [1]"""
 
     def __init__(self, default):
-        super(DefaultDict, self).__init__()
+        super().__init__()
         self.default = default
 
     def __getitem__(self, key):
@@ -55,8 +54,8 @@ class Struct:
             return cmp(self.__dict__, other)
 
     def __repr__(self):
-        args = ["%s=%s" % (k, repr(v)) for (k, v) in vars(self).items()]
-        return "Struct(%s)" % ", ".join(args)
+        args = [f"{k}={repr(v)}" for (k, v) in vars(self).items()]
+        return f"Struct({', '.join(args)})"
 
 
 def update(x, **entries):
@@ -130,7 +129,7 @@ def count_if(predicate, seq):
     count_if(callable, [42, None, max, min]) ==> 2"""
 
     def count_func(count, x):
-        return count + (not not predicate(x))
+        return count + (bool(predicate(x)))
 
     return reduce(count_func, seq, 0)
 
@@ -148,10 +147,7 @@ def find_if(predicate, seq):
 def every(predicate, seq):
     """True if every element of seq satisfies predicate.
     Ex: every(callable, [min, max]) ==> 1; every(callable, [min, 3]) ==> 0"""
-    for x in seq:
-        if not predicate(x):
-            return False
-    return True
+    return all(predicate(x) for x in seq)
 
 
 def some(predicate, seq):
@@ -299,7 +295,7 @@ def stddev(values, mean_val=None):
 def dot_product(xi, yi):
     """Return the sum_seq of the element-wise product of vectors x and y.
     Ex: dotproduct([1, 2, 3], [1000, 100, 10]) ==> 1230"""
-    return sum_seq([x * y for x, y in zip(xi, yi)])
+    return sum_seq([x * y for x, y in zip(xi, yi, strict=False)])
 
 
 def vector_add(a, b):
@@ -422,10 +418,7 @@ def caller(n=1):
 def indexed(seq):
     """Like [(i, seq[i]) for i in range(len(seq))], but with yield.
     Ex: for i, c in indexed('abc'): print i, c"""
-    i = 0
-    for x in seq:
-        yield i, x
-        i += 1
+    yield from enumerate(seq)
 
 
 def if_(test, result, alternative):
@@ -473,14 +466,14 @@ def print_table(table, header=None, sep=" ", numfmt="%g"):
     justs = [if_(is_number(x), "rjust", "ljust") for x in table[0]]
     if header:
         table = [header] + table
-    table = [[if_(is_number(x), lambda: numfmt % x, x) for x in row] for row in table]
+    table = [[numfmt % x if is_number(x) else x for x in row] for row in table]
 
     def max_length(seq):
         return max(map(len, seq))
 
-    sizes = map(max_length, zip(*[map(str, row) for row in table]))
+    sizes = map(max_length, zip(*[map(str, row) for row in table], strict=False))
     for row in table:
-        for j, size, x in zip(justs, sizes, row):
+        for j, size, x in zip(justs, sizes, row, strict=False):
             print(
                 getattr(str(x), j)(size),
                 sep,

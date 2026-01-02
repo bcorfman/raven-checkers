@@ -1,8 +1,9 @@
 import os.path
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from io import StringIO
-from parsing.PDN import Game, PDNWriter
 from pathlib import Path
+
+from parsing.PDN import Game, PDNWriter
 
 
 def _get_game_result(_anno):
@@ -76,10 +77,12 @@ class RCF2PDN:
     def with_file(cls, rcf_filepath, pdn_filepath):
         event = os.path.splitext(os.path.basename(rcf_filepath))[0]
         file_mtime = Path(rcf_filepath).stat().st_mtime
-        file_mod_time = datetime.fromtimestamp(file_mtime, tz=timezone.utc).strftime(r"%m/%d/%Y")
-        with open(rcf_filepath) as rcf:
-            with open(pdn_filepath, "w") as pdn:
-                RCF2PDN().translate(rcf, pdn, event, file_mod_time)
+        file_mod_time = datetime.fromtimestamp(file_mtime, tz=UTC).strftime(r"%m/%d/%Y")
+        with (
+            open(rcf_filepath) as rcf,
+            open(pdn_filepath, "w") as pdn,
+        ):
+            RCF2PDN().translate(rcf, pdn, event, file_mod_time)
 
     def translate(self, rcf_stream, pdn_stream, event_name=None, file_mod_time=None):
         self.event_name = event_name
@@ -166,7 +169,7 @@ class RCF2PDN:
         line = stream.readline()
         self.lineno += 1
         if not line:
-            raise IOError(f"Unexpected end of file at line {self.lineno}")
+            raise OSError(f"Unexpected end of file at line {self.lineno}")
         self._read_event_name(line)
         self.description.append(line)
         while True:
@@ -174,7 +177,7 @@ class RCF2PDN:
             line = stream.readline()
             self.lineno += 1
             if not line:
-                raise IOError(f"Unexpected end of file at line {self.lineno}")
+                raise OSError(f"Unexpected end of file at line {self.lineno}")
             elif line.startswith("<setup>"):
                 stream.seek(prior_loc)
                 self.lineno -= 1
@@ -199,7 +202,7 @@ class RCF2PDN:
             line = stream.readline()
             self.lineno += 1
             if not line:
-                raise IOError(f"Unexpected end of file at line {self.lineno}")
+                raise OSError(f"Unexpected end of file at line {self.lineno}")
             line = line.strip()
             for tag in setup_tags:
                 if line.startswith(tag):
@@ -218,8 +221,8 @@ class RCF2PDN:
                 break
             try:
                 move, annotation = line.strip().split(";", 1)
-            except ValueError:
-                raise IOError(f"Missing newline on line {self.lineno}")
+            except ValueError as e:
+                raise OSError(f"Missing newline on line {self.lineno}") from e
             if annotation[0:2] == ". ":
                 annotation = annotation[2:]
             move_list = [int(sq) for sq in move.split("-")]

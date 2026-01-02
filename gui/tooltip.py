@@ -1,5 +1,6 @@
-from tkinter import Toplevel, StringVar, Message, Tk, Button, N, S, E, W
-from time import time, localtime, strftime
+from contextlib import suppress
+from time import localtime, strftime, time
+from tkinter import Button, E, Message, N, S, StringVar, Tk, Toplevel, W
 
 
 class ToolTip(Toplevel):
@@ -75,13 +76,11 @@ class ToolTip(Toplevel):
         if not self.follow:  # If the follow flag is not set, motion within the widget will make the ToolTip disappear
             self.withdraw()
             self.visible = 1
-        self.geometry("+%i+%i" % (event.x_root + 10, event.y_root + 10))  # Offset the ToolTip 10x10 pixels southwest
-        try:
-            # Try to call the message function.  Will not change the message if the message
+        self.geometry(f"+{event.x_root + 10}+{event.y_root + 10}")  # Offset the ToolTip 10x10 pixels southwest
+        with suppress(TypeError):
+            # Try to call the message function. Will not change the message if the message
             # function is None or the message function fails
             self.msgVar.set(self.msgFunc())
-        except TypeError:
-            pass
         self.after(int(self.delay * 1000), self.show)
 
     def hide(self, event=None):
@@ -129,7 +128,7 @@ def print_time():
     t = time()
     time_string = "time="
     time_string += strftime("%H:%M:", localtime(t))
-    time_string += "%.2f" % (t % 60,)
+    time_string += f"{t % 60:.2f}"
     return time_string
 
 
@@ -137,7 +136,7 @@ def main():
     root = Tk()
     btn_list = []
     for i, j in range2d(6, 4):
-        text = "delay=%i\n" % i
+        text = f"delay={i}\n"
         delay = i
         if j >= 2:
             follow = True
@@ -150,7 +149,7 @@ def main():
             msg_func = print_time
             text += "Message Function"
         else:
-            msg = "Button at %s" % str((i, j))
+            msg = f"Button at {str((i, j))}"
             msg_func = None
             text += "Static Message"
         btn_list.append(Button(root, text=text))

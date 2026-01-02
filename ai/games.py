@@ -1,8 +1,8 @@
 """Games, or Adversarial Search. (Chapters 6)"""
 
-from ai.utils import infinity, argmax, argmax_random_tie, num_or_str, Dict, update
-from ai.utils import if_, Struct, abstract
 import random
+
+from ai.utils import Dict, Struct, abstract, argmax, argmax_random_tie, if_, infinity, num_or_str, update
 
 # Minimax Search
 
@@ -44,7 +44,7 @@ def alphabeta_full_search(state, game):
         if game.terminal_test(st):
             return game.utility(st, player)
         v = -infinity
-        for a, s in game.successors(st):
+        for _a, s in game.successors(st):
             v = max(v, min_value(s, alpha, beta))
             if v >= beta:
                 return v
@@ -55,7 +55,7 @@ def alphabeta_full_search(state, game):
         if game.terminal_test(st):
             return game.utility(st, player)
         v = infinity
-        for a, s in game.successors(st):
+        for _a, s in game.successors(st):
             v = min(v, max_value(s, alpha, beta))
             if v <= alpha:
                 return v
@@ -77,7 +77,7 @@ def alphabeta_search(state, game, d=4, cutoff_test=None, eval_fn=None):
             return eval_fn(st)
         v = -infinity
         successor = game.successors(st)
-        for a, s in successor:
+        for _a, s in successor:
             v = max(v, min_value(s, alpha, beta, depth + 1))
             if v >= beta:
                 successor.close()
@@ -90,7 +90,7 @@ def alphabeta_search(state, game, d=4, cutoff_test=None, eval_fn=None):
             return eval_fn(st)
         v = infinity
         successor = game.successors(st)
-        for a, s in successor:
+        for _a, s in successor:
             v = min(v, max_value(s, alpha, beta, depth + 1))
             if v <= alpha:
                 successor.close()
@@ -176,7 +176,7 @@ class Game:
         return [(move, self.make_move(move, state)) for move in self.legal_moves(state)]
 
     def __repr__(self):
-        return "<%s>" % self.__class__.__name__
+        return f"<{self.__class__.__name__}>"
 
 
 class Fig62Game(Game):
@@ -263,7 +263,7 @@ class TicTacToe(Game):
                 print(
                     board.get((x, y), "."),
                 )
-            print
+            print()
 
     def compute_utility(self, board, move, player):
         """If X wins with this move, return 1; if O return -1; else return 0."""

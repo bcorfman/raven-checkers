@@ -1,5 +1,6 @@
-from tkinter import Canvas, Button, TOP, BOTTOM, BOTH
+from tkinter import BOTH, BOTTOM, TOP, Button, Canvas
 from tkinter.simpledialog import Dialog
+
 from util.globalconst import VERSION
 
 

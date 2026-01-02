@@ -1,7 +1,7 @@
 import itertools
 
 import game.checkers as checkers
-from util.globalconst import BLACK, WHITE, MAN, FREE
+from util.globalconst import BLACK, MAN, WHITE
 
 
 def _setup(game, to_move, placements):

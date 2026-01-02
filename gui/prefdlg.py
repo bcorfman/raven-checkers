@@ -1,7 +1,7 @@
-from tkinter import Frame, LabelFrame, LEFT, RIGHT, X
-from tkinter.ttk import Combobox, Label
+from tkinter import LEFT, RIGHT, Frame, LabelFrame, X
 from tkinter.font import families
 from tkinter.simpledialog import Dialog
+from tkinter.ttk import Combobox, Label
 
 
 class PreferencesDialog(Dialog):

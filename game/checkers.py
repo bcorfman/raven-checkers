@@ -1,14 +1,41 @@
-import ai.games as games
 import time
+
+import ai.games as games
 from base.move import Move
-from util.globalconst import BLACK, WHITE, KING, MAN, OCCUPIED, BLACK_CHAR, WHITE_CHAR
-from util.globalconst import BLACK_KING, WHITE_KING, FREE, OCCUPIED_CHAR, FREE_CHAR
-from util.globalconst import COLORS, TYPES, TURN, CRAMP, BRV, KEV, KCV, MEV, MCV
-from util.globalconst import INTACT_DOUBLE_CORNER, ENDGAME, OPENING, MIDGAME
-from util.globalconst import create_grid_map, KING_IDX, BLACK_IDX, WHITE_IDX
+from util.globalconst import (
+    BLACK,
+    BLACK_CHAR,
+    BLACK_IDX,
+    BLACK_KING,
+    BRV,
+    COLORS,
+    CRAMP,
+    ENDGAME,
+    FREE,
+    FREE_CHAR,
+    INTACT_DOUBLE_CORNER,
+    KCV,
+    KEV,
+    KING,
+    KING_IDX,
+    MAN,
+    MCV,
+    MEV,
+    MIDGAME,
+    OCCUPIED,
+    OCCUPIED_CHAR,
+    OPENING,
+    TURN,
+    TYPES,
+    WHITE,
+    WHITE_CHAR,
+    WHITE_IDX,
+    WHITE_KING,
+    create_grid_map,
+)
 
 
-class Checkerboard(object):
+class Checkerboard:
     #   (white)
     #            45  46  47  48
     #          39  40  41  42
@@ -143,15 +170,15 @@ class Checkerboard(object):
         wc = self.count(WHITE)
         sq = self.squares
         lookup = self.lookup
-        s = "[%s=%2d %s=%2d (%+d)]\n" % (BLACK_CHAR, bc, WHITE_CHAR, wc, bc - wc)
-        s += "8   %s   %s   %s   %s\n" % (lookup(sq[45]), lookup(sq[46]), lookup(sq[47]), lookup(sq[48]))
-        s += "7 %s   %s   %s   %s\n" % (lookup(sq[39]), lookup(sq[40]), lookup(sq[41]), lookup(sq[42]))
-        s += "6   %s   %s   %s   %s\n" % (lookup(sq[34]), lookup(sq[35]), lookup(sq[36]), lookup(sq[37]))
-        s += "5 %s   %s   %s   %s\n" % (lookup(sq[28]), lookup(sq[29]), lookup(sq[30]), lookup(sq[31]))
-        s += "4   %s   %s   %s   %s\n" % (lookup(sq[23]), lookup(sq[24]), lookup(sq[25]), lookup(sq[26]))
-        s += "3 %s   %s   %s   %s\n" % (lookup(sq[17]), lookup(sq[18]), lookup(sq[19]), lookup(sq[20]))
-        s += "2   %s   %s   %s   %s\n" % (lookup(sq[12]), lookup(sq[13]), lookup(sq[14]), lookup(sq[15]))
-        s += "1 %s   %s   %s   %s\n" % (lookup(sq[6]), lookup(sq[7]), lookup(sq[8]), lookup(sq[9]))
+        s = f"[{BLACK_CHAR}={bc:2d} {WHITE_CHAR}={wc:2d} ({bc - wc:+d})]\n"
+        s += f"8   {lookup(sq[45])}   {lookup(sq[46])}   {lookup(sq[47])}   {lookup(sq[48])}\n"
+        s += f"7 {lookup(sq[39])}   {lookup(sq[40])}   {lookup(sq[41])}   {lookup(sq[42])}\n"
+        s += f"6   {lookup(sq[34])}   {lookup(sq[35])}   {lookup(sq[36])}   {lookup(sq[37])}\n"
+        s += f"5 {lookup(sq[28])}   {lookup(sq[29])}   {lookup(sq[30])}   {lookup(sq[31])}\n"
+        s += f"4   {lookup(sq[23])}   {lookup(sq[24])}   {lookup(sq[25])}   {lookup(sq[26])}\n"
+        s += f"3 {lookup(sq[17])}   {lookup(sq[18])}   {lookup(sq[19])}   {lookup(sq[20])}\n"
+        s += f"2   {lookup(sq[12])}   {lookup(sq[13])}   {lookup(sq[14])}   {lookup(sq[15])}\n"
+        s += f"1 {lookup(sq[6])}   {lookup(sq[7])}   {lookup(sq[8])}   {lookup(sq[9])}\n"
         s += "  a b c d e f g h"
         return s
 
@@ -461,13 +488,11 @@ class Checkerboard(object):
 
     def _eval_double_corner(self, sq):
         evaluation = 0
-        if sq[9] == BLACK | MAN:
-            if sq[14] == BLACK | MAN or sq[15] == BLACK | MAN:
-                evaluation += INTACT_DOUBLE_CORNER
+        if sq[9] == BLACK | MAN and (sq[14] == (BLACK | MAN) or sq[15] == (BLACK | MAN)):
+            evaluation += INTACT_DOUBLE_CORNER
 
-        if sq[45] == WHITE | MAN:
-            if sq[39] == WHITE | MAN or sq[40] == WHITE | MAN:
-                evaluation -= INTACT_DOUBLE_CORNER
+        if sq[45] == (WHITE | MAN) and (sq[39] == (WHITE | MAN) or sq[40] == (WHITE | MAN)):
+            evaluation -= INTACT_DOUBLE_CORNER
         return evaluation
 
     def _eval_center(self, sq):
@@ -660,7 +685,7 @@ def play():
     game = Checkers()
     for depth in range(1, 11):
         start = time.time()
-        print("Perft for depth %d: %d. Time: %5.3f sec" % (depth, game.perft(depth), time.time() - start))
+        print(f"Perft for depth {depth}: {game.perft(depth)}. Time: {time.time() - start:.3f} sec")
 
 
 if __name__ == "__main__":

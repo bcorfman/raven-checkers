@@ -1,5 +1,6 @@
-from tkinter import Frame, Listbox, Variable, SINGLE, TOP
+from tkinter import SINGLE, TOP, Frame, Listbox, Variable
 from tkinter.simpledialog import Dialog
+
 from gui.autoscrollbar import AutoScrollbar
 
 

@@ -1,9 +1,10 @@
-import ai.games as games
 import copy
 import multiprocessing
 import time
+
+import ai.games as games
 from base.controller import Controller
-from util.globalconst import OUTLINE_COLOR, DARK_SQUARES, MAX_DEPTH
+from util.globalconst import DARK_SQUARES, MAX_DEPTH, OUTLINE_COLOR
 
 
 class AlphaBetaController(Controller):

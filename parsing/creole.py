@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
 # pylint: disable-all
 # Creole parser/HTML converter, from http://devel.sheep.art.pl/creole/.
@@ -9,7 +8,7 @@ import re
 import sys
 
 
-class DocNode(object):
+class DocNode:
     """
     A node in the document.
     """
@@ -23,12 +22,12 @@ class DocNode(object):
             self.parent.children.append(self)
 
 
-class LinkRules(object):
+class LinkRules:
     """Rules for recognizing external links."""
 
     # For the link targets:
     proto = r"http|https|ftp|nntp|news|mailto|telnet|file|irc"
-    extern = r"(?P<extern_addr>(?P<extern_proto>%s):.*)" % proto
+    extern = rf"(?P<extern_addr>(?P<extern_proto>{proto}):.*)"
     interwiki = r"""
             (?P<inter_wiki> [A-Z][a-zA-Z]+ ) :
             (?P<inter_page> .* )
@@ -46,7 +45,7 @@ class LinkRules(object):
         )  # for addresses
 
 
-class Rules(object):
+class Rules:
     """Hold all the rules for generating regular expressions."""
 
     # For the inline elements:
@@ -120,13 +119,15 @@ class Rules(object):
         )"""
 
     # For splitting table cells:
-    cell = r"""
-            \| \s*
-            (
-                (?P<head> [=][^|]+ ) |
-                (?P<cell> (  %s | [^|])+ )
-            ) \s*
-        """ % "|".join([link, macro, image, code])
+    inline = "|".join([link, macro, image, code])
+
+    cell = rf"""
+                \| \s*
+                (
+                    (?P<head> [=][^|]+ ) |
+                    (?P<cell> (  (?:{inline}) | [^|])+ )
+                ) \s*
+            """
 
     def __init__(self, bloglike_lines=False, url_protocols=None, wiki_words=False):
         c = re.compile
@@ -150,14 +151,11 @@ class Rules(object):
         # For inline elements:
         if url_protocols is not None:
             self.proto = "|".join(re.escape(p) for p in url_protocols)
-        self.url = (
-            r"""(?P<url>
+        self.url = rf"""(?P<url>
             (^ | (?<=\s | [.,:;!?()/=]))
             (?P<escaped_url>~)?
-            (?P<url_target> (?P<url_proto> %s ):\S+? )
+            (?P<url_target> (?P<url_proto> {self.proto} ):\S+? )
             ($ | (?=\s | [,.:;!?()] (\s | $))))"""
-            % self.proto
-        )
         inline_elements = [
             self.link,
             self.url,
@@ -174,12 +172,12 @@ class Rules(object):
             import unicodedata
 
             up_case = "".join(chr(i) for i in range(sys.maxunicode) if unicodedata.category(chr(i)) == "Lu")
-            self.wiki = r"(?P<wiki>[%s]\w+[%s]\w+)" % (up_case, up_case)
+            self.wiki = rf"(?P<wiki>[{up_case}]\w+[{up_case}]\w+)"
             inline_elements.insert(3, self.wiki)
         self.inline_re = c("|".join(inline_elements), re.X | re.U)
 
 
-class Parser(object):
+class Parser:
     """
     Parse the raw text and create a document object
     that can be converted into output using Emitter.
@@ -274,10 +272,7 @@ class Parser(object):
     def _item_repl(self, groups):
         bullet = groups.get("item_head", "")
         text = groups.get("item_text", "")
-        if bullet[-1] == "#":
-            kind = "number_list"
-        else:
-            kind = "bullet_list"
+        kind = "number_list" if bullet[-1] == "#" else "bullet_list"
         level = len(bullet)
         lst = self.cur
         # Find a list of the same kind and level up the tree
@@ -402,7 +397,7 @@ class Parser(object):
         for match in rules_re.finditer(raw):
             groups = dict((k, v) for (k, v) in match.groupdict().items() if v is not None)
             name = match.lastgroup
-            function = getattr(self, "_%s_repl" % name)
+            function = getattr(self, f"_{name}_repl")
             function(groups)
 
     def parse(self):
@@ -411,7 +406,7 @@ class Parser(object):
         return self.root
 
 
-class HtmlEmitter(object):
+class HtmlEmitter:
     """
     Generate HTML output for the document
     tree consisting of DocNodes.
@@ -448,57 +443,54 @@ class HtmlEmitter(object):
         return "<hr>"
 
     def paragraph_emit(self, node):
-        return "<p>%s</p>\n" % self.emit_children(node)
+        return f"<p>{self.emit_children(node)}</p>\n"
 
     def bullet_list_emit(self, node):
-        return "<ul>\n%s</ul>\n" % self.emit_children(node)
+        return f"<ul>\n{self.emit_children(node)}</ul>\n"
 
     def number_list_emit(self, node):
-        return "<ol>\n%s</ol>\n" % self.emit_children(node)
+        return f"<ol>\n{self.emit_children(node)}</ol>\n"
 
     def list_item_emit(self, node):
-        return "<li>%s</li>\n" % self.emit_children(node)
+        return f"<li>{self.emit_children(node)}</li>\n"
 
     def table_emit(self, node):
-        return "<table>\n%s</table>\n" % self.emit_children(node)
+        return f"<table>\n{self.emit_children(node)}</table>\n"
 
     def table_row_emit(self, node):
-        return "<tr>%s</tr>\n" % self.emit_children(node)
+        return f"<tr>{self.emit_children(node)}</tr>\n"
 
     def table_cell_emit(self, node):
-        return "<td>%s</td>" % self.emit_children(node)
+        return f"<td>{self.emit_children(node)}</td>"
 
     def table_head_emit(self, node):
-        return "<th>%s</th>" % self.emit_children(node)
+        return f"<th>{self.emit_children(node)}</th>"
 
     def emphasis_emit(self, node):
-        return "<i>%s</i>" % self.emit_children(node)
+        return f"<i>{self.emit_children(node)}</i>"
 
     def strong_emit(self, node):
-        return "<b>%s</b>" % self.emit_children(node)
+        return f"<b>{self.emit_children(node)}</b>"
 
     def header_emit(self, node):
         hid = self.id_func()
         content = self.html_escape(node.content)
         self.headers.append((node.level, content, hid))
-        return '<h%d id="%s">%s</h%d>\n' % (node.level, hid, content, node.level)
+        return f'<h{node.level} id="{hid}">{content}</h{node.level}>\n'
 
     def code_emit(self, node):
-        return "<tt>%s</tt>" % self.html_escape(node.content)
+        return f"<tt>{self.html_escape(node.content)}</tt>"
 
     def link_emit(self, node):
         target = node.content
-        if node.children:
-            inside = self.emit_children(node)
-        else:
-            inside = self.html_escape(target)
+        inside = self.emit_children(node) if node.children else self.html_escape(target)
         m = self.link_rules.addr_re.match(target)
         if m:
             if m.group("extern_addr"):
-                return '<a href="%s">%s</a>' % (self.attr_escape(target), inside)
+                return f'<a href="{self.attr_escape(target)}">{inside}</a>'
             elif m.group("inter_wiki"):
                 raise NotImplementedError
-        return '<a href="%s">%s</a>' % (self.attr_escape(target), inside)
+        return f'<a href="{self.attr_escape(target)}">{inside}</a>'
 
     def image_emit(self, node):
         target = node.content
@@ -506,10 +498,10 @@ class HtmlEmitter(object):
         m = self.link_rules.addr_re.match(target)
         if m:
             if m.group("extern_addr"):
-                return '<img src="%s" alt="%s">' % (self.attr_escape(target), self.attr_escape(text))
+                return f'<img src="{self.attr_escape(target)}" alt="{self.attr_escape(text)}">'
             elif m.group("inter_wiki"):
                 raise NotImplementedError
-        return '<img src="%s" alt="%s">' % (self.attr_escape(target), self.attr_escape(text))
+        return f'<img src="{self.attr_escape(target)}" alt="{self.attr_escape(text)}">'
 
     def macro_emit(self, node):
         raise NotImplementedError
@@ -518,7 +510,7 @@ class HtmlEmitter(object):
         return "<br>"
 
     def preformatted_emit(self, node):
-        return "<pre>%s</pre>" % self.html_escape(node.content)
+        return f"<pre>{self.html_escape(node.content)}</pre>"
 
     def default_emit(self, node):
         """Fallback function for emitting unknown nodes."""
@@ -532,7 +524,7 @@ class HtmlEmitter(object):
 
     def emit_node(self, node):
         """Emit a single node."""
-        emit = getattr(self, "%s_emit" % node.kind, self.default_emit)
+        emit = getattr(self, f"{node.kind}_emit", self.default_emit)
         return emit(node)
 
     def emit(self):

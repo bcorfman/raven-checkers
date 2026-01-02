@@ -1,20 +1,20 @@
 import os
-from tkinter import Label, SUNKEN, NW
+from datetime import datetime
+from tkinter import NW, SUNKEN, Label
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 from tkinter.messagebox import askyesnocancel, showerror, showinfo
-from datetime import datetime
+
 from game.checkers import Checkers
+from gui.alphabetacontroller import AlphaBetaController
 from gui.boardview import BoardView
 from gui.filelist import FileList
 from gui.playercontroller import PlayerController
-from gui.alphabetacontroller import AlphaBetaController
-from parsing.PDN import PDNReader, PDNWriter, board_to_PDN_ready
 from parsing.migrate import RCF2PDN, build_move_annotation_pairs
-from util.globalconst import BLACK, WHITE, TITLE, VERSION, KING, MAN, PROGRAM_TITLE, TRAINING_DIR
-from util.globalconst import square_map, keymap
+from parsing.PDN import PDNReader, PDNWriter, board_to_PDN_ready
+from util.globalconst import BLACK, KING, MAN, PROGRAM_TITLE, TITLE, TRAINING_DIR, VERSION, WHITE, keymap, square_map
 
 
-class GameManager(object):
+class GameManager:
     def __init__(self, **props):
         self.model = Checkers()
         self._root = props["root"]
@@ -65,7 +65,7 @@ class GameManager(object):
         if self.view.is_dirty():
             msg = "Do you want to save your changes"
             if self.filepath:
-                msg += " to %s?" % self.filepath
+                msg += f" to {self.filepath}?"
             else:
                 msg += "?"
             result = askyesnocancel(TITLE, msg)
@@ -129,7 +129,7 @@ class GameManager(object):
                 self.view.update_statusbar()
                 self.parent.set_title_bar_filename(os.path.basename(filepath))
                 self.filepath = filepath
-        except IOError as err:
+        except OSError as err:
             showerror(PROGRAM_TITLE, "Invalid file. " + str(err))
 
     def open_game(self):
@@ -196,15 +196,9 @@ class GameManager(object):
             to_move = self.model.curr_state.to_move
             scoring = self.model.utility(to_move, self.model.curr_state)
             if scoring == -4000:
-                if to_move == WHITE:
-                    result = "1-0"
-                else:
-                    result = "0-1"
+                result = "1-0" if to_move == WHITE else "0-1"
             elif scoring == 4000:
-                if to_move == WHITE:
-                    result = "0-1"
-                else:
-                    result = "1-0"
+                result = "0-1" if to_move == WHITE else "1-0"
             else:
                 result = "*"
             # undo moves back to the beginning of play
@@ -258,13 +252,13 @@ class GameManager(object):
             )
 
             # redo moves forward to the previous state
-            for i in range(undo_steps):
+            for _ in range(undo_steps):
                 annotation = self.view.get_annotation()
                 self.model.curr_state.redo_move(None, annotation)
             # record current filename in title bar
             self.parent.set_title_bar_filename(filename)
             self.filepath = filename
-        except IOError:
+        except OSError:
             showerror(PROGRAM_TITLE, "Could not save file.")
 
     def turn_finished(self):

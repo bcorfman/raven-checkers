@@ -1,51 +1,50 @@
 import os
-from tkinter import PhotoImage, Canvas, Frame, Text, Button, IntVar, Widget
-from tkinter.constants import END, W, INSERT, CENTER
+from tkinter import Button, Canvas, Frame, IntVar, PhotoImage, Text, Widget
+from tkinter.constants import CENTER, END, INSERT, W
 from tkinter.filedialog import askopenfilename
 from tkinter.font import Font
+
 from base.command import Command
 from base.observer import Observer
+from gui.autoscrollbar import AutoScrollbar
+from gui.hyperlinkmgr import HyperlinkManager
+from gui.tooltip import ToolTip
+from parsing.textserialize import Serializer
 from util.globalconst import (
-    NUMBERS_IMAGE,
+    ADDLINK_IMAGE,
+    BLACK,
+    BOLD_IMAGE,
     BULLET_IMAGE,
     BULLETS_IMAGE,
-    DEFAULT_SIZE,
-    LIGHT_SQUARES,
-    DARK_SQUARES,
-    LIGHT_CHECKERS,
-    DARK_CHECKERS,
-    CROWN_IMAGE,
-    REDO_IMAGE,
-    REDO_ALL_IMAGE,
-    UNDO_IMAGE,
-    UNDO_ALL_IMAGE,
-    REMLINK_IMAGE,
-    ADDLINK_IMAGE,
-    ITALIC_IMAGE,
-    BOLD_IMAGE,
-    BLACK,
-    WHITE,
-    CUR_DIR,
-    FREE,
-    FIRST,
-    LAST,
-    COLORS,
     CHECKER_SIZE,
+    COLORS,
+    CROWN_IMAGE,
+    CUR_DIR,
+    DARK_CHECKERS,
+    DARK_SQUARES,
+    DEFAULT_SIZE,
+    FIRST,
+    FREE,
+    ITALIC_IMAGE,
     KING,
-)
-from util.globalconst import (
+    LAST,
+    LIGHT_CHECKERS,
+    LIGHT_SQUARES,
+    NUMBERS_IMAGE,
+    REDO_ALL_IMAGE,
+    REDO_IMAGE,
+    REMLINK_IMAGE,
+    UNDO_ALL_IMAGE,
+    UNDO_IMAGE,
+    WHITE,
     create_grid_map,
     create_position_map,
     get_preferences_from_file,
-    parse_index,
-    to_string,
     keymap,
+    parse_index,
     reverse_dict,
+    to_string,
 )
-from gui.autoscrollbar import AutoScrollbar
-from gui.hyperlinkmgr import HyperlinkManager
-from parsing.textserialize import Serializer
-from gui.tooltip import ToolTip
 
 
 class BoardView(Observer):
@@ -160,7 +159,7 @@ class BoardView(Observer):
         else:
             return
         for tag in tags:
-            already_tagged = any((x for x in current_tags if x.startswith(tag)))
+            already_tagged = any(x for x in current_tags if x.startswith(tag))
             for t in current_tags:
                 if t != "sel":
                     self.txt.tag_remove(t, "sel.first", "sel.last")
@@ -199,7 +198,7 @@ class BoardView(Observer):
         else:
             start_line, _ = parse_index(self.txt.index(INSERT))
             end_line = start_line
-        current_tags = self.txt.tag_names("%d.0" % start_line)
+        current_tags = self.txt.tag_names(f"{start_line}.0")
         if tag not in current_tags:
             add_func(start_line, end_line)
         else:
@@ -208,10 +207,10 @@ class BoardView(Observer):
     def _add_bullets_if_needed(self, start_line, end_line):
         self._remove_numbers_if_needed(start_line, end_line)
         for line in range(start_line, end_line + 1):
-            current_tags = self.txt.tag_names("%d.0" % line)
+            current_tags = self.txt.tag_names(f"{line}.0")
             if "bullet" not in current_tags:
-                start = "%d.0" % line
-                end = "%d.end" % line
+                start = f"{line}.0"
+                end = f"{line}.end"
                 self.txt.insert(start, "\t")
                 self.txt.image_create(start, image=self.bullet_image)
                 self.txt.insert(start, "\t")
@@ -221,13 +220,13 @@ class BoardView(Observer):
 
     def _remove_bullets_if_needed(self, start_line, end_line):
         for line in range(start_line, end_line + 1):
-            current_tags = self.txt.tag_names("%d.0" % line)
+            current_tags = self.txt.tag_names(f"{line}.0")
             if "bullet" in current_tags:
-                start = "%d.0" % line
-                end = "%d.end" % line
+                start = f"{line}.0"
+                end = f"{line}.end"
                 self.txt.tag_remove("bullet", start, end)
-                start = "%d.0" % line
-                end = "%d.3" % line
+                start = f"{line}.0"
+                end = f"{line}.3"
                 self.txt.delete(start, end)
         self.bullets.configure(relief="raised")
 
@@ -235,12 +234,12 @@ class BoardView(Observer):
         self._remove_bullets_if_needed(start_line, end_line)
         num = 1
         for line in range(start_line, end_line + 1):
-            current_tags = self.txt.tag_names("%d.0" % line)
+            current_tags = self.txt.tag_names(f"{line}.0")
             if "number" not in current_tags:
-                start = "%d.0" % line
-                end = "%d.end" % line
+                start = f"{line}.0"
+                end = f"{line}.end"
                 self.txt.insert(start, "\t")
-                num_str = "%d." % num
+                num_str = f"{num}."
                 self.txt.insert(start, num_str)
                 self.txt.insert(start, "\t")
                 self.txt.tag_add("number", start, end)
@@ -251,17 +250,17 @@ class BoardView(Observer):
     def _remove_numbers_if_needed(self, start_line, end_line):
         cnt = IntVar()
         for line in range(start_line, end_line + 1):
-            current_tags = self.txt.tag_names("%d.0" % line)
+            current_tags = self.txt.tag_names(f"{line}.0")
             if "number" in current_tags:
-                start = "%d.0" % line
-                end = "%d.end" % line
+                start = f"{line}.0"
+                end = f"{line}.end"
                 self.txt.tag_remove("number", start, end)
                 # Regex to match a tab, followed by any number of digits,
                 # followed by a period, all at the start of a line.
                 # The cnt variable stores the number of characters matched.
                 pos = self.txt.search(r"^\t\d+\.\t", start, end, None, None, None, True, None, cnt)
                 if pos:
-                    end = "%d.%d" % (line, cnt.get())
+                    end = f"{line}.{cnt.get()}"
                     self.txt.delete(start, end)
         self.numbers.configure(relief="raised")
 
@@ -324,14 +323,11 @@ class BoardView(Observer):
             btn.configure(relief="raised")
 
     def update_button_state(self, index):
-        if self.txt.tag_ranges("sel"):
-            current_tags = self.txt.tag_names("sel.first")
-        else:
-            current_tags = self.txt.tag_names(index)
+        current_tags = self.txt.tag_names("sel.first") if self.txt.tag_ranges("sel") else self.txt.tag_names(index)
         for btn in self.button_map.values():
             btn.configure(relief="raised")
         for tag in current_tags:
-            if tag in self.button_map.keys():
+            if tag in self.button_map:
                 self.button_map[tag].configure(relief="sunken")
 
     def init_font_sizes(self, font, size):
@@ -395,7 +391,7 @@ class BoardView(Observer):
         if self.txt.get("1.0", "end").strip() == "":
             start = keymap[move.affected_squares[FIRST][0]]
             dest = keymap[move.affected_squares[LAST][0]]
-            move_str = "%d-%d" % (start, dest)
+            move_str = f"{start}-{dest}"
             self.txt.insert("1.0", move_str)
 
     def get_annotation(self):
@@ -443,11 +439,9 @@ class BoardView(Observer):
         return map(
             str,
             sorted(
-                (
-                    keymap[i]
-                    for i in self._model.curr_state.valid_squares
-                    if self._model.curr_state.squares[i] == square_type
-                )
+                keymap[i]
+                for i in self._model.curr_state.valid_squares
+                if self._model.curr_state.squares[i] == square_type
             ),
         )
 

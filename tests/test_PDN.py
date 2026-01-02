@@ -1,7 +1,8 @@
 import os
+
 from base.move import Move
-from parsing.PDN import PDNReader, PDNWriter, translate_to_fen, board_to_PDN_ready
-from util.globalconst import BLACK, WHITE, MAN, KING, FREE, square_map
+from parsing.PDN import PDNReader, PDNWriter, board_to_PDN_ready, translate_to_fen
+from util.globalconst import BLACK, FREE, KING, MAN, WHITE, square_map
 
 
 def test_board_to_PDN_ready():
@@ -368,9 +369,11 @@ def test_write_PDN_file_success(tmp_path):
         board_orientation,
         moves,
     )
-    with open(pdn_filepath) as f1:
-        with open(os.path.join("training", "german_open_2004.pdn")) as f2:
-            assert f1.readlines() == f2.readlines()
+    with (
+        open(pdn_filepath) as f1,
+        open(os.path.join("training", "german_open_2004.pdn")) as f2,
+    ):
+        assert f1.readlines() == f2.readlines()
 
 
 def test_write_PDN_string_success():

@@ -1,4 +1,4 @@
-class Move(object):
+class Move:
     def __init__(self, squares, annotation=""):
         self.affected_squares = squares
         self.annotation = annotation

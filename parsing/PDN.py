@@ -1,14 +1,17 @@
-import charset_normalizer
 import copy
 import os
 import textwrap
+from contextlib import contextmanager
 from io import StringIO
+from typing import NamedTuple
+
+import charset_normalizer
 from pyparsing import (
     Combine,
     Forward,
     Group,
-    LineStart,
     LineEnd,
+    LineStart,
     Literal,
     OneOrMore,
     Optional,
@@ -22,10 +25,10 @@ from pyparsing import (
     rest_of_line,
     srange,
 )
-from typing import NamedTuple
+
 from base.move import Move
 from game.checkers import Checkers
-from util.globalconst import keymap, square_map, BLACK, WHITE, MAN, KING, HEADER, DESC, BODY
+from util.globalconst import BLACK, BODY, DESC, HEADER, KING, MAN, WHITE, keymap, square_map
 
 
 def is_game_terminator(item):
@@ -40,28 +43,28 @@ def _removeLineFeed(s):
     return s[0].replace("\n", " ")
 
 
-Game = NamedTuple(
-    "Game",
-    [
-        ("event", str),
-        ("site", str),
-        ("date", str),
-        ("round", str),
-        ("black_player", str),
-        ("white_player", str),
-        ("next_to_move", int),
-        ("black_men", list),
-        ("white_men", list),
-        ("black_kings", list),
-        ("white_kings", list),
-        ("result", str),
-        ("board_orientation", str),
-        ("description", str),
-        ("moves", list),
-    ],
-)
+class Game(NamedTuple):
+    event: str
+    site: str
+    date: str
+    round: str
+    black_player: str
+    white_player: str
+    next_to_move: int
+    black_men: list
+    white_men: list
+    black_kings: list
+    white_kings: list
+    result: str
+    board_orientation: str
+    description: str
+    moves: list
 
-GameTitle = NamedTuple("GameTitle", [("index", int), ("name", str)])
+
+class GameTitle(NamedTuple):
+    index: int
+    name: str
+
 
 _MoveStrength = one_of("! ?") | "(" + one_of("! ?") + ")"
 _Identifier = Word(srange("[A-Z]"), srange("[A-Za-z0-9_]"))
@@ -83,7 +86,7 @@ _NormalMove = Group(_Square + Suppress(_MoveSeparator) + _Square)
 _CaptureMove = Group(_Square + OneOrMore(Suppress(_CaptureSeparator) + _Square))
 _Move = _NormalMove | _CaptureMove
 _LineComment = LineStart() + Group("% " + rest_of_line()("comment"))
-_Description = Combine((OneOrMore(Combine(LineStart() + Suppress("% ") + ... + LineEnd()))))("description")
+_Description = Combine(OneOrMore(Combine(LineStart() + Suppress("% ") + ... + LineEnd())))("description")
 _PDNTag = (
     LineStart()
     + Suppress("[")
@@ -134,14 +137,17 @@ class PDNReader:
         return cls(stream, "PDN string")
 
     @classmethod
+    @contextmanager
     def from_file(cls, filepath):
         filename = os.path.basename(filepath)
-        # sample a small chunk of the file to determine encoding
-        chunk_size = min(os.path.getsize(filepath), 10000)
+
+        chunk_size = min(os.path.getsize(filepath), 10_000)
         with open(filepath, "rb") as test:
             pdn_encoding = charset_normalizer.detect(test.read(chunk_size))["encoding"]
-            stream = open(filepath, encoding=pdn_encoding)
-            return cls(stream, filename)
+
+        # One open, managed by `with`:
+        with open(filepath, encoding=pdn_encoding) as stream:
+            yield cls(stream, filename)
 
     def __enter__(self):
         return self
@@ -757,7 +763,7 @@ class PDNWriter:
 def board_to_PDN_ready(board_moves: list[Move]):
     pdn_moves = []
     annotations = []
-    for idx, move in enumerate(board_moves):
+    for _idx, move in enumerate(board_moves):
         num_squares = len(move.affected_squares)
         if num_squares == 2:  # move
             sq1 = keymap[move.affected_squares[0][0]]

@@ -1,6 +1,6 @@
 import util
 
 
-class Observer(object):
+class Observer:
     def update(self, change):
         util.abstract()

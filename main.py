@@ -1,12 +1,13 @@
-from tkinter import IntVar, Menu, Tk, Image
-from tkinter.messagebox import askyesnocancel
 from multiprocessing import freeze_support
-from util.globalconst import RAVEN_ICON, VERSION, TITLE, BLACK, get_preferences_from_file, write_preferences_to_file
-from gui.aboutbox import AboutBox
-from gui.setupboard import SetupBoard
+from tkinter import Image, IntVar, Menu, Tk
+from tkinter.messagebox import askyesnocancel
+
 from game.gamemanager import GameManager
+from gui.aboutbox import AboutBox
 from gui.centeredwindow import CenteredWindow
 from gui.prefdlg import PreferencesDialog
+from gui.setupboard import SetupBoard
+from util.globalconst import BLACK, RAVEN_ICON, TITLE, VERSION, get_preferences_from_file, write_preferences_to_file
 
 
 class MainFrame(CenteredWindow):

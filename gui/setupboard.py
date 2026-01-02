@@ -1,8 +1,8 @@
-from tkinter import LabelFrame, Frame, Radiobutton, Label, Entry, StringVar, IntVar
-from tkinter import DISABLED, NORMAL, LEFT, X
-from tkinter.ttk import Checkbutton
+from tkinter import DISABLED, LEFT, NORMAL, Entry, Frame, IntVar, Label, LabelFrame, Radiobutton, StringVar, X
 from tkinter.simpledialog import Dialog
-from util.globalconst import BLACK, WHITE, square_map, MAN, KING, MAX_VALID_SQ
+from tkinter.ttk import Checkbutton
+
+from util.globalconst import BLACK, KING, MAN, MAX_VALID_SQ, WHITE, square_map
 
 
 class SetupBoard(Dialog):
@@ -209,7 +209,7 @@ class SetupBoard(Dialog):
         except ValueError:
             return None
 
-        if not all(((1 <= x <= MAX_VALID_SQ) for x in lst)):
+        if not all((1 <= x <= MAX_VALID_SQ) for x in lst):
             return None
 
         return lst

@@ -366,7 +366,7 @@ def flip_dict(m):
     d = {}
     keys = [k for k, _ in m.items()]
     values = [v for _, v in m.items()]
-    for k, v in zip(values, keys):
+    for k, v in zip(values, keys, strict=False):
         d[k] = v
     return d
 
@@ -375,7 +375,7 @@ def reverse_dict(m):
     d = {}
     keys = [k for k, _ in m.items()]
     values = [v for _, v in m.items()]
-    for k, v in zip(keys, reversed(values)):
+    for k, v in zip(keys, reversed(values), strict=False):
         d[k] = v
     return d
 
@@ -412,7 +412,7 @@ def parse_index(idx):
 
 
 def to_string(line, char):
-    return "%d.%d" % (line, char)
+    return f"{line}.{char}"
 
 
 grid = create_grid_map()

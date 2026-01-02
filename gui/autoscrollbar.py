@@ -2,7 +2,9 @@ from tkinter import Scrollbar, TclError
 
 
 class AutoScrollbar(Scrollbar):
-    def __init__(self, master=None, cnf={}, **kw):
+    def __init__(self, master=None, cnf=None, **kw):
+        if cnf is None:
+            cnf = {}
         self.container = kw.pop("container", None)
         self.row = kw.pop("row", 0)
         self.column = kw.pop("column", 0)

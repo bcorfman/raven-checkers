@@ -1,6 +1,7 @@
 from tkinter import Widget
+
 from base.controller import Controller
-from util.globalconst import HUMAN, OUTLINE_COLOR, DARK_SQUARES, FREE
+from util.globalconst import DARK_SQUARES, FREE, HUMAN, OUTLINE_COLOR
 
 
 class PlayerController(Controller):

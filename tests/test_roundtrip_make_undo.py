@@ -1,8 +1,7 @@
 import pytest
 
 import game.checkers as checkers
-from util.globalconst import BLACK, WHITE, MAN, KING, FREE
-
+from util.globalconst import BLACK, KING, MAN, WHITE
 
 # --- Helpers ---------------------------------------------------------------
 

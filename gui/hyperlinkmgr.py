@@ -1,7 +1,7 @@
 from tkinter import CURRENT
 
 
-class HyperlinkManager(object):
+class HyperlinkManager:
     def __init__(self, text_widget, link_func):
         self.txt = text_widget
         self.link_func = link_func
@@ -17,7 +17,7 @@ class HyperlinkManager(object):
     def add(self, filename):
         # Add a link with associated filename. The link function returns tags
         # to use in the associated text widget.
-        tag = "hyper-%d" % len(self.filenames)
+        tag = f"hyper-{len(self.filenames)}"
         self.filenames[tag] = filename
         return "hyper", tag
 

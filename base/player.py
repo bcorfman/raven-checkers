@@ -1,9 +1,10 @@
 import sys
+
 import ai.games as games
 from util.globalconst import CB_MAP, IMAP
 
 
-class Player(object):
+class Player:
     def __init__(self, color):
         self.col = color
 
