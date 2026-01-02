@@ -4,25 +4,45 @@ from configparser import RawConfigParser
 from pathlib import Path
 
 
-def _app_root() -> Path:
+def _external_root() -> Path:
     """
-    Preferred root for runtime assets.
-    1) If images/ or training/ exist next to the executable, use that (release layout).
-    2) Else fall back to repo-relative (dev/test), based on this file location.
+    Files next to the *distributed executable* (user-browsable).
+    Works for onefile and standalone.
     """
-    exe_dir = Path(sys.executable).resolve().parent
-    if (exe_dir / "images").exists() or (exe_dir / "training").exists():
-        return exe_dir
+    try:
+        # Nuitka standalone/onefile provides this
+        return Path(__compiled__.containing_dir)  # type: ignore[name-defined]
+    except NameError:
+        # Fallback for dev / other builds
+        return Path(sys.argv[0]).resolve().parent
 
-    # dev fallback: globalconst.py is under util/
-    return Path(__file__).resolve().parents[1]
+
+def _bundle_root() -> Path:
+    """
+    Files embedded into onefile and unpacked to temp.
+    In dev, this is repo-relative.
+    """
+    return Path(__file__).resolve().parent
 
 
-APP_ROOT = _app_root()
+EXTERNAL_ROOT = _external_root()
+BUNDLE_ROOT = _bundle_root()
 
 
 def get_resource_path(relative_path: str) -> str:
-    return str(APP_ROOT / relative_path)
+    rel = Path(relative_path)
+
+    # Training should be user-browsable (external)
+    if rel.parts and rel.parts[0] == "training":
+        return str(EXTERNAL_ROOT / rel)
+
+    # Images: prefer embedded bundle, but allow external override if present
+    bundle_candidate = BUNDLE_ROOT / rel
+    if bundle_candidate.exists():
+        return str(bundle_candidate)
+
+    external_candidate = EXTERNAL_ROOT / rel
+    return str(external_candidate)
 
 
 DEFAULT_SIZE = 400
@@ -83,7 +103,7 @@ MAX_DEPTH = 10
 VERSION = "0.7"
 TITLE = "Raven " + VERSION
 PROGRAM_TITLE = "Raven Checkers"
-CUR_DIR = str(APP_ROOT)
+CUR_DIR = str(EXTERNAL_ROOT)
 TRAINING_DIR = get_resource_path("training")
 
 # search values for transposition table
@@ -403,7 +423,7 @@ def reverse_dict(m):
     return d
 
 
-INI_PATH = APP_ROOT / "raven.ini"
+INI_PATH = EXTERNAL_ROOT / "raven.ini"
 
 
 def get_preferences_from_file():
