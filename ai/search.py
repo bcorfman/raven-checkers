@@ -3,15 +3,30 @@
 The way to use this code is to subclass Problem to create a class of problems,
 then create problem instances and solve them with calls to the various search
 functions."""
-import sys
+
 import math
 import random
-from util import abstract, update, FIFOQueue, Stack, memoize, PriorityQueue, \
-    if_, infinity, argmax_random_tie, probability, distance, argmin
+import sys
+
 from utils import cmp
 
+from util import (
+    FIFOQueue,
+    PriorityQueue,
+    Stack,
+    abstract,
+    argmax_random_tie,
+    argmin,
+    distance,
+    if_,
+    infinity,
+    memoize,
+    probability,
+    update,
+)
 
-class Problem(object):
+
+class Problem:
     """The abstract class for a formal problem.  You should subclass
     this and implement the methods actions and result, and possibly
     __init__, goal_test, and path_cost. Then you will create instances
@@ -78,18 +93,16 @@ class Node:
             self.depth = parent.depth + 1
 
     def __repr__(self):
-        return "<Node %s>" % (self.state,)
+        return f"<Node {self.state}>"
 
     def expand(self, problem):
         """List the nodes reachable in one step from this node."""
-        return [self.child_node(problem, action)
-                for action in problem.actions(self.state)]
+        return [self.child_node(problem, action) for action in problem.actions(self.state)]
 
     def child_node(self, problem, action):
         """Fig. 3.10"""
         next_state = problem.result(self.state, action)
-        return Node(next_state, self, action,
-                    problem.path_cost(self.path_cost, self.state, action, next_state))
+        return Node(next_state, self, action, problem.path_cost(self.path_cost, self.state, action, next_state))
 
     def solution(self):
         """Return the sequence of actions to go from the root to this node."""
@@ -117,6 +130,7 @@ class Node:
 
 class SimpleProblemSolvingAgentProgram:
     """Abstract framework for a problem-solving agent. [Fig. 3.1]"""
+
     def __init__(self, initial_state=None):
         update(self, state=initial_state, seq=[])
 
@@ -168,9 +182,9 @@ def graph_search(problem, frontier):
         if problem.goal_test(node.state):
             return node
         explored.add(node.state)
-        frontier.extend(child for child in node.expand(problem)
-                        if child.state not in explored
-                        and child not in frontier)
+        frontier.extend(
+            child for child in node.expand(problem) if child.state not in explored and child not in frontier
+        )
     return None
 
 
@@ -216,7 +230,7 @@ def best_first_graph_search(problem, f):
     There is a subtlety: the line "f = memoize(f, 'f')" means that the f
     values will be cached on the nodes as they are computed. So after doing
     a best first search you can examine the f values of the path returned."""
-    f = memoize(f, 'f')
+    f = memoize(f, "f")
     node = Node(problem.initial)
     if problem.goal_test(node.state):
         return node
@@ -246,20 +260,21 @@ def uniform_cost_search(problem):
 
 def depth_limited_search(problem, limit=50):
     """[Fig. 3.17]"""
+
     def recursive_dls(node, problem, limit):
         if problem.goal_test(node.state):
             return node
         elif node.depth == limit:
-            return 'cutoff'
+            return "cutoff"
         else:
             cutoff_occurred = False
             for child in node.expand(problem):
                 result = recursive_dls(child, problem, limit)
-                if result == 'cutoff':
+                if result == "cutoff":
                     cutoff_occurred = True
                 elif result is not None:
                     return result
-            return if_(cutoff_occurred, 'cutoff', None)
+            return if_(cutoff_occurred, "cutoff", None)
 
     # Body of depth_limited_search:
     return recursive_dls(Node(problem.initial), problem, limit)
@@ -269,7 +284,7 @@ def iterative_deepening_search(problem):
     """[Fig. 3.18]"""
     for depth in range(sys.maxint):
         result = depth_limited_search(problem, depth)
-        if result != 'cutoff':
+        if result != "cutoff":
             return result
 
 
@@ -282,18 +297,18 @@ def astar_search(problem, h=None):
     """A* search is best-first graph search with f(n) = g(n)+h(n).
     You need to specify the h function when you call astar_search, or
     else in your Problem subclass."""
-    h = memoize(h or problem.h, 'h')
+    h = memoize(h or problem.h, "h")
     return best_first_graph_search(problem, lambda n: n.path_cost + h(n))
 
 
 # Other search algorithms
 def recursive_best_first_search(problem, h=None):
     """[Fig. 3.26]"""
-    h = memoize(h or problem.h, 'h')
+    h = memoize(h or problem.h, "h")
 
     def RBFS(problem, node, flimit):
         if problem.goal_test(node.state):
-            return node, 0   # (The second value is immaterial)
+            return node, 0  # (The second value is immaterial)
         successors = node.expand(problem)
         if len(successors) == 0:
             return None, infinity
@@ -304,10 +319,7 @@ def recursive_best_first_search(problem, h=None):
             best = successors[0]
             if best.f > flimit:
                 return None, best.f
-            if len(successors) > 1:
-                alternative = successors[1].f
-            else:
-                alternative = infinity
+            alternative = successors[1].f if len(successors) > 1 else infinity
             result, best.f = RBFS(problem, best, min(flimit, alternative))
             if result is not None:
                 return result, best.f
@@ -326,8 +338,7 @@ def hill_climbing(problem):
         neighbors = current.expand(problem)
         if not neighbors:
             break
-        neighbor = argmax_random_tie(neighbors,
-                                     lambda node: problem.value(node.state))
+        neighbor = argmax_random_tie(neighbors, lambda node: problem.value(node.state))
         if problem.value(neighbor.state) <= problem.value(current.state):
             break
         current = neighbor
@@ -339,8 +350,10 @@ def exp_schedule(k=20, lam=0.005, limit=100):
     return lambda t: if_(t < limit, k * math.exp(-lam * t), 0)
 
 
-def simulated_annealing(problem, schedule=exp_schedule()):
+def simulated_annealing(problem, schedule=None):
     """[Fig. 4.5]"""
+    if schedule is None:
+        schedule = exp_schedule()
     current = Node(problem.initial)
     for t in range(sys.maxint):
         t_prime = schedule(t)
@@ -350,8 +363,7 @@ def simulated_annealing(problem, schedule=exp_schedule()):
         if not neighbors:
             return current
         next_neighbor = random.choice(neighbors)
-        delta_e = problem.value(next_neighbor.state) - \
-            problem.value(current.state)
+        delta_e = problem.value(next_neighbor.state) - problem.value(current.state)
         if delta_e > 0 or probability(math.exp(delta_e / t_prime)):
             current = next_neighbor
 
@@ -380,7 +392,7 @@ class Graph:
 
     def make_undirected(self):
         """Make a digraph into an undirected graph by adding symmetric edges."""
-        for a in self.dict.keys():
+        for a in self.dict:
             for b, dist in self.dict[a].items():
                 self.connect1(b, a, dist)
 
@@ -415,29 +427,31 @@ def UndirectedGraph(dct=None):
     return Graph(dict=dct, directed=False)
 
 
-def RandomGraph(nodes=range(10), min_links=2, width=400, height=300,
-                curvature=lambda: random.uniform(1.1, 1.5)):
+def RandomGraph(nodes=None, min_links=2, width=400, height=300, curvature=lambda: random.uniform(1.1, 1.5)):
     """Construct a random graph, with the specified nodes, and random links.
     The nodes are laid out randomly on a (width x height) rectangle.
     Then each node is connected to the min_links nearest neighbors.
     Because inverse links are added, some nodes will have more connections.
     The dist between nodes is the hypotenuse times curvature(),
     where curvature() defaults to a random number between 1.1 and 1.5."""
+    if nodes is None:
+        nodes = range(10)
     g = UndirectedGraph()
     g.locations = {}
     # Build the cities
     for node in nodes:
         g.locations[node] = (random.randrange(width), random.randrange(height))
     # Build roads from each city to at least min_links nearest neighbors.
-    for i in range(min_links):
+    for _ in range(min_links):
         for node in nodes:
             if len(g.get(node)) < min_links:
                 here = g.locations[node]
 
-                def distance_to_node(n):
+                def distance_to_node(n, node=node, here=here):
                     if n is node or g.get(node, n):
                         return infinity
                     return distance(g.locations[n], here)
+
                 neighbor = argmin(nodes, distance_to_node)
                 d = distance(g.locations[neighbor], here) * curvature()
                 g.connect(node, neighbor, int(d))
@@ -446,6 +460,7 @@ def RandomGraph(nodes=range(10), min_links=2, width=400, height=300,
 
 class GraphProblem(Problem):
     """The problem of searching a graph from one node to another."""
+
     def __init__(self, initial, goal, graph):
         Problem.__init__(self, initial, goal)
         self.graph = graph
@@ -463,7 +478,7 @@ class GraphProblem(Problem):
 
     def h(self, node):
         """h function is straight-line dist from a node's state to goal."""
-        locs = getattr(self.graph, 'locations', None)
+        locs = getattr(self.graph, "locations", None)
         if locs:
             return int(distance(locs[node.state], locs[self.goal]))
         else:
@@ -479,8 +494,9 @@ class NQueensProblem(Problem):
     >>> depth_first_tree_search(NQueensProblem(8))
     <Node [7, 3, 0, 2, 5, 1, 6, 4]>
     """
+
     def __init__(self, n, initial):
-        super(NQueensProblem, self).__init__(initial)
+        super().__init__(initial)
         self.N = n
         self.initial = [None] * n
 
@@ -490,8 +506,7 @@ class NQueensProblem(Problem):
             return []  # All columns filled; no successors
         else:
             col = state.index(None)
-            return [row for row in range(self.N)
-                    if not self.conflicted(state, row, col)]
+            return [row for row in range(self.N) if not self.conflicted(state, row, col)]
 
     def result(self, state, row):
         """Place the next queen at the given row."""
@@ -502,22 +517,22 @@ class NQueensProblem(Problem):
 
     def conflicted(self, state, row, col):
         """Would placing a queen at (row, col) conflict with anything?"""
-        return any(self.conflict(row, col, state[c], c)
-                   for c in range(col))
+        return any(self.conflict(row, col, state[c], c) for c in range(col))
 
     def conflict(self, row1, col1, row2, col2):
         """Would putting two queens in (row1, col1) and (row2, col2) conflict?"""
-        return (row1 == row2  # same row
-                or col1 == col2  # same column
-                or row1-col1 == row2-col2  # same \ diagonal
-                or row1+col1 == row2+col2)  # same / diagonal
+        return (
+            row1 == row2  # same row
+            or col1 == col2  # same column
+            or row1 - col1 == row2 - col2  # same \ diagonal
+            or row1 + col1 == row2 + col2
+        )  # same / diagonal
 
     def goal_test(self, state):
         """Check if all columns filled, no conflicts."""
         if state[-1] is None:
             return False
-        return not any(self.conflicted(state, state[col], col)
-                       for col in range(len(state)))
+        return not any(self.conflicted(state, state[col], col) for col in range(len(state)))
 
 
 __doc__ += """

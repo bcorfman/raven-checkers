@@ -1,24 +1,25 @@
 from tkinter import Widget
+
 from base.controller import Controller
-from util.globalconst import HUMAN, OUTLINE_COLOR, DARK_SQUARES, FREE
+from util.globalconst import DARK_SQUARES, FREE, HUMAN, OUTLINE_COLOR
 
 
 class PlayerController(Controller):
     def __init__(self, **props):
-        self._model = props['model']
-        self._view = props['view']
+        self._model = props["model"]
+        self._view = props["view"]
         self._before_turn_event = None
-        self._end_turn_event = props['end_turn_event']
+        self._end_turn_event = props["end_turn_event"]
         self._highlights = []
         self._move_in_progress = False
         self.idx = None
         self.moves = []
 
     def _register_event_handlers(self):
-        Widget.bind(self._view.canvas, '<Button-1>', self.mouse_click)
+        Widget.bind(self._view.canvas, "<Button-1>", self.mouse_click)
 
     def _unregister_event_handlers(self):
-        Widget.unbind(self._view.canvas, '<Button-1>')
+        Widget.unbind(self._view.canvas, "<Button-1>")
 
     def stop_process(self):
         pass
@@ -104,8 +105,7 @@ class PlayerController(Controller):
             idx = m[0]
             self._view.highlight_square(idx, OUTLINE_COLOR)
             self._highlights.append(idx)
-        self._model.make_move(self.moves[0], None, True, True,
-                              self._view.get_annotation())
+        self._model.make_move(self.moves[0], None, True, True, self._view.get_annotation())
         # a new move obliterates any more redo's along a branch of the game tree
         self._model.curr_state.delete_redo_list()
         self._move_in_progress = False

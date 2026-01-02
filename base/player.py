@@ -1,14 +1,16 @@
 import sys
+
 import ai.games as games
 from util.globalconst import CB_MAP, IMAP
 
 
-class Player(object):
+class Player:
     def __init__(self, color):
         self.col = color
 
     def _get_color(self):
         return self.col
+
     color = property(_get_color, doc="Player color")
 
 
@@ -18,16 +20,15 @@ class AlphabetaPlayer(Player):
         self.searchDepth = depth
 
     def select_move(self, game, state):
-        sys.stdout.write('\nThinking ... ')
-        move_list = games.alphabeta_search(state, game, False,
-                                           self.searchDepth)
+        sys.stdout.write("\nThinking ... ")
+        move_list = games.alphabeta_search(state, game, False, self.searchDepth)
         positions = []
         step = 2 if game.captures_available(state) else 1
         for i in range(0, len(move_list), step):
             idx, old, new = move_list[i]
             positions.append(str(CB_MAP[idx]))
-        move = '-'.join(positions)
-        print(f'I move {move}')
+        move = "-".join(positions)
+        print(f"I move {move}")
         return move_list
 
 
@@ -41,7 +42,7 @@ class HumanPlayer(Player):
             positions = []
             idx = 0
             while 1:
-                request = '_Move to? ' if positions else '_Move from? '
+                request = "_Move to? " if positions else "_Move from? "
                 # do any positions match the input
                 pos = self._valid_pos(input(request), moves, idx)
                 if pos:
