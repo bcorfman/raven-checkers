@@ -20,9 +20,10 @@ def _external_root() -> Path:
 def _bundle_root() -> Path:
     """
     Files embedded into onefile and unpacked to temp.
-    In dev, this is repo-relative.
+    In dev, this should resolve to the repo/project root.
+    globalconst.py is under util/, so go up one.
     """
-    return Path(__file__).resolve().parent
+    return Path(__file__).resolve().parents[1]
 
 
 EXTERNAL_ROOT = _external_root()
