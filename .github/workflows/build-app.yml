@@ -94,23 +94,33 @@ jobs:
           enable-plugins: tk-inter
           include-data-dir: images=images
 
+      - name: Install and start Xvfb (Ubuntu only)
+        if: matrix.os == 'ubuntu-22.04'
+        env:
+          DISPLAY: ':99.0'
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y xvfb x11-utils
+          /sbin/start-stop-daemon --start --quiet \
+            --pidfile /tmp/xvfb_99.pid --make-pidfile --background \
+            --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac
+        shell: bash
 
       - name: Smoke test binary (Linux/macOS)
         if: matrix.os != 'windows-latest'
+        env:
+          DISPLAY: ${{ matrix.os == 'ubuntu-22.04' && ':99.0' || '' }}
         run: |
           python - <<'PY'
-          import subprocess
+          import os, subprocess
           from pathlib import Path
 
+          # Find candidate
           build_dir = Path("build")
-          if not build_dir.exists():
-              print("Smoke test skipped: build/ directory not found")
-              raise SystemExit(0)
-
           candidates = []
-          for pat in ("raven-checkers*", "main*"):
-              candidates.extend(build_dir.rglob(pat))
-
+          if build_dir.exists():
+              for pat in ("raven-checkers*", "main*"):
+                  candidates.extend(build_dir.rglob(pat))
           candidates = [p for p in candidates if p.is_file()]
           if not candidates:
               print("Smoke test skipped: no binary found")
@@ -119,11 +129,14 @@ jobs:
           bin_path = candidates[0]
           print("Smoke test candidate:", bin_path)
 
+          # Run briefly; GUI app may hang, so timeout is success
           try:
-              subprocess.run([str(bin_path)], timeout=2, check=False)
+              subprocess.run([str(bin_path)], timeout=2, check=False, env=os.environ.copy())
           except subprocess.TimeoutExpired:
               print("Smoke test: timed out (expected for GUI app)")
           PY
+        shell: bash
+
 
       - name: Smoke test binary (Windows)
         if: matrix.os == 'windows-latest'
