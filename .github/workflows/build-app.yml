@@ -1,8 +1,3 @@
-# Build Raven Checkers:
-# - Linux: Nuitka onefile -> AppImage (images embedded) packed with training/ into ONE tar.gz
-# - macOS: Nuitka onefile -> tar.gz containing binary + training/ (images embedded)
-# - Windows: Nuitka onefile -> zip containing exe + training/ (images embedded)
-
 name: Build Application
 
 on:
@@ -16,7 +11,6 @@ permissions:
 env:
   GITHUB_TOKEN: ${{ github.token }}
   APP_NAME: "raven-checkers"
-  DIST_DIR_NAME: "RavenCheckers"
 
 jobs:
   build:
@@ -51,7 +45,7 @@ jobs:
       - uses: seanmiddleditch/gha-setup-vsdevenv@master
         if: matrix.os == 'windows-latest'
 
-      - name: Install system Tk (Ubuntu only)
+      - name: Install system packages (Ubuntu only)
         if: matrix.os == 'ubuntu-22.04'
         run: |
           sudo apt-get update -y
@@ -83,9 +77,12 @@ jobs:
           python -c "import tkinter; print('ok', tkinter.TkVersion)"
         shell: bash
 
-      # ---- Build with Nuitka ----
-      - name: Build Executable with Nuitka (Linux - onefile)
-        if: matrix.os == 'ubuntu-22.04'
+      # ---------------------------
+      # Build with Nuitka (onefile on all OS)
+      # Include BOTH images/ and training/ inside the onefile.
+      # ---------------------------
+      - name: Build with Nuitka (Linux/macOS)
+        if: matrix.os != 'windows-latest'
         uses: Nuitka/Nuitka-Action@main
         with:
           nuitka-version: main
@@ -96,22 +93,9 @@ jobs:
           enable-plugins: tk-inter
           include-data-dir: |
             images=images
+            training=training
 
-
-      - name: Build Executable with Nuitka (macOS - onefile)
-        if: matrix.os == 'macos-latest'
-        uses: Nuitka/Nuitka-Action@main
-        with:
-          nuitka-version: main
-          script-name: main.py
-          mode: onefile
-          output-dir: build
-          output-file: ${{ env.APP_NAME }}
-          enable-plugins: tk-inter
-          include-data-dir: |
-            images=images
-
-      - name: Build Executable with Nuitka (Windows - onefile)
+      - name: Build with Nuitka (Windows)
         if: matrix.os == 'windows-latest'
         uses: Nuitka/Nuitka-Action@main
         with:
@@ -124,45 +108,34 @@ jobs:
           enable-plugins: tk-inter
           include-data-dir: |
             images=images
+            training=training
 
-      - name: Create AppImage and Linux tar.gz (Linux)
+      # ---------------------------
+      # Linux: wrap onefile into AppImage (single download)
+      # ---------------------------
+      - name: Create AppImage (Linux)
         if: matrix.os == 'ubuntu-22.04'
         run: |
           set -euo pipefail
-          rm -rf build_output stage "${DIST_DIR_NAME}".AppDir squashfs-root appimagetool
+          rm -rf build_output RavenCheckers.AppDir squashfs-root appimagetool
           mkdir -p build_output
 
-          # Locate the Nuitka onefile binary (location can vary)
-          BIN=""
-          if [ -f "build/${APP_NAME}" ]; then
-            BIN="build/${APP_NAME}"
-          elif [ -f "${APP_NAME}" ]; then
-            BIN="${APP_NAME}"
-          else
-            BIN="$(find build -maxdepth 6 -type f -name "${APP_NAME}" -print -quit 2>/dev/null || true)"
-            if [ -z "${BIN}" ]; then
-              BIN="$(find . -maxdepth 6 -type f -name "${APP_NAME}" -print -quit 2>/dev/null || true)"
-            fi
-          fi
-
+          # Locate the Nuitka onefile binary
+          BIN="$(find build -maxdepth 6 -type f -name "${APP_NAME}" -print -quit 2>/dev/null || true)"
           if [ -z "${BIN}" ] || [ ! -f "${BIN}" ]; then
-            echo "ERROR: Could not find onefile binary named '${APP_NAME}'"
-            echo "Build dir contents:"
-            find build -maxdepth 4 -type f -print | head -200 || true
+            echo "ERROR: Could not find onefile binary named '${APP_NAME}' under build/"
+            find build -maxdepth 6 -type f -print | head -200 || true
             exit 1
           fi
-          echo "Found onefile binary: ${BIN}"
           chmod 755 "${BIN}"
+          echo "Found onefile binary: ${BIN}"
 
-          # Create AppDir layout
-          APPDIR="${DIST_DIR_NAME}.AppDir"
+          APPDIR="RavenCheckers.AppDir"
           mkdir -p "${APPDIR}/usr/bin"
 
-          # Copy ONE binary into AppDir
           cp -f "${BIN}" "${APPDIR}/usr/bin/${APP_NAME}"
           chmod 755 "${APPDIR}/usr/bin/${APP_NAME}"
 
-          # Desktop file
           cat > "${APPDIR}/${APP_NAME}.desktop" <<EOF
           [Desktop Entry]
           Type=Application
@@ -173,10 +146,9 @@ jobs:
           Terminal=false
           EOF
 
-          # Create AppImage icon (PNG) from your existing GIF
+          # Icon for AppImage (use your existing gif -> png)
           convert "images/_raven.gif" "${APPDIR}/${APP_NAME}.png"
 
-          # AppRun
           cat > "${APPDIR}/AppRun" <<EOF
           #!/bin/sh
           HERE="\$(dirname "\$(readlink -f "\$0")")"
@@ -184,136 +156,89 @@ jobs:
           EOF
           chmod 755 "${APPDIR}/AppRun"
 
-          # Download appimagetool and extract (no FUSE in GitHub Actions)
           wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool
           chmod +x appimagetool
           ./appimagetool --appimage-extract > /dev/null
 
-          # Build AppImage
           ARCH=x86_64 ./squashfs-root/AppRun "${APPDIR}" "build_output/${APP_NAME}.AppImage"
           chmod 755 "build_output/${APP_NAME}.AppImage"
 
-          # Stage ONE folder for tar.gz: RavenCheckers/{AppImage,training/}
-          rm -rf stage
-          mkdir -p "stage/${DIST_DIR_NAME}"
-
-          cp -f "build_output/${APP_NAME}.AppImage" "stage/${DIST_DIR_NAME}/${APP_NAME}.AppImage"
-
-          if [ ! -d training ]; then
-            echo "ERROR: training/ folder missing"
-            exit 1
-          fi
-          cp -R training "stage/${DIST_DIR_NAME}/training"
-
-          # NO images/ copied — images are embedded in onefile binary inside the AppImage.
-          (cd stage && tar -czf "../build_output/${APP_NAME}-linux.tar.gz" "${DIST_DIR_NAME}")
-
-          echo "Created build_output/${APP_NAME}-linux.tar.gz"
-          tar -tvf "build_output/${APP_NAME}-linux.tar.gz" | head -80
+          ls -lh build_output/
         shell: bash
 
-
-
       # ---------------------------
-      # macOS: Package onefile + training/ into tar.gz (NO images dir shipped outside)
+      # macOS: locate the onefile binary for upload
       # ---------------------------
-      - name: Stage distribution (macOS)
+      - name: Prepare macOS artifact
         if: matrix.os == 'macos-latest'
         run: |
           set -euo pipefail
-          rm -rf stage build_output
-          mkdir -p "stage/${DIST_DIR_NAME}"
+          rm -rf build_output
           mkdir -p build_output
 
-          BIN="$(find ./build -maxdepth 6 -type f -name "${APP_NAME}" -print -quit 2>/dev/null || true)"
-          if [ -z "${BIN}" ]; then
-            BIN="$(find . -maxdepth 6 -type f -name "${APP_NAME}" -print -quit 2>/dev/null || true)"
-          fi
-          if [ -z "${BIN}" ]; then
-            echo "ERROR: Could not find macOS onefile output"
-            find . -maxdepth 6 -type f | head -200 || true
+          BIN="$(find build -maxdepth 6 -type f -name "${APP_NAME}" -print -quit 2>/dev/null || true)"
+          if [ -z "${BIN}" ] || [ ! -f "${BIN}" ]; then
+            echo "ERROR: Could not find macOS onefile output '${APP_NAME}' under build/"
+            find build -maxdepth 6 -type f -print | head -200 || true
             exit 1
           fi
 
-          chmod 755 "$BIN"
-          cp "$BIN" "stage/${DIST_DIR_NAME}/${APP_NAME}"
-
-          cp -R training "stage/${DIST_DIR_NAME}/"
-
-          (cd stage && tar -czf "../build_output/${APP_NAME}-macos.tar.gz" "${DIST_DIR_NAME}")
-
-          echo "Created build_output/${APP_NAME}-macos.tar.gz"
-          tar -tvf "build_output/${APP_NAME}-macos.tar.gz" | head -50
+          chmod 755 "${BIN}"
+          cp -f "${BIN}" "build_output/${APP_NAME}-macos"
+          chmod 755 "build_output/${APP_NAME}-macos"
+          ls -lh build_output/
         shell: bash
 
       # ---------------------------
-      # Windows: Package onefile exe + training/ into zip (NO images dir shipped outside)
+      # Windows: locate the exe for upload
       # ---------------------------
-      - name: Stage distribution (Windows)
+      - name: Prepare Windows artifact
         if: matrix.os == 'windows-latest'
         run: |
           $ErrorActionPreference = "Stop"
-
-          Remove-Item -Recurse -Force stage, build_output -ErrorAction SilentlyContinue
-          New-Item -ItemType Directory -Force -Path "stage\$env:DIST_DIR_NAME" | Out-Null
+          Remove-Item -Recurse -Force build_output -ErrorAction SilentlyContinue
           New-Item -ItemType Directory -Force -Path "build_output" | Out-Null
 
           $exe = Get-ChildItem -Path build -Recurse -File -Filter "$env:APP_NAME*.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
           if (-not $exe) { $exe = Get-ChildItem -Path build -Recurse -File -Filter "main*.exe" -ErrorAction SilentlyContinue | Select-Object -First 1 }
-          if (-not $exe) { $exe = Get-ChildItem -Recurse -File -Filter "$env:APP_NAME*.exe" | Select-Object -First 1 }
-          if (-not $exe) { $exe = Get-ChildItem -Recurse -File -Filter "main*.exe" | Select-Object -First 1 }
           if (-not $exe) {
-            Write-Error "ERROR: Could not find built .exe"
-            Get-ChildItem -Recurse -File | Select-Object -First 200 | ForEach-Object { $_.FullName }
+            Write-Error "ERROR: Could not find built .exe under build/"
+            Get-ChildItem -Path build -Recurse -File | Select-Object -First 200 | ForEach-Object { $_.FullName }
             exit 1
           }
 
-          Copy-Item $exe.FullName "stage\$env:DIST_DIR_NAME\$env:APP_NAME.exe"
-
-          if (!(Test-Path training)) { Write-Error "ERROR: training/ folder missing"; exit 1 }
-          Copy-Item -Recurse -Force training "stage\$env:DIST_DIR_NAME\training"
-
-          Compress-Archive -Path "stage\$env:DIST_DIR_NAME" -DestinationPath "build_output\$env:APP_NAME-windows.zip" -Force
-
-          Write-Host "Created build_output\$env:APP_NAME-windows.zip"
+          Copy-Item $exe.FullName "build_output\$env:APP_NAME.exe"
+          Get-ChildItem build_output | Format-List
         shell: pwsh
 
       # ---------------------------
-      # Upload build artifacts
+      # Upload build artifacts (single-file per OS)
       # ---------------------------
-      - name: Upload build artifact (Linux)
+      - name: Upload artifact (Linux AppImage)
         if: matrix.os == 'ubuntu-22.04'
         uses: actions/upload-artifact@v5
         with:
           name: linux
-          path: |
-            build_output/${{ env.APP_NAME }}-linux.tar.gz
+          path: build_output/${{ env.APP_NAME }}.AppImage
 
-      - name: Upload build artifact (macOS)
+      - name: Upload artifact (macOS onefile)
         if: matrix.os == 'macos-latest'
         uses: actions/upload-artifact@v5
         with:
           name: macos
-          path: |
-            build_output/${{ env.APP_NAME }}-macos.tar.gz
+          path: build_output/${{ env.APP_NAME }}-macos
 
-      - name: Upload build artifact (Windows)
+      - name: Upload artifact (Windows exe)
         if: matrix.os == 'windows-latest'
         uses: actions/upload-artifact@v5
         with:
           name: windows
-          path: |
-            build_output/${{ env.APP_NAME }}-windows.zip
+          path: build_output/${{ env.APP_NAME }}.exe
 
   release:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-
       - name: Download all build artifacts
         uses: actions/download-artifact@v6
         with:
@@ -335,6 +260,6 @@ jobs:
               --notes "Automated build for $TAG"
           fi
 
-          gh release upload "$TAG" "downloads/linux/${APP_NAME}-linux.tar.gz" --clobber
-          gh release upload "$TAG" "downloads/macos/${APP_NAME}-macos.tar.gz" --clobber
-          gh release upload "$TAG" "downloads/windows/${APP_NAME}-windows.zip" --clobber
+          gh release upload "$TAG" "downloads/linux/${APP_NAME}.AppImage" --clobber
+          gh release upload "$TAG" "downloads/macos/${APP_NAME}-macos" --clobber
+          gh release upload "$TAG" "downloads/windows/${APP_NAME}.exe" --clobber
