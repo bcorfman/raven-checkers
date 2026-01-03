@@ -229,10 +229,16 @@ jobs:
           rm -rf build_output
           mkdir -p build_output
 
-          APP_PATH="$(find build -maxdepth 6 -type d -name "*.app" -print -quit 2>/dev/null || true)"
+          echo "Searching for .app bundle produced by Nuitka..."
+          echo "Top-level build/ contents:"
+          find build -maxdepth 3 -print | head -200 || true
+
+          # Nuitka often places the .app inside *.dist/
+          APP_PATH="$(find build . -maxdepth 8 -type d -name "*.app" -print -quit 2>/dev/null || true)"
           if [ -z "${APP_PATH}" ] || [ ! -d "${APP_PATH}" ]; then
             echo "ERROR: Could not find macOS app bundle under build/"
-            find build -maxdepth 6 -print | head -200 || true
+            echo "Dumping likely Nuitka output dirs:"
+            find . -maxdepth 4 -type d \( -name "*.dist" -o -name "*.build" \) -print | head -200 || true
             exit 1
           fi
           echo "Found app bundle: ${APP_PATH}"
