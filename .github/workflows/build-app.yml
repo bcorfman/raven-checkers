@@ -11,6 +11,7 @@ permissions:
 env:
   GITHUB_TOKEN: ${{ github.token }}
   APP_NAME: "raven-checkers"
+  MAC_APP_NAME: "Raven Checkers"
 
 jobs:
   build:
@@ -81,8 +82,8 @@ jobs:
       # Build with Nuitka (onefile on all OS)
       # Include BOTH images/ and training/ inside the onefile.
       # ---------------------------
-      - name: Build with Nuitka (Linux/macOS)
-        if: matrix.os != 'windows-latest'
+      - name: Build with Nuitka (Linux)
+        if: matrix.os == 'ubuntu-22.04'
         uses: Nuitka/Nuitka-Action@main
         with:
           nuitka-version: main
@@ -94,6 +95,53 @@ jobs:
           include-data-dir: |
             images=images
             training=training
+
+      # ---------------------------
+      # macOS: build a double-clickable .app bundle
+      # Also generate an .icns from images/_raven.gif (no Homebrew).
+      # ---------------------------
+      - name: Create .icns icon from images/_raven.gif (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          set -euo pipefail
+          rm -rf build/icon build/icon.iconset
+          mkdir -p build/icon
+
+          # Convert GIF -> PNG (sips usually supports GIF input on macOS)
+          sips -s format png "images/_raven.gif" --out "build/icon/raven.png" >/dev/null
+
+          # Create iconset at required sizes
+          mkdir -p build/icon.iconset
+          for size in 16 32 64 128 256 512; do
+            sips -z $size $size "build/icon/raven.png" --out "build/icon.iconset/icon_${size}x${size}.png" >/dev/null
+          done
+          # Retina variants
+          cp "build/icon.iconset/icon_32x32.png"   "build/icon.iconset/icon_16x16@2x.png"
+          cp "build/icon.iconset/icon_64x64.png"   "build/icon.iconset/icon_32x32@2x.png"
+          cp "build/icon.iconset/icon_256x256.png" "build/icon.iconset/icon_128x128@2x.png"
+          cp "build/icon.iconset/icon_512x512.png" "build/icon.iconset/icon_256x256@2x.png"
+          cp "build/icon.iconset/icon_512x512.png" "build/icon.iconset/icon_512x512@2x.png"
+
+          iconutil -c icns "build/icon.iconset" -o "build/raven.icns"
+          ls -lh build/raven.icns
+        shell: bash
+
+      - name: Build with Nuitka (macOS - .app bundle)
+        if: matrix.os == 'macos-latest'
+        uses: Nuitka/Nuitka-Action@main
+        with:
+          nuitka-version: main
+          script-name: main.py
+          mode: onefile
+          output-dir: build
+          output-file: ${{ env.APP_NAME }}
+          enable-plugins: tk-inter
+          include-data-dir: |
+            images=images
+            training=training
+          macos-create-app-bundle: yes
+          macos-app-name: ${{ env.MAC_APP_NAME }}
+          macos-app-icon: build/raven.icns
 
       - name: Build with Nuitka (Windows)
         if: matrix.os == 'windows-latest'
@@ -169,23 +217,27 @@ jobs:
       # ---------------------------
       # macOS: locate the onefile binary for upload
       # ---------------------------
-      - name: Prepare macOS artifact
+      - name: Prepare macOS artifact (create DMG)
         if: matrix.os == 'macos-latest'
         run: |
           set -euo pipefail
           rm -rf build_output
           mkdir -p build_output
 
-          BIN="$(find build -maxdepth 6 -type f -name "${APP_NAME}" -print -quit 2>/dev/null || true)"
-          if [ -z "${BIN}" ] || [ ! -f "${BIN}" ]; then
-            echo "ERROR: Could not find macOS onefile output '${APP_NAME}' under build/"
-            find build -maxdepth 6 -type f -print | head -200 || true
+          APP_PATH="build/${MAC_APP_NAME}.app"
+          if [ ! -d "${APP_PATH}" ]; then
+            echo "ERROR: Could not find macOS app bundle at ${APP_PATH}"
+            find build -maxdepth 4 -print | head -200 || true
             exit 1
           fi
 
-          chmod 755 "${BIN}"
-          cp -f "${BIN}" "build_output/${APP_NAME}-macos"
-          chmod 755 "build_output/${APP_NAME}-macos"
+          # Create a single-file DMG (double-clickable distribution)
+          hdiutil create \
+            -volname "${MAC_APP_NAME}" \
+            -srcfolder "${APP_PATH}" \
+            -ov -format UDZO \
+            "build_output/${APP_NAME}.dmg"
+
           ls -lh build_output/
         shell: bash
 
@@ -226,7 +278,7 @@ jobs:
         uses: actions/upload-artifact@v5
         with:
           name: macos
-          path: build_output/${{ env.APP_NAME }}-macos
+          path: build_output/${{ env.APP_NAME }}.dmg
 
       - name: Upload artifact (Windows exe)
         if: matrix.os == 'windows-latest'
@@ -261,5 +313,5 @@ jobs:
           fi
 
           gh release upload "$TAG" "downloads/linux/${APP_NAME}.AppImage" --clobber
-          gh release upload "$TAG" "downloads/macos/${APP_NAME}-macos" --clobber
+          gh release upload "$TAG" "downloads/macos/${APP_NAME}.dmg" --clobber
           gh release upload "$TAG" "downloads/windows/${APP_NAME}.exe" --clobber
