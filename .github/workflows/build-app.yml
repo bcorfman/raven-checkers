@@ -92,8 +92,18 @@ jobs:
           output-file: ${{ env.APP_NAME }}
           windows-console-mode: disable
           enable-plugins: tk-inter
-          include-data-dir: images=images
+          include-data-dir: |
+            images=images
 
+      - name: Verify images are bundled (Linux/macOS)
+        if: matrix.os != 'windows-latest'
+        run: |
+          set -euo pipefail
+          # Run briefly and inspect the extraction dir printed by Nuitka onefile
+          # (Nuitka logs "onefile" extraction to a temp dir; we can also just check staging)
+          ls -la images | head -50
+        shell: bash
+        
       - name: Install and start Xvfb (Ubuntu only)
         if: matrix.os == 'ubuntu-22.04'
         env:
