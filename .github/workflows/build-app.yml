@@ -1,5 +1,5 @@
 # Build Raven Checkers:
-# - Linux: Nuitka standalone -> AppImage (images embedded) packed with training/ into ONE tar.gz
+# - Linux: Nuitka onefile -> AppImage (images embedded) packed with training/ into ONE tar.gz
 # - macOS: Nuitka onefile -> tar.gz containing binary + training/ (images embedded)
 # - Windows: Nuitka onefile -> zip containing exe + training/ (images embedded)
 
@@ -55,7 +55,7 @@ jobs:
         if: matrix.os == 'ubuntu-22.04'
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y python3-tk
+          sudo apt-get install -y python3-tk imagemagick
         shell: bash
 
       - name: Export runtime requirements from pyproject.toml
@@ -84,17 +84,19 @@ jobs:
         shell: bash
 
       # ---- Build with Nuitka ----
-      - name: Build Executable with Nuitka (Linux - standalone)
+      - name: Build Executable with Nuitka (Linux - onefile)
         if: matrix.os == 'ubuntu-22.04'
         uses: Nuitka/Nuitka-Action@main
         with:
           nuitka-version: main
           script-name: main.py
-          mode: standalone
+          mode: onefile
+          output-dir: build
           output-file: ${{ env.APP_NAME }}
           enable-plugins: tk-inter
           include-data-dir: |
             images=images
+
 
       - name: Build Executable with Nuitka (macOS - onefile)
         if: matrix.os == 'macos-latest'
@@ -103,6 +105,7 @@ jobs:
           nuitka-version: main
           script-name: main.py
           mode: onefile
+          output-dir: build
           output-file: ${{ env.APP_NAME }}
           enable-plugins: tk-inter
           include-data-dir: |
@@ -115,55 +118,48 @@ jobs:
           nuitka-version: main
           script-name: main.py
           mode: onefile
+          output-dir: build
           output-file: ${{ env.APP_NAME }}
           windows-console-mode: disable
           enable-plugins: tk-inter
           include-data-dir: |
             images=images
 
-      # ---------------------------
-      # Linux: Create AppImage, then package AppImage + training/ into ONE tar.gz
-      # (NO images dir shipped outside)
-      # ---------------------------
       - name: Create AppImage and Linux tar.gz (Linux)
         if: matrix.os == 'ubuntu-22.04'
         run: |
           set -euo pipefail
-          rm -rf build_output stage "${DIST_DIR_NAME}"*.AppDir squashfs-root appimagetool
+          rm -rf build_output stage "${DIST_DIR_NAME}".AppDir squashfs-root appimagetool
           mkdir -p build_output
 
-          # Find the standalone dist directory (Nuitka creates *.dist)
-          DIST_DIR="$(find . -maxdepth 4 -type d -name "*.dist" | head -n1 || true)"
-          if [ -z "${DIST_DIR}" ]; then
-            echo "ERROR: Could not find *.dist directory"
-            find . -maxdepth 6 -type d | head -200 || true
+          # Locate the Nuitka onefile binary (location can vary)
+          BIN=""
+          if [ -f "build/${APP_NAME}" ]; then
+            BIN="build/${APP_NAME}"
+          elif [ -f "${APP_NAME}" ]; then
+            BIN="${APP_NAME}"
+          else
+            BIN="$(find build -maxdepth 6 -type f -name "${APP_NAME}" -print -quit 2>/dev/null || true)"
+            if [ -z "${BIN}" ]; then
+              BIN="$(find . -maxdepth 6 -type f -name "${APP_NAME}" -print -quit 2>/dev/null || true)"
+            fi
+          fi
+
+          if [ -z "${BIN}" ] || [ ! -f "${BIN}" ]; then
+            echo "ERROR: Could not find onefile binary named '${APP_NAME}'"
+            echo "Build dir contents:"
+            find build -maxdepth 4 -type f -print | head -200 || true
             exit 1
           fi
-          echo "Found dist directory: ${DIST_DIR}"
+          echo "Found onefile binary: ${BIN}"
+          chmod 755 "${BIN}"
 
           # Create AppDir layout
           APPDIR="${DIST_DIR_NAME}.AppDir"
           mkdir -p "${APPDIR}/usr/bin"
 
-          # Locate the actual executable in the dist directory
-          EXEC_CANDIDATE=""
-          if [ -f "${DIST_DIR}/${APP_NAME}" ]; then
-            EXEC_CANDIDATE="${DIST_DIR}/${APP_NAME}"
-          else
-            EXEC_CANDIDATE="$(find "${DIST_DIR}" -maxdepth 1 -type f -perm -u+x | head -n1 || true)"
-          fi
-          if [ -z "${EXEC_CANDIDATE}" ]; then
-            echo "ERROR: Could not find executable in ${DIST_DIR}"
-            ls -la "${DIST_DIR}" | head -200 || true
-            exit 1
-          fi
-          echo "Executable candidate: ${EXEC_CANDIDATE}"
-
-          # Copy dist contents into AppDir
-          cp -a "${DIST_DIR}/." "${APPDIR}/usr/bin/"
-
-          # Ensure stable name and exec bit for AppRun
-          cp -f "${EXEC_CANDIDATE}" "${APPDIR}/usr/bin/${APP_NAME}"
+          # Copy ONE binary into AppDir
+          cp -f "${BIN}" "${APPDIR}/usr/bin/${APP_NAME}"
           chmod 755 "${APPDIR}/usr/bin/${APP_NAME}"
 
           # Desktop file
@@ -177,20 +173,13 @@ jobs:
           Terminal=false
           EOF
 
-          # Tiny icon (1x1) to satisfy appimagetool
-          python - <<'PY'
-          import base64, pathlib
-          png_b64 = (
-              "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMA"
-              "ASsJTYQAAAAASUVORK5CYII="
-          )
-          (pathlib.Path("${APPDIR}") / "raven-checkers.png").write_bytes(base64.b64decode(png_b64))
-          PY
+          # Create AppImage icon (PNG) from your existing GIF
+          convert "images/_raven.gif" "${APPDIR}/${APP_NAME}.png"
 
           # AppRun
           cat > "${APPDIR}/AppRun" <<EOF
           #!/bin/sh
-          HERE="\$(dirname "\$(readlink -f "\${0}")")"
+          HERE="\$(dirname "\$(readlink -f "\$0")")"
           exec "\${HERE}/usr/bin/${APP_NAME}" "\$@"
           EOF
           chmod 755 "${APPDIR}/AppRun"
@@ -204,9 +193,10 @@ jobs:
           ARCH=x86_64 ./squashfs-root/AppRun "${APPDIR}" "build_output/${APP_NAME}.AppImage"
           chmod 755 "build_output/${APP_NAME}.AppImage"
 
-          # Stage ONE Linux folder for tar.gz: RavenCheckers/{AppImage,training/}
+          # Stage ONE folder for tar.gz: RavenCheckers/{AppImage,training/}
           rm -rf stage
           mkdir -p "stage/${DIST_DIR_NAME}"
+
           cp -f "build_output/${APP_NAME}.AppImage" "stage/${DIST_DIR_NAME}/${APP_NAME}.AppImage"
 
           if [ ! -d training ]; then
@@ -215,12 +205,14 @@ jobs:
           fi
           cp -R training "stage/${DIST_DIR_NAME}/training"
 
-          # NOTE: do NOT copy images/ — images are embedded into the AppImage.
+          # NO images/ copied — images are embedded in onefile binary inside the AppImage.
           (cd stage && tar -czf "../build_output/${APP_NAME}-linux.tar.gz" "${DIST_DIR_NAME}")
 
           echo "Created build_output/${APP_NAME}-linux.tar.gz"
-          tar -tvf "build_output/${APP_NAME}-linux.tar.gz" | head -60
+          tar -tvf "build_output/${APP_NAME}-linux.tar.gz" | head -80
         shell: bash
+
+
 
       # ---------------------------
       # macOS: Package onefile + training/ into tar.gz (NO images dir shipped outside)
@@ -243,8 +235,8 @@ jobs:
             exit 1
           fi
 
+          chmod 755 "$BIN"
           cp "$BIN" "stage/${DIST_DIR_NAME}/${APP_NAME}"
-          chmod 755 "stage/${DIST_DIR_NAME}/${APP_NAME}"
 
           cp -R training "stage/${DIST_DIR_NAME}/"
 
@@ -267,9 +259,9 @@ jobs:
           New-Item -ItemType Directory -Force -Path "build_output" | Out-Null
 
           $exe = Get-ChildItem -Path build -Recurse -File -Filter "$env:APP_NAME*.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
-          if (-not $exe) {
-            $exe = Get-ChildItem -Recurse -File -Filter "$env:APP_NAME*.exe" | Select-Object -First 1
-          }
+          if (-not $exe) { $exe = Get-ChildItem -Path build -Recurse -File -Filter "main*.exe" -ErrorAction SilentlyContinue | Select-Object -First 1 }
+          if (-not $exe) { $exe = Get-ChildItem -Recurse -File -Filter "$env:APP_NAME*.exe" | Select-Object -First 1 }
+          if (-not $exe) { $exe = Get-ChildItem -Recurse -File -Filter "main*.exe" | Select-Object -First 1 }
           if (-not $exe) {
             Write-Error "ERROR: Could not find built .exe"
             Get-ChildItem -Recurse -File | Select-Object -First 200 | ForEach-Object { $_.FullName }
