@@ -313,17 +313,18 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
+          REPO="${GITHUB_REPOSITORY}"          
           TAG="${{ github.ref_name }}"
           echo "Target release tag: $TAG"
 
-          if gh release view "$TAG" >/dev/null 2>&1; then
+          if gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
             echo "Release $TAG already exists; will upload assets with --clobber"
           else
-            gh release create "$TAG" \
+            gh release create "$TAG" --repo "$REPO" \
               --title "$TAG" \
               --notes "Automated build for $TAG"
           fi
 
-          gh release upload "$TAG" "downloads/linux/${APP_NAME}.AppImage" --clobber
-          gh release upload "$TAG" "downloads/macos/${APP_NAME}.dmg" --clobber
-          gh release upload "$TAG" "downloads/windows/${APP_NAME}.exe" --clobber
+          gh release upload "$TAG" "downloads/linux/${APP_NAME}.AppImage" --repo "$REPO" --clobber
+          gh release upload "$TAG" "downloads/macos/${APP_NAME}.dmg" --repo "$REPO" --clobber
+          gh release upload "$TAG" "downloads/windows/${APP_NAME}.exe" --repo "$REPO" --clobber
