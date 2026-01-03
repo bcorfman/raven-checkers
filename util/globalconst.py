@@ -4,23 +4,35 @@ from configparser import RawConfigParser
 from pathlib import Path
 
 
+def _nuitka_compiled_obj():
+    # Returns the Nuitka __compiled__ object if present, else None.
+    return globals().get("__compiled__")
+
+
 def _external_root() -> Path:
     """
     Files next to the *distributed executable* (user-browsable).
-    Works for onefile and standalone.
+    Works for Nuitka onefile/standalone and dev runs.
     """
-    try:
-        # Nuitka standalone/onefile provides this
-        return Path(__compiled__.containing_dir)  # type: ignore[name-defined]
-    except NameError:
-        # Fallback for dev / other builds
-        return Path(sys.argv[0]).resolve().parent
+    c = _nuitka_compiled_obj()
+    if c is not None:
+        # Prefer original_argv0 when available (often points at the real binary path)
+        orig = getattr(c, "original_argv0", None)
+        if orig:
+            return Path(orig).resolve().parent
+
+        containing = getattr(c, "containing_dir", None)
+        if containing:
+            return Path(containing).resolve()
+
+    # Dev / non-Nuitka fallback
+    return Path(sys.argv[0]).resolve().parent
 
 
 def _bundle_root() -> Path:
     """
-    Files embedded into onefile and unpacked to temp.
-    In dev, this should resolve to the repo/project root.
+    Files embedded in onefile and unpacked to temp.
+    In dev, this should resolve to repo/project root.
     globalconst.py is under util/, so go up one.
     """
     return Path(__file__).resolve().parents[1]
@@ -33,17 +45,39 @@ BUNDLE_ROOT = _bundle_root()
 def get_resource_path(relative_path: str) -> str:
     rel = Path(relative_path)
 
-    # Training should be user-browsable (external)
+    # TRAINING: prefer external if present (user-browsable), else fall back
     if rel.parts and rel.parts[0] == "training":
-        return str(EXTERNAL_ROOT / rel)
+        ext = EXTERNAL_ROOT / rel
+        if ext.exists():
+            return str(ext)
+        bun = BUNDLE_ROOT / rel
+        return str(bun)
 
-    # Images: prefer embedded bundle, but allow external override if present
-    bundle_candidate = BUNDLE_ROOT / rel
-    if bundle_candidate.exists():
-        return str(bundle_candidate)
+    # IMAGES: prefer bundled (embedded), but allow external override if missing
+    bun = BUNDLE_ROOT / rel
+    if bun.exists():
+        return str(bun)
 
-    external_candidate = EXTERNAL_ROOT / rel
-    return str(external_candidate)
+    return str(EXTERNAL_ROOT / rel)
+
+
+def is_writable_dir(path: str) -> bool:
+    try:
+        p = Path(path)
+        return p.is_dir() and os.access(p, os.W_OK)
+    except Exception:
+        return False
+
+
+def default_open_dir(last_dir: str) -> str:
+    return last_dir if last_dir and os.path.isdir(last_dir) else TRAINING_DIR
+
+
+def default_save_dir(last_dir: str) -> str:
+    d = last_dir if last_dir and os.path.isdir(last_dir) else TRAINING_DIR
+    if not is_writable_dir(d):
+        d = os.path.expanduser("~")
+    return d
 
 
 DEFAULT_SIZE = 400
@@ -424,19 +458,31 @@ def reverse_dict(m):
     return d
 
 
-INI_PATH = EXTERNAL_ROOT / "raven.ini"
+def user_config_dir(app_name: str = "RavenCheckers") -> Path:
+    if sys.platform.startswith("win"):
+        base = os.environ.get("APPDATA") or str(Path.home() / "AppData" / "Roaming")
+        return Path(base) / app_name
+    if sys.platform == "darwin":
+        return Path.home() / "Library" / "Application Support" / app_name
+    # Linux / other unix
+    base = os.environ.get("XDG_CONFIG_HOME")
+    return Path(base) / app_name if base else (Path.home() / ".config" / app_name)
+
+
+INI_PATH = user_config_dir() / "raven.ini"
 
 
 def get_preferences_from_file():
     config = RawConfigParser()
+    INI_PATH.parent.mkdir(parents=True, exist_ok=True)
+
     if not INI_PATH.exists():
-        # no .ini file yet, so make one
         config.add_section("AnnotationWindow")
         config.set("AnnotationWindow", "font", "Arial")
         config.set("AnnotationWindow", "size", "12")
-        # Writing our configuration file to 'raven.ini'
         with open(INI_PATH, "w", encoding="utf-8") as configfile:
             config.write(configfile)
+
     config.read(str(INI_PATH), encoding="utf-8")
     font = config.get("AnnotationWindow", "font")
     size = config.get("AnnotationWindow", "size")
@@ -448,7 +494,8 @@ def write_preferences_to_file(font, size):
     config.add_section("AnnotationWindow")
     config.set("AnnotationWindow", "font", font)
     config.set("AnnotationWindow", "size", size)
-    # Writing our configuration file to 'raven.ini'
+
+    INI_PATH.parent.mkdir(parents=True, exist_ok=True)
     with open(INI_PATH, "w", encoding="utf-8") as configfile:
         config.write(configfile)
 
