@@ -11,7 +11,20 @@ from gui.filelist import FileList
 from gui.playercontroller import PlayerController
 from parsing.migrate import RCF2PDN, build_move_annotation_pairs
 from parsing.PDN import PDNReader, PDNWriter, board_to_PDN_ready
-from util.globalconst import BLACK, KING, MAN, PROGRAM_TITLE, TITLE, TRAINING_DIR, VERSION, WHITE, keymap, square_map
+from util.globalconst import (
+    BLACK,
+    KING,
+    MAN,
+    PROGRAM_TITLE,
+    TITLE,
+    TRAINING_DIR,
+    VERSION,
+    WHITE,
+    default_open_dir,
+    default_save_dir,
+    keymap,
+    square_map,
+)
 
 
 class GameManager:
@@ -31,6 +44,7 @@ class GameManager:
         # noinspection PyUnresolvedReferences
         self.controller1.start_turn()
         self.filepath = None
+        self._last_file_dir = TRAINING_DIR
 
     def set_controllers(self):
         if self.num_players == 0:
@@ -135,31 +149,42 @@ class GameManager:
     def open_game(self):
         self._stop_updates()
         self._save_curr_game_if_needed()
+
+        initial_dir = default_open_dir(self._last_file_dir)
+
         in_path = askopenfilename(
             filetypes=(
                 ("Portable Draughts Notation files", "*.pdn"),
                 ("Raven Checkers files", "*.rcf"),
                 ("All files", "*.*"),
             ),
-            initialdir=TRAINING_DIR,
+            initialdir=initial_dir,
         )
         if not in_path:
             return
+
+        self._last_file_dir = os.path.dirname(in_path)
+
         root, ext = os.path.splitext(in_path)
-        if ext == ".rcf":
+        if ext.lower() == ".rcf":
             showinfo(
                 "Migrate RCF file",
                 "RCF files use the legacy Raven Checkers format and must be converted to "
                 "PDN format. Choose a PDN save file to perform the conversion.",
             )
+
+            out_dir = default_save_dir(self._last_file_dir)
+
             out_path = asksaveasfilename(
                 filetypes=(("Portable Draughts Notation files", "*.pdn"), ("All files", "*.*")),
-                initialdir=TRAINING_DIR,
+                initialdir=out_dir,
                 initialfile=os.path.basename(root) + ".pdn",
                 defaultextension=".pdn",
             )
             if not out_path:
                 return
+
+            self._last_file_dir = os.path.dirname(out_path)
             RCF2PDN.with_file(in_path, out_path)
             self.load_game(out_path)
         else:
@@ -167,27 +192,40 @@ class GameManager:
 
     def save_game_as(self):
         self._stop_updates()
+
+        initial_dir = default_save_dir(self._last_file_dir)
+
         filename = asksaveasfilename(
             filetypes=(("Portable Draughts Notation files", "*.pdn"), ("All files", "*.*")),
-            initialdir=TRAINING_DIR,
+            initialdir=initial_dir,
             defaultextension=".pdn",
         )
-        if filename == "":
+        if not filename:
             return
 
+        self._last_file_dir = os.path.dirname(filename)
+        self.filepath = filename
         self._write_file(filename)
 
     def save_game(self):
         self._stop_updates()
-        filename = self.filepath
-        if not self.filepath:
-            filename = asksaveasfilename(
-                filetypes=(("Portable Draughts Notation files", "*.pdn"), ("All files", "*.*")),
-                initialdir=TRAINING_DIR,
-                defaultextension=".pdn",
-            )
-            if filename == "":
-                return
+
+        # If we already have a path, just overwrite.
+        if self.filepath:
+            self._write_file(self.filepath)
+            return
+
+        initial_dir = default_save_dir(self._last_file_dir)
+
+        filename = asksaveasfilename(
+            filetypes=(("Portable Draughts Notation files", "*.pdn"), ("All files", "*.*")),
+            initialdir=initial_dir,
+            defaultextension=".pdn",
+        )
+        if not filename:
+            return
+
+        self._last_file_dir = os.path.dirname(filename)
         self._write_file(filename)
 
     def _write_file(self, filename):
