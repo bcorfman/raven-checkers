@@ -132,7 +132,7 @@ jobs:
         with:
           nuitka-version: main
           script-name: main.py
-          mode: onefile
+          mode: standalone
           output-dir: build
           output-file: ${{ env.APP_NAME }}
           enable-plugins: tk-inter
