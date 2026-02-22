@@ -6,6 +6,7 @@ on:
       - "v[0-9]+.*"
 
 permissions:
+  actions: read
   contents: write
 
 env:
@@ -276,6 +277,57 @@ jobs:
         shell: pwsh
 
       # ---------------------------
+      # Windows: submit artifact to SignPath and replace with signed exe
+      # ---------------------------
+      - name: Upload unsigned artifact (Windows)
+        if: matrix.os == 'windows-latest'
+        id: upload-unsigned-windows
+        uses: actions/upload-artifact@v5
+        with:
+          name: windows-unsigned
+          path: build_output/${{ env.APP_NAME }}.exe
+          retention-days: 1
+
+      - name: Sign Windows artifact with SignPath
+        if: matrix.os == 'windows-latest'
+        id: signpath
+        uses: signpath/github-action-submit-signing-request@v2
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG }}
+          github-artifact-id: ${{ steps.upload-unsigned-windows.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: signed_artifact
+
+      - name: Prepare signed Windows artifact for release
+        if: matrix.os == 'windows-latest'
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $signedExe = Get-ChildItem -Path signed_artifact -Recurse -File -Filter "*.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $signedExe) {
+            $signedZip = Get-ChildItem -Path signed_artifact -Recurse -File -Filter "*.zip" -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($signedZip) {
+              $extractPath = "signed_artifact\\unzipped"
+              Remove-Item -Recurse -Force $extractPath -ErrorAction SilentlyContinue
+              Expand-Archive -Path $signedZip.FullName -DestinationPath $extractPath -Force
+              $signedExe = Get-ChildItem -Path $extractPath -Recurse -File -Filter "*.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+            }
+          }
+
+          if (-not $signedExe) {
+            Write-Error "ERROR: Could not find signed .exe in signed_artifact/"
+            Get-ChildItem -Path signed_artifact -Recurse -File | ForEach-Object { $_.FullName }
+            exit 1
+          }
+
+          Copy-Item $signedExe.FullName "build_output\$env:APP_NAME.exe" -Force
+          Get-AuthenticodeSignature "build_output\$env:APP_NAME.exe" | Format-List
+        shell: pwsh
+
+      # ---------------------------
       # Upload build artifacts (single-file per OS)
       # ---------------------------
       - name: Upload artifact (Linux AppImage)
@@ -292,7 +344,7 @@ jobs:
           name: macos
           path: build_output/${{ env.APP_NAME }}.dmg
 
-      - name: Upload artifact (Windows exe)
+      - name: Upload artifact (Windows exe, signed)
         if: matrix.os == 'windows-latest'
         uses: actions/upload-artifact@v5
         with:
