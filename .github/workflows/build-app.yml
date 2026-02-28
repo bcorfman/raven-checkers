@@ -288,7 +288,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         uses: actions/upload-artifact@v5
         with:
-          name: windows
+          name: windows-unsigned
           path: build_output/${{ env.APP_NAME }}.exe
 
       - name: Sign Windows artifact with SignPath
