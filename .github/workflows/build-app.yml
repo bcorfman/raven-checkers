@@ -284,6 +284,13 @@ jobs:
         with: 
           path: build_output/${{ env.APP_NAME }}.exe
 
+      - name: Upload artifact (Windows exe)
+        if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v5
+        with:
+          name: windows
+          path: build_output/${{ env.APP_NAME }}.exe
+
       - name: Sign Windows artifact with SignPath
         if: matrix.os == 'windows-latest'
         id: signpath
