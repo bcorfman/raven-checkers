@@ -276,17 +276,20 @@ jobs:
           Get-ChildItem build_output | Format-List
         shell: pwsh
 
-      # ---------------------------
-      # Windows: submit artifact to SignPath and replace with signed exe
-      # ---------------------------
-      - name: Upload unsigned artifact (Windows)
+      # required for the artifact to be available on the GitHub server
+      - name: upload-unsigned-artifact
         if: matrix.os == 'windows-latest'
-        id: upload-unsigned-windows
+        id: upload-unsigned-artifact
+        uses: actions/upload-artifact@v4
+        with: 
+          path: build_output/${{ env.APP_NAME }}.exe
+
+      - name: Upload artifact (Windows exe)
+        if: matrix.os == 'windows-latest'
         uses: actions/upload-artifact@v5
         with:
           name: windows-unsigned
           path: build_output/${{ env.APP_NAME }}.exe
-          retention-days: 1
 
       - name: Sign Windows artifact with SignPath
         if: matrix.os == 'windows-latest'
@@ -297,10 +300,10 @@ jobs:
           organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
           project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
           signing-policy-slug: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG }}
-          github-artifact-id: ${{ steps.upload-unsigned-windows.outputs.artifact-id }}
+          github-artifact-id: '${{ steps.upload-unsigned-artifact.outputs.artifact-id }}'
           wait-for-completion: true
           output-artifact-directory: signed_artifact
-
+      
       - name: Prepare signed Windows artifact for release
         if: matrix.os == 'windows-latest'
         run: |
