@@ -17,7 +17,7 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 cli = [
-    "ipython>=9.13.0",
+    "ipython>=9.14.0",
 ]
 dev = [
     "pytest>=9.0.3",
