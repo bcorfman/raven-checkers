@@ -6,7 +6,7 @@ authors = [
     {name = "Brandon Corfman", email = "bcorfman@fastmail.fm"},
 ]
 dependencies = [
-    "charset-normalizer>=3.4.9",
+    "charset-normalizer>=3.5.0",
     "pyparsing>=3.1.1",
 ]
 requires-python = ">=3.12"
